@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+
+    <item android:title="Inbox"
+          android:id="@+id/nav_item_inbox"
+          android:icon="@drawable/inbox"/>
+
+    <item android:title="Sent"
+          android:id="@+id/nav_item_sent"
+          android:icon="@drawable/sent"/>
+
+    <item android:title="Log Out"
+          android:id="@+id/nav_logout"
+          android:icon="@drawable/draft"/>
+
+
+
+</menu>
