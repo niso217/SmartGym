@@ -6,6 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import com.a.n.smartgym.model.User;
+import com.a.n.smartgym.repo.UserRepo;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -42,6 +45,7 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null) {
             // Rounds is signed in
+            SaveUserToDataBase(user);
             Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
             startActivity(new Intent(this, MainActivity.class));
             finish();
@@ -49,5 +53,17 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
             // Rounds is signed out
             Log.d(TAG, "onAuthStateChanged:signed_out");
         }
+    }
+
+    private void SaveUserToDataBase(FirebaseUser current){
+            UserRepo userRepo = new UserRepo();
+            if (!userRepo.isUserExist(current.getUid()))
+            {
+                User user  = new User();
+                user.setId(current.getUid());
+                user.setFname(current.getDisplayName());
+                userRepo.insert(user);
+
+            }
     }
 }

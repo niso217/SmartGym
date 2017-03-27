@@ -21,6 +21,14 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
+import com.a.n.smartgym.model.Exercise;
+import com.a.n.smartgym.model.Sets;
+import com.a.n.smartgym.model.User;
+import com.a.n.smartgym.model.Visits;
+import com.a.n.smartgym.repo.ExerciseRepo;
+import com.a.n.smartgym.repo.SetsRepo;
+import com.a.n.smartgym.repo.UserRepo;
+import com.a.n.smartgym.repo.VisitsRepo;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -32,6 +40,10 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
+
+import java.sql.Date;
+import java.util.Calendar;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     DrawerLayout mDrawerLayout;
@@ -56,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
-        fab = (FloatingActionButton) findViewById(R.id.fab) ;
+        fab = (FloatingActionButton) findViewById(R.id.fab);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mDrawerToggle.syncState();
 
+        //insertSampleData();
+        FakeResult();
 
 
     }
@@ -216,22 +230,98 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     Point[] p = barcode.cornerPoints;
                     //mResultTextView.setText(barcode.displayValue);
+
+                    //create new visit
+                    VisitsRepo visitsRepo = new VisitsRepo();
+                    String uuid = visitsRepo.getCurrentUUID();
+                    if (uuid.isEmpty()){
+                        Visits visits = new Visits();
+                        uuid = UUID.randomUUID().toString();
+                        visits.setVisitid(uuid);
+                        visits.setUserid(mAuth.getCurrentUser().getUid());
+                        visits.setDate(new Date(Calendar.getInstance().getTime().getTime()));
+                    }
+
+
                     Bundle bundle = new Bundle();
                     bundle.putString("scanresult", barcode.displayValue);
-                    Log.d(TAG,barcode.displayValue);
+                    bundle.putString("uuid", uuid);
+
+                    Log.d(TAG, barcode.displayValue);
                     FireBaseFragment fb = new FireBaseFragment();
                     fb.setArguments(bundle);
                     FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
 
-                }
-                else
-                    Log.d(TAG,"No barcode captured");
+                } else
+                    Log.d(TAG, "No barcode captured");
 
-                    //mResultTextView.setText(R.string.no_barcode_captured);
+                //mResultTextView.setText(R.string.no_barcode_captured);
             } else Log.e(TAG, String.format(getString(R.string.barcode_error_format),
                     CommonStatusCodes.getStatusCodeString(resultCode)));
+        } else super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void FakeResult(){
+        //create new visit
+        VisitsRepo visitsRepo = new VisitsRepo();
+        String uuid = visitsRepo.getCurrentUUID();
+        if (uuid.isEmpty()){
+            Visits visits = new Visits();
+            uuid = UUID.randomUUID().toString();
+            visits.setVisitid(uuid);
+            visits.setUserid(mAuth.getCurrentUser().getUid());
+            visits.setDate(new Date(Calendar.getInstance().getTime().getTime()));
+            visitsRepo.insert(visits);
         }
-        else super.onActivityResult(requestCode, resultCode, data);
+
+
+        Bundle bundle = new Bundle();
+        bundle.putString("scanresult", "ID1");
+        bundle.putString("uuid", uuid);
+
+        FireBaseFragment fb = new FireBaseFragment();
+        fb.setArguments(bundle);
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
+    }
+
+    private void insertSampleData() {
+
+        //UserRepo userRepo = new UserRepo();
+        //VisitsRepo visitsRepo = new VisitsRepo();
+        ExerciseRepo exerciseRepo = new ExerciseRepo();
+        SetsRepo setsRepo = new SetsRepo();
+
+        //userRepo.delete();
+        //visitsRepo.delete();
+        exerciseRepo.delete();
+        setsRepo.delete();
+
+//        User user = new User();
+//        user.setId("1");
+//        user.setFname("nir");
+//        user.setLname("ben ezra");
+//        userRepo.insert(user);
+//
+//        Visits visit = new Visits();
+//        visit.setUserid(user.getId());
+//        visit.setVisitid("123");
+//        visit.setDate(new Date(Calendar.getInstance().getTime().getTime()));
+//        visitsRepo.insert(visit);
+//
+//        Exercise exercise = new Exercise();
+//        exercise.setexerciseid("100");
+//        exercise.setVisitid(visit.getVisitid());
+//        exercise.setStart(new Date(Calendar.getInstance().getTime().getTime()));
+//        exerciseRepo.insert(exercise);
+//
+//        Sets sets = new Sets();
+//        sets.setSetid("111");
+//        sets.setexerciseid(exercise.getexerciseid());
+//        sets.setCount(3);
+//        sets.setWeight(55);
+//        setsRepo.insert(sets);
+
     }
 }
