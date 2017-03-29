@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     //create new visit
                     VisitsRepo visitsRepo = new VisitsRepo();
-                    String uuid = visitsRepo.getCurrentUUID();
+                    String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
                     if (uuid.isEmpty()){
                         Visits visits = new Visits();
                         uuid = UUID.randomUUID().toString();
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void FakeResult(){
         //create new visit
         VisitsRepo visitsRepo = new VisitsRepo();
-        String uuid = visitsRepo.getCurrentUUID();
+        String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
         if (uuid.isEmpty()){
             Visits visits = new Visits();
             uuid = UUID.randomUUID().toString();

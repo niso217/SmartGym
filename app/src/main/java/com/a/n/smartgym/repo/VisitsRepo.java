@@ -67,12 +67,12 @@ public class VisitsRepo {
         return cursor.getCount() > 0;
     }
 
-    public String getCurrentUUID(){
+    public String getCurrentUUID(String user_id){
         String uuid = "";
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery = " SELECT " + Visits.TABLE +"." + Visits.KEY_VISIT_ID
                 + " FROM " + Visits.TABLE
-                + " WHERE " + Visits.KEY_DATE + "=" +  "date('now')";
+                + " WHERE " + Visits.KEY_DATE + "=" +  "date('now') and " + User.KEY_USER_ID+"='"+user_id+"'";
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);

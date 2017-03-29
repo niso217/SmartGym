@@ -57,5 +57,13 @@ public class DBHelper  extends SQLiteOpenHelper {
 //    inner join Visits on Visits.userid=User.userid
 //    inner join Exercise on Exercise.visitid = Visits.visitid
 //    inner join Sets on Sets.exerciseid=Exercise.exerciseid
+//
+//    select User.firstname , Visits.date, AVG(Sets.weight) as avrage from User
+//    inner join Visits on Visits.userid=User.userid
+//    inner join Exercise on Exercise.visitid = Visits.visitid
+//    inner join Sets on Sets.exerciseid=Exercise.exerciseid
+//
+//    GROUP BY User.firstname, Visits.date
+//    having avrage>70
 
 }

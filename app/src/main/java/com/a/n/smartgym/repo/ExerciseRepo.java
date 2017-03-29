@@ -1,11 +1,20 @@
 package com.a.n.smartgym.repo;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.a.n.smartgym.DatabaseManager;
+import com.a.n.smartgym.Quary.DailyAvrage;
 import com.a.n.smartgym.model.Exercise;
+import com.a.n.smartgym.model.Sets;
+import com.a.n.smartgym.model.StudentCourse;
+import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.model.Visits;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -14,6 +23,8 @@ import com.a.n.smartgym.model.Visits;
 public class ExerciseRepo {
 
     private Exercise exercise;
+    public static final String TAG = ExerciseRepo.class.getSimpleName();
+
 
     public ExerciseRepo(){
 
@@ -49,6 +60,44 @@ public class ExerciseRepo {
         DatabaseManager.getInstance().closeDatabase();
 
     }
+
+    public List<DailyAvrage> getDailyAvrage(String user_id){
+        DailyAvrage dailyavrage = new DailyAvrage();
+        List<DailyAvrage> DailyAvrages = new ArrayList<DailyAvrage>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + User.TABLE +"." + User.KEY_FIRST_NAME
+                + ", "+Visits.TABLE +"." + Visits.KEY_DATE
+                + ", AVG(" + Sets.TABLE +"."+Sets.KEY_WEIGHT+") as average FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE +"."+Visits.KEY_USER_ID + "=" +User.TABLE+"."+User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE +"."+Exercise.KEY_VISIT_ID + "=" +Visits.TABLE+"."+Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
+                + " GROUP BY " + User.TABLE +"."+User.KEY_FIRST_NAME +" , " + Visits.TABLE +"."+Visits.KEY_DATE
+                + " HAVING " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"'"
+                ;
+
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                dailyavrage= new DailyAvrage();
+                dailyavrage.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
+                dailyavrage.setFname(cursor.getString(cursor.getColumnIndex(User.KEY_FIRST_NAME)));
+                dailyavrage.setAvrage(cursor.getDouble(cursor.getColumnIndex("average")));
+
+                DailyAvrages.add(dailyavrage);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return DailyAvrages;
+
+    }
+
 
 
 
