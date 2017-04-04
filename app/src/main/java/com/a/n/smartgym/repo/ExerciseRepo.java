@@ -62,7 +62,7 @@ public class ExerciseRepo {
     }
 
     public List<DailyAvrage> getDailyAvrage(String user_id){
-        DailyAvrage dailyavrage = new DailyAvrage();
+        DailyAvrage dailyavrage;
         List<DailyAvrage> DailyAvrages = new ArrayList<DailyAvrage>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();

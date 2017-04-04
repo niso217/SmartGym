@@ -157,9 +157,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (item.getItemId()) {
             case R.id.nav_item_sent:
+                fab.setVisibility(View.VISIBLE);
                 fragmentTransaction.replace(R.id.containerView, new SentFragment()).commit();
                 break;
             case R.id.nav_item_inbox:
+                fab.setVisibility(View.INVISIBLE);
                 fragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
                 break;
 //            case R.id.nav_firebase:

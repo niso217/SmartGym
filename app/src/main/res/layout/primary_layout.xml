@@ -11,10 +11,9 @@
         android:text="Average Weight in Device: ID1"
         android:textSize="20sp" />
 
-    <com.jjoe64.graphview.GraphView
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/graph"
-        android:layout_alignParentTop="true" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

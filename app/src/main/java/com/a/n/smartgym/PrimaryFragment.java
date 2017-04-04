@@ -3,6 +3,7 @@ package com.a.n.smartgym;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,21 +13,27 @@ import android.view.ViewGroup;
 import com.a.n.smartgym.Objects.Dates;
 import com.a.n.smartgym.Quary.DailyAvrage;
 import com.a.n.smartgym.repo.ExerciseRepo;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
-import com.jjoe64.graphview.series.BarGraphSeries;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
+
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +47,9 @@ public class PrimaryFragment extends Fragment {
     private FirebaseAuth mAuth;
     private static final String TAG = PrimaryFragment.class.getSimpleName();
     private List<DailyAvrage> mDailyAvrage;
+    private FloatingActionButton fba;
+    private String [] dates;
+    private BarChart mBarChart;
 
 
     @Override
@@ -47,6 +57,7 @@ public class PrimaryFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
 
         mFirebaseInstance = FirebaseDatabase.getInstance();
+
 
         // get reference to 'users' node
         //mFirebaseDatabase = mFirebaseInstance.getReference("users");
@@ -61,48 +72,73 @@ public class PrimaryFragment extends Fragment {
 
         View rootFragment = inflater.inflate(R.layout.primary_layout, null);
 
-        GraphView graph = (GraphView) rootFragment.findViewById(R.id.graph);
         //addSessionChangeListener();
-        initGraph(graph);
+
+        mBarChart = (BarChart) rootFragment.findViewById(R.id.chart);
+        initGraph();
+
         return rootFragment;
     }
 
-    public void initGraph(GraphView graph) {
+    public void initGraph() {
+
+        //data
+        float groupSpace = 0.04f;
+        float barSpace = 0.02f; // x2 dataset
+        float barWidth = 0.46f; // x2 dataset
+
+
+
 
         mDailyAvrage = new ExerciseRepo().getDailyAvrage(mAuth.getCurrentUser().getUid());
 
-        DataPoint[] dataPoint = new DataPoint[mDailyAvrage.size()];
+        List<BarEntry> yVals1 = new ArrayList<BarEntry>();
+        final String [] labels = new String[mDailyAvrage.size()];
 
-
-        for (int i = 0; i < dataPoint.length; i++) {
-            dataPoint[i] = new DataPoint(StringtoDate(mDailyAvrage.get(i).getDate()),Math.round(mDailyAvrage.get(i).getAvrage()));
+        for (int i = 0; i < mDailyAvrage.size(); i++) {
+            yVals1.add(new BarEntry(i, (float) mDailyAvrage.get(i).getAvrage()));
+            labels[i] = mDailyAvrage.get(i).getDate();
         }
 
-        // you can directly pass Date objects to DataPoint-Constructor
-        // this will convert the Date to double via Date#getTime()
-        BarGraphSeries<DataPoint> series = new BarGraphSeries<DataPoint>(dataPoint);
-        series.setSpacing(10);
-        series.setAnimated(true);
-        series.setColor(Color.RED);
-        graph.addSeries(series);
+        IAxisValueFormatter formatter = new IAxisValueFormatter() {
 
-        // set date label formatter
-       graph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(graph.getContext()));
-        graph.getGridLabelRenderer().setNumHorizontalLabels(mDailyAvrage.size());
-        graph.getGridLabelRenderer().setNumVerticalLabels(mDailyAvrage.size()+10);
-        graph.getGridLabelRenderer().setHorizontalAxisTitle("date");
-        graph.getGridLabelRenderer().setVerticalAxisTitle("weight");
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return labels[(int) value];
+            }
 
+        };
 
+        XAxis xAxis = mBarChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextSize(10f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+        xAxis.setValueFormatter(formatter);
 
-        // set manual x bounds to have nice steps
-        graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(150);
-        graph.getViewport().setYAxisBoundsManual(true);
+        BarDataSet set1;
 
-        // as we use dates as labels, the human rounding to nice readable numbers
-        // is not nessecary
-        graph.getGridLabelRenderer().setHumanRounding(false);
+        if (mBarChart.getData() != null && mBarChart.getData().getDataSetCount() > 0) {
+            set1 = (BarDataSet)mBarChart.getData().getDataSetByIndex(0);
+            set1.setValues(yVals1);
+            set1.setStackLabels(labels);
+            mBarChart.getData().notifyDataChanged();
+            mBarChart.notifyDataSetChanged();
+        } else {
+            // create 2 datasets with different types
+            set1 = new BarDataSet(yVals1, "Weight");
+            //set1.setColor(Color.rgb(104, 241, 175));
+            ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+            dataSets.add(set1);
+
+            BarData data = new BarData(dataSets);
+            mBarChart.setData(data);
+            mBarChart.getDescription().setText("");
+            mBarChart.getBarData().setBarWidth(barWidth);
+            mBarChart.invalidate();
+            mBarChart.animateY(500);
+
+        }
 
     }
 
@@ -118,28 +154,4 @@ public class PrimaryFragment extends Fragment {
         return theDate;
     }
 
-
-
-    private void addSessionChangeListener() {
-        // User data change listener
-        mFirebaseDatabase
-                .child(mAuth.getCurrentUser().getUid())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                            // TODO: handle the post
-                            //Dates dates = postSnapshot.getValue(Dates.class);
-                            Log.d(TAG,postSnapshot.toString());
-                        }
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                        // Failed to read value
-                        Log.e(TAG, "Failed to read user", error.toException());
-                    }
-                });
-    }
 }
