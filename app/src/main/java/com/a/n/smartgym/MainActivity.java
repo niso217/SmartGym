@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //UserRepo userRepo = new UserRepo();
         //VisitsRepo visitsRepo = new VisitsRepo();
         ExerciseRepo exerciseRepo = new ExerciseRepo();
-        SetsRepo setsRepo = new SetsRepo();
+        SetsRepo setsRepo = new SetsRepo(this);
 
         //userRepo.delete();
         //visitsRepo.delete();
