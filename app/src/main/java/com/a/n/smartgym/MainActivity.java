@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerToggle.syncState();
 
         //insertSampleData();
-        FakeResult();
+        //FakeResult();
 
 
     }
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.nav_item_sent:
                 fab.setVisibility(View.VISIBLE);
-                fragmentTransaction.replace(R.id.containerView, new SentFragment()).commit();
+                fragmentTransaction.replace(R.id.containerView, new FireBaseFragment()).commit();
                 break;
             case R.id.nav_item_inbox:
                 fab.setVisibility(View.INVISIBLE);
@@ -242,6 +242,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         visits.setVisitid(uuid);
                         visits.setUserid(mAuth.getCurrentUser().getUid());
                         visits.setDate(new Date(Calendar.getInstance().getTime().getTime()));
+                        visitsRepo.insert(visits);
+
                     }
 
 

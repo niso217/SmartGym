@@ -61,7 +61,7 @@ public class ExerciseRepo {
 
     }
 
-    public List<DailyAvrage> getDailyAvrage(String user_id){
+    public List<DailyAvrage> getDailyAvrage(String user_id, String ex_id){
         DailyAvrage dailyavrage;
         List<DailyAvrage> DailyAvrages = new ArrayList<DailyAvrage>();
 
@@ -72,8 +72,8 @@ public class ExerciseRepo {
                 + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE +"."+Visits.KEY_USER_ID + "=" +User.TABLE+"."+User.KEY_USER_ID
                 + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE +"."+Exercise.KEY_VISIT_ID + "=" +Visits.TABLE+"."+Visits.KEY_VISIT_ID
                 + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"' AND " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME + "="+ "'"+ex_id+"'"
                 + " GROUP BY " + User.TABLE +"."+User.KEY_FIRST_NAME +" , " + Visits.TABLE +"."+Visits.KEY_DATE
-                + " HAVING " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"'"
                 ;
 
 

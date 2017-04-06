@@ -40,7 +40,10 @@ public class SetsRepo {
                 + Sets.KEY_SET_ID + " TEXT  PRIMARY KEY,"
                 + Sets.KEY_EXERCISE_ID + " TEXT, "
                 + Sets.KEY_WEIGHT + " INTEGER, "
-                + Sets.KEY_COUNT + " INTEGER )";
+                + Sets.KEY_COUNT + " INTEGER, "
+                + Sets.KEY_START + " INTEGER, "
+                + Sets.KEY_END + " INTEGER )"
+                ;
     }
 
 
@@ -52,6 +55,9 @@ public class SetsRepo {
         values.put(Sets.KEY_EXERCISE_ID, set.getexerciseid());
         values.put(Sets.KEY_WEIGHT, set.getWeight());
         values.put(Sets.KEY_COUNT, set.getCount());
+        values.put(Sets.KEY_START, set.getStart());
+        values.put(Sets.KEY_END, set.getEnd());
+
 
         // Inserting Row
         db.insert(Sets.TABLE, null, values);
@@ -80,6 +86,8 @@ public class SetsRepo {
             values.put(Sets.KEY_EXERCISE_ID, jb.optString(Sets.KEY_EXERCISE_ID));
             values.put(Sets.KEY_WEIGHT, jb.optInt(Sets.KEY_WEIGHT));
             values.put(Sets.KEY_COUNT, jb.optInt(Sets.KEY_COUNT));
+            values.put(Sets.KEY_START, jb.optInt(Sets.KEY_START));
+            values.put(Sets.KEY_END, jb.optInt(Sets.KEY_END));
 
             list.add(values);
         }
@@ -98,12 +106,16 @@ public class SetsRepo {
                 values.put(Sets.KEY_EXERCISE_ID, set.getexerciseid());
                 values.put(Sets.KEY_WEIGHT, set.getWeight());
                 values.put(Sets.KEY_COUNT, set.getCount());
+                values.put(Sets.KEY_START, set.getStart());
+                values.put(Sets.KEY_END, set.getEnd());
 
                 db.insert(Sets.TABLE, null, values);
             }
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
+            DatabaseManager.getInstance().closeDatabase();
+
         }
     }
 

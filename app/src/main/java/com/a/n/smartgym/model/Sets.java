@@ -14,11 +14,32 @@ public class Sets {
     public static final String KEY_EXERCISE_ID = "exerciseid";
     public static final String KEY_COUNT = "count";
     public static final String KEY_WEIGHT = "weight";
+    public static final String KEY_START = "start";
+    public static final String KEY_END = "end";
+
 
     private String setid;
     private String exerciseid;
     private int count;
     private int weight;
+    private long start;
+    private long end;
+
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public void setEnd(long end) {
+        this.end = end;
+    }
 
     public String getSetid() {
         return setid;

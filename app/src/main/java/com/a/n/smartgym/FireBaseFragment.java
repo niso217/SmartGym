@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,7 +46,7 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = FireBaseFragment.class.getSimpleName();
     private TextView txtDetails;
     private EditText inputName, inputEmail;
-    private Button btnSave;
+    private Button btnFinish;
     private DatabaseReference mFirebaseDatabase;
     private FirebaseDatabase mFirebaseInstance;
     private String currentDate;
@@ -66,7 +68,9 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     private EditText mWeight;
     private List<Sets> mSet;
     private boolean mInProgress;
-    private List<Integer>  arr;
+    private boolean[] arr;
+    private int achieveCounter;
+    private long mSetStart,mSetEnd;
 
 
     @Override
@@ -76,27 +80,24 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
         mRandom = new Random();
         mAuth = FirebaseAuth.getInstance();
 
-        //mFirebaseInstance = FirebaseDatabase.getInstance();
-
-        // get reference to 'users' node
-        //mFirebaseDatabase = mFirebaseInstance.getReference("users");
 
         mRound = new ArrayList<Rounds>();
+        mSet = new ArrayList<>();
 
-        arr = new ArrayList<>();
 
 
     }
 
-    private void fakedata(){
-        mSet = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+    private void AddSet(Editable weight,long start, long end) {
             Sets s1 = new Sets();
             s1.setSetid(UUID.randomUUID().toString());
-            s1.setWeight(mRandom.nextInt(80 - 65) + 65);
+            s1.setWeight(Integer.parseInt(String.valueOf(weight)));
             s1.setexerciseid(mUUID);
+            s1.setStart(start);
+            s1.setEnd(end);
+
             mSet.add(s1);
-        }
+
     }
 
     @Nullable
@@ -108,11 +109,33 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
         mID = (TextView) rootFragment.findViewById(R.id.device_id);
         mCounter = (TextView) rootFragment.findViewById(R.id.counter);
         mWeight = (EditText) rootFragment.findViewById(R.id.weight);
+        mWeight.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-        Button finish = (Button) rootFragment.findViewById(R.id.btn_finish);
-        finish.setOnClickListener(this);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length()>0)
+                    Controllers(true);
+                else
+                    Controllers(false);
 
 
+            }
+        });
+
+        btnFinish = (Button) rootFragment.findViewById(R.id.btn_finish);
+        btnFinish.setOnClickListener(this);
+        Controllers(false);
+
+        arr = new boolean[mSeekBar.getMax()];
 
 
         mSeekBar.setOnSeekBarChangeListener(
@@ -121,9 +144,27 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
 
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
-                        progress = progressValue;
-                        if (mInProgress){
-                            
+                        if (mInProgress) {
+
+                            if (progressValue == 0)
+                                arr[progressValue] = true;
+                            else
+                                arr[progressValue - 1] = true;
+
+
+                            if (areAllTrue(arr)) {
+                                Counter++;
+                                mSetEnd = System.currentTimeMillis();
+                                arr = new boolean[mSeekBar.getMax()];
+                                AddSet(mWeight.getText(),mSetStart,mSetEnd);
+                                mCounter.setText(Counter + "");
+
+                            }
+                            else
+                            {
+                                mSetStart = System.currentTimeMillis();
+
+                            }
                         }
 
                     }
@@ -136,6 +177,7 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         mInProgress = false;
+                        arr = new boolean[mSeekBar.getMax()];
 
                         // Display the value in textview
                     }
@@ -146,16 +188,25 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
             ScanResult = getArguments().getString("scanresult");
             CurrentSession = getArguments().getString("uuid");
 
-            if (!mUUID.isEmpty() && !ScanResult.isEmpty() && !CurrentSession.isEmpty()){
+
+            if (!mUUID.isEmpty() && !ScanResult.isEmpty() && !CurrentSession.isEmpty()) {
                 setNewExercise(mUUID, CurrentSession, ScanResult);
-                //fakedata();
-
+                mID.setText(ScanResult);
             }
-
 
 
         }
         return rootFragment;
+    }
+
+    public boolean areAllTrue(boolean[] array) {
+        for (boolean b : array) if (!b) return false;
+        return true;
+    }
+
+    private void Controllers(boolean b){
+        btnFinish.setEnabled(b);
+        mSeekBar.setEnabled(b);
     }
 
     private void setNewExercise(String uuid, String session, String scan) {
@@ -169,38 +220,17 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     }
 
 
-
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_finish:
                 SetsRepo setsRepo = new SetsRepo(getContext());
-//                Sets sets = new Sets();
-//                sets.setSetid(UUID.randomUUID().toString());
-//                sets.setWeight(mRandom.nextInt(80 - 65) + 65);
-//                sets.setexerciseid(mUUID);
-                Gson gson = new Gson();
-
-                String inputString= gson.toJson(mSet);
-
                 setsRepo.BulkSets(mSet);
+                mSet.clear();
+                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.containerView, new PrimaryFragment()).commitAllowingStateLoss();
+                break;
 
-
-//                mRound.add(new Rounds(mRandom.nextInt(80 - 65) + 65));
-//
-//                mFirebaseDatabase
-//                        .child(mAuth.getCurrentUser().getUid()) //user id
-//                        .child(new SimpleDateFormat("dd-MM-yyyy").format(new Date())) //current date
-//                        .child(ScanResult) //current exercise
-//                        .child(CurrentSession).setValue(mRound); //current exercise
-
-
-            // break;
-//            case R.id.btn_finish:
-//                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(R.id.containerView, new PrimaryFragment()).commitAllowingStateLoss();
-//                break;
         }
     }
 
