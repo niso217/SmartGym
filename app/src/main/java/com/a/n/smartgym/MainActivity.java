@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         Bundle bundle = new Bundle();
-        bundle.putString("scanresult", "ID1");
+        bundle.putString("scanresult", "id1");
         bundle.putString("uuid", uuid);
 
         FireBaseFragment fb = new FireBaseFragment();

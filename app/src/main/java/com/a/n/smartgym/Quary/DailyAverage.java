@@ -6,11 +6,20 @@ import java.sql.Date;
  * Created by nirb on 29/03/2017.
  */
 
-public class DailyAvrage {
+public class DailyAverage {
 
     private String fname;
+    private String machine_name;
     private String date;
     private double avrage;
+
+    public String getMachine_name() {
+        return machine_name;
+    }
+
+    public void setMachine_name(String machine_name) {
+        this.machine_name = machine_name;
+    }
 
     public String getDate() {
         return date;
