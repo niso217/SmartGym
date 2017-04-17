@@ -60,19 +60,22 @@ public class ExerciseRepo {
 
     }
 
-    public List<DailyAverage> getDailyAverage(String user_id){
-        DailyAverage dailyavrage;
-        List<DailyAverage> DailyAverages = new ArrayList<>();
+    public ArrayList<DailyAverage> getAllDaysAverages(String user_id){
+        DailyAverage dailyAverage;
+        ArrayList<DailyAverage> DailyAverages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery =  " SELECT " + User.TABLE +"." + User.KEY_FIRST_NAME
                 + ", "+Visits.TABLE +"." + Visits.KEY_DATE
+                + ", "+Exercise.TABLE +"." + Exercise.KEY_MACHINE_NAME
                 + ", AVG(" + Sets.TABLE +"."+Sets.KEY_WEIGHT+") as average FROM " + User.TABLE
                 + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE +"."+Visits.KEY_USER_ID + "=" +User.TABLE+"."+User.KEY_USER_ID
                 + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE +"."+Exercise.KEY_VISIT_ID + "=" +Visits.TABLE+"."+Visits.KEY_VISIT_ID
                 + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
-                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id
+                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"'"
                 + " GROUP BY " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME+" , "+Visits.TABLE +"."+Visits.KEY_DATE
+                + " ORDER BY date(" +Visits.TABLE +"."+Visits.KEY_DATE+") DESC"
+
                 ;
 
 
@@ -81,13 +84,51 @@ public class ExerciseRepo {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                dailyavrage= new DailyAverage();
-                dailyavrage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
-                dailyavrage.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
-                dailyavrage.setFname(cursor.getString(cursor.getColumnIndex(User.KEY_FIRST_NAME)));
-                dailyavrage.setAvrage(cursor.getDouble(cursor.getColumnIndex("average")));
+                dailyAverage= new DailyAverage();
+                dailyAverage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
+                dailyAverage.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
+                dailyAverage.setAverage(cursor.getDouble(cursor.getColumnIndex("average")));
 
-                DailyAverages.add(dailyavrage);
+                DailyAverages.add(dailyAverage);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return DailyAverages;
+
+    }
+
+    public List<DailyAverage> getDayAverage(String user_id, String date){
+        DailyAverage dailyAverage;
+        List<DailyAverage> DailyAverages = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + User.TABLE +"." + User.KEY_FIRST_NAME
+                + ", "+Visits.TABLE +"." + Visits.KEY_DATE
+                + ", "+Exercise.TABLE +"." + Exercise.KEY_MACHINE_NAME
+                + ", AVG(" + Sets.TABLE +"."+Sets.KEY_WEIGHT+") as average FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE +"."+Visits.KEY_USER_ID + "=" +User.TABLE+"."+User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE +"."+Exercise.KEY_VISIT_ID + "=" +Visits.TABLE+"."+Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"' AND " + Visits.TABLE +"."+Visits.KEY_DATE + "="+ "'"+date+"'"
+                + " GROUP BY " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME+" , "+Visits.TABLE +"."+Visits.KEY_DATE
+                + " ORDER BY date(" +Visits.TABLE +"."+Visits.KEY_DATE+") DESC"
+                ;
+
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                dailyAverage= new DailyAverage();
+                dailyAverage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
+                dailyAverage.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
+                dailyAverage.setAverage(cursor.getDouble(cursor.getColumnIndex("average")));
+
+                DailyAverages.add(dailyAverage);
             } while (cursor.moveToNext());
         }
 

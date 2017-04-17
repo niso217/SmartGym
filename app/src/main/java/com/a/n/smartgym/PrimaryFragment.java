@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,11 @@ import com.google.firebase.database.FirebaseDatabase;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -44,6 +49,9 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
     private String[] dates;
     private BarChart mBarChart;
     private ImageView id1, id2;
+    private LinkedHashMap<String, Map<String, Double>> dicCodeToIndex;
+    private List<List<String>> labels = new ArrayList<>();
+    private List<String> titles = new ArrayList<>();
 
 
     @Override
@@ -52,9 +60,35 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
 
         mFirebaseInstance = FirebaseDatabase.getInstance();
 
-        mDailyAvrage = new ExerciseRepo().getDailyAverage(mAuth.getCurrentUser().getUid());
+
+        extractData();
 
         super.onCreate(savedInstanceState);
+    }
+
+    //get all data from database
+    private void extractData() {
+        dicCodeToIndex = new LinkedHashMap <String, Map<String, Double>>();
+
+        mDailyAvrage = new ExerciseRepo().getAllDaysAverages(mAuth.getCurrentUser().getUid());
+
+        Iterator iterator = mDailyAvrage.iterator();
+        while (iterator.hasNext()) {
+            DailyAverage temp = (DailyAverage) iterator.next();
+            Map<String, Double> in = dicCodeToIndex.get(temp.getDate());
+            if (in != null) {
+                in.put(temp.getMachine_name(), temp.getAverage());
+                dicCodeToIndex.put(temp.getDate(), in);
+
+            } else {
+                Map<String, Double> inner = new HashMap<>();
+                inner.put(temp.getMachine_name(), temp.getAverage());
+                dicCodeToIndex.put(temp.getDate(), inner);
+            }
+
+        }
+        Log.d(TAG, "");
+
     }
 
     @Nullable
@@ -62,14 +96,7 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootFragment = inflater.inflate(R.layout.primary_layout, null);
-//        id1 = (ImageView) rootFragment.findViewById(R.id.ID1);
-//        id2 = (ImageView) rootFragment.findViewById(R.id.ID2);
-//        id1.setOnClickListener(this);
-//        id2.setOnClickListener(this);
-//
-//        //addSessionChangeListener();
-//
-//        mBarChart = (BarChart) rootFragment.findViewById(R.id.chart);
+
 
         getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -78,13 +105,14 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
 
         ArrayList<BarData> list = new ArrayList<BarData>();
 
-        // 20 items
-
-        for (int i = 0; i < 20; i++) {
-            list.add(generateData(i + 1));
+        Iterator<Map.Entry<String, Map<String, Double>>> parent = dicCodeToIndex.entrySet().iterator();
+        while (parent.hasNext()) {
+            Map.Entry<String, Map<String, Double>> parentPair = parent.next();
+            list.add(generateData((parentPair.getValue()).entrySet().iterator()));
+            titles.add(parentPair.getKey());
         }
 
-        ChartDataAdapter cda = new ChartDataAdapter(getApplicationContext(), list);
+        ChartDataAdapter cda = new ChartDataAdapter(getApplicationContext(), list, labels, titles);
         lv.setAdapter(cda);
 
         return rootFragment;
@@ -95,15 +123,19 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
      *
      * @return
      */
-    private BarData generateData(int cnt) {
-
+    private BarData generateData(Iterator<Map.Entry<String, Double>> child) {
+        List list = new ArrayList();
         ArrayList<BarEntry> entries = new ArrayList<BarEntry>();
-
-        for (int i = 0; i < 12; i++) {
-            entries.add(new BarEntry(i, (float) (Math.random() * 70) + 30));
+        int i = 0;
+        while (child.hasNext()) {
+            Map.Entry childPair = child.next();
+            double val = Double.valueOf(childPair.getValue().toString());
+            entries.add(new BarEntry(i++, (float) val));
+            list.add(childPair.getKey().toString());
+            child.remove(); // avoids a ConcurrentModificationException
         }
 
-        BarDataSet d = new BarDataSet(entries, "New DataSet " + cnt);
+        BarDataSet d = new BarDataSet(entries, "");
         d.setColors(ColorTemplate.VORDIPLOM_COLORS);
         d.setBarShadowColor(Color.rgb(203, 203, 203));
 
@@ -112,90 +144,11 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
 
 
         BarData cd = new BarData(sets);
-        cd.setBarWidth(0.9f);
+        labels.add(list);
+        //cd.setBarWidth(0.9f);
         return cd;
     }
 
-//    public void initGraph(String ex_id) {
-//
-//        mBarChart.clear();
-//        //data
-//        float groupSpace = 0.04f;
-//        float barSpace = 0.02f; // x2 dataset
-//        float barWidth = 0.46f; // x2 dataset
-//
-//        if (mDailyAvrage != null)
-//            mDailyAvrage.clear();
-//
-//
-
-//
-//
-//        List<BarEntry> yVals1 = new ArrayList<BarEntry>();
-//        final String[] labels = new String[mDailyAvrage.size()];
-//
-//        for (int i = 0; i < mDailyAvrage.size(); i++) {
-//            yVals1.add(new BarEntry(i, (float) mDailyAvrage.get(i).getAvrage()));
-//            labels[i] = mDailyAvrage.get(i).getDate();
-//        }
-//
-//
-//        IAxisValueFormatter formatter = new IAxisValueFormatter() {
-//
-//            @Override
-//            public String getFormattedValue(float value, AxisBase axis) {
-//                if (mDailyAvrage.size()>0)
-//                    return labels[(int) value];
-//
-//                return null;
-//            }
-//
-//        };
-//
-//        XAxis xAxis = mBarChart.getXAxis();
-//        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-//        xAxis.setTextSize(10f);
-//        xAxis.setDrawGridLines(false);
-//        xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
-//        xAxis.setLabelRotationAngle(60);
-//        if (mDailyAvrage.size()>0)
-//        xAxis.setValueFormatter(formatter);
-//
-//        BarDataSet set1;
-//
-//        if (mBarChart.getData() != null && mBarChart.getData().getDataSetCount() > 0) {
-//            set1 = (BarDataSet) mBarChart.getData().getDataSetByIndex(0);
-//            set1.setValues(yVals1);
-//            set1.setStackLabels(labels);
-//            mBarChart.getData().notifyDataChanged();
-//            mBarChart.notifyDataSetChanged();
-//        } else {
-//            set1 = new BarDataSet(yVals1, "Weight");
-//            ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
-//            dataSets.add(set1);
-//
-//            BarData data = new BarData(dataSets);
-//            mBarChart.setData(data);
-//            mBarChart.getDescription().setText("");
-//            mBarChart.getBarData().setBarWidth(barWidth);
-//            mBarChart.invalidate();
-//            mBarChart.animateY(500);
-//
-//        }
-//
-//    }
-//
-//    private Date StringtoDate(String date) {
-//        DateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-//        Date theDate = null;
-//        try {
-//            theDate = df.parse(date);
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return theDate;
-//    }
 
     @Override
     public void onClick(View view) {
@@ -206,6 +159,16 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
 //            case R.id.ID2:
 //                //initGraph("id2");
 //                break;
+        }
+    }
+
+    class details {
+        double weight;
+        String name;
+
+        public details(double weight, String name) {
+            this.weight = weight;
+            this.name = name;
         }
     }
 }

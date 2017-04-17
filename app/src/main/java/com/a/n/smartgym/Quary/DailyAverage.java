@@ -1,17 +1,26 @@
 package com.a.n.smartgym.Quary;
 
-import java.sql.Date;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by nirb on 29/03/2017.
  */
 
-public class DailyAverage {
+public class DailyAverage implements Parcelable {
 
-    private String fname;
     private String machine_name;
     private String date;
-    private double avrage;
+    private double average;
+
+    public DailyAverage() {
+
+    }
+
+    public DailyAverage(String machine_name, double average) {
+        this.machine_name = machine_name;
+        this.average = average;
+    }
 
     public String getMachine_name() {
         return machine_name;
@@ -29,20 +38,40 @@ public class DailyAverage {
         this.date = date;
     }
 
-    public String getFname() {
-        return fname;
+    public double getAverage() {
+        return average;
     }
 
-    public void setFname(String fname) {
-        this.fname = fname;
+    public void setAverage(double average) {
+        this.average = average;
     }
 
-
-    public double getAvrage() {
-        return avrage;
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public void setAvrage(double avrage) {
-        this.avrage = avrage;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(machine_name);
+        dest.writeDouble(average);
+    }
+
+    // Creator
+    public static final Parcelable.Creator
+            CREATOR = new Parcelable.Creator() {
+        public DailyAverage createFromParcel(Parcel in) {
+            return new DailyAverage(in);
+        }
+
+        public DailyAverage[] newArray(int size) {
+            return new DailyAverage[size];
+        }
+    };
+
+    // "De-parcel object
+    private DailyAverage(Parcel in) {
+        machine_name = in.readString();
+        average = in.readDouble();
     }
 }

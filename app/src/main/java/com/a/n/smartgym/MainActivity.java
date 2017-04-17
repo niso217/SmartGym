@@ -43,6 +43,7 @@ import com.squareup.picasso.Picasso;
 
 import java.sql.Date;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -157,16 +158,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         switch (item.getItemId()) {
             case R.id.nav_item_sent:
-                fab.setVisibility(View.VISIBLE);
-                fragmentTransaction.replace(R.id.containerView, new FireBaseFragment()).commit();
+                fragmentTransaction.replace(R.id.containerView, new FragmentParent()).commit();
                 break;
             case R.id.nav_item_inbox:
-                fab.setVisibility(View.INVISIBLE);
                 fragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
                 break;
-//            case R.id.nav_firebase:
-//                fragmentTransaction.replace(R.id.containerView, new FireBaseFragment()).commit();
-//                break;
+            case R.id.exercise:
+                FakeResult();
+                break;
             case R.id.nav_logout:
                 logout();
                 break;
@@ -281,7 +280,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         Bundle bundle = new Bundle();
-        bundle.putString("scanresult", "id1");
+        String id = "ID";
+        Random r = new Random();
+        int i1 = r.nextInt(20 - 1) + 1;
+        bundle.putString("scanresult", id+i1);
         bundle.putString("uuid", uuid);
 
         FireBaseFragment fb = new FireBaseFragment();
@@ -290,42 +292,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
     }
 
-    private void insertSampleData() {
-
-        //UserRepo userRepo = new UserRepo();
-        //VisitsRepo visitsRepo = new VisitsRepo();
-        ExerciseRepo exerciseRepo = new ExerciseRepo();
-        SetsRepo setsRepo = new SetsRepo(this);
-
-        //userRepo.delete();
-        //visitsRepo.delete();
-        exerciseRepo.delete();
-        setsRepo.delete();
-
-//        User user = new User();
-//        user.setId("1");
-//        user.setFname("nir");
-//        user.setLname("ben ezra");
-//        userRepo.insert(user);
-//
-//        Visits visit = new Visits();
-//        visit.setUserid(user.getId());
-//        visit.setVisitid("123");
-//        visit.setDate(new Date(Calendar.getInstance().getTime().getTime()));
-//        visitsRepo.insert(visit);
-//
-//        Exercise exercise = new Exercise();
-//        exercise.setexerciseid("100");
-//        exercise.setVisitid(visit.getVisitid());
-//        exercise.setStart(new Date(Calendar.getInstance().getTime().getTime()));
-//        exerciseRepo.insert(exercise);
-//
-//        Sets sets = new Sets();
-//        sets.setSetid("111");
-//        sets.setexerciseid(exercise.getexerciseid());
-//        sets.setCount(3);
-//        sets.setWeight(55);
-//        setsRepo.insert(sets);
-
-    }
 }

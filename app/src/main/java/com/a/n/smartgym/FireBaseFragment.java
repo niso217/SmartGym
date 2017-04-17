@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,30 +14,18 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.a.n.smartgym.Objects.Dates;
-import com.a.n.smartgym.Objects.Device;
-import com.a.n.smartgym.Objects.Rounds;
-import com.a.n.smartgym.Objects.Sessions;
-import com.a.n.smartgym.Objects.User;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 public class FireBaseFragment extends Fragment implements View.OnClickListener {
@@ -55,13 +42,7 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     private String ScanResult;
     private String mUUID;
     private String CurrentSession;
-    private Random mRandom;
-    private List<Rounds> mRound;
-    private TextView text;
-    private User mUser;
-    private Sessions mSessions;
-    private Device mDevice;
-    private Dates mDates;
+
     private int Counter;
     private SeekBar mSeekBar;
     private TextView mID, mCounter;
@@ -77,11 +58,9 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mRandom = new Random();
         mAuth = FirebaseAuth.getInstance();
 
 
-        mRound = new ArrayList<Rounds>();
         mSet = new ArrayList<>();
 
 

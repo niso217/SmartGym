@@ -1,20 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <group android:checkableBehavior="single">
 
+        <item
+            android:id="@+id/nav_item_inbox"
+            android:icon="@drawable/inbox"
+            android:title="Inbox" />
 
-    <item android:title="Inbox"
-          android:id="@+id/nav_item_inbox"
-          android:icon="@drawable/inbox"/>
+        <item
+            android:id="@+id/nav_item_sent"
+            android:icon="@drawable/sent"
+            android:title="Sent" />
 
-    <item android:title="Sent"
-          android:id="@+id/nav_item_sent"
-          android:icon="@drawable/sent"/>
+        <item
+            android:id="@+id/navigation_subheader"
+            android:title="Statistics">
+            <menu>
+                <item
+                    android:id="@+id/navigation_sub_item_1"
+                    android:title="Day / Average" />
+                <item
+                    android:id="@+id/navigation_sub_item_2"
+                    android:title="Trend" />
+            </menu>
+        </item>
 
-    <item android:title="Log Out"
-          android:id="@+id/nav_logout"
-          android:icon="@drawable/draft"/>
+        <item
+            android:id="@+id/exercise"
+            android:icon="@drawable/draft"
+            android:title="Exercise" />
 
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/draft"
+            android:title="Log Out" />
 
+    </group>
 
 </menu>
