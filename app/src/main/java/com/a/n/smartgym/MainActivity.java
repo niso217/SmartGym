@@ -1,7 +1,13 @@
 package com.a.n.smartgym;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
+import android.nfc.tech.NfcF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -17,17 +23,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
-import com.a.n.smartgym.model.Exercise;
-import com.a.n.smartgym.model.Sets;
-import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.model.Visits;
-import com.a.n.smartgym.repo.ExerciseRepo;
-import com.a.n.smartgym.repo.SetsRepo;
-import com.a.n.smartgym.repo.UserRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
@@ -45,6 +45,7 @@ import java.sql.Date;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     DrawerLayout mDrawerLayout;
@@ -56,6 +57,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FirebaseAuth mAuth;
     private FloatingActionButton fab;
     private GoogleApiClient mGoogleApiClient;
+    private NfcAdapter mAdapter;
+    private PendingIntent mPendingIntent;
+    private IntentFilter[] mFilters;
+    private String[][] mTechLists;
+    private int mCount = 0;
+    public static final String MIME_TEXT_PLAIN = "text/plain";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,12 +102,95 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         mDrawerToggle.syncState();
+        
+        nfc();
+
+        handleIntent(getIntent());
+
 
         //insertSampleData();
-        //FakeResult();
+        //StartExercise();
 
 
     }
+
+    private void nfc() {
+        mAdapter = NfcAdapter.getDefaultAdapter(this);
+        // Create a generic PendingIntent that will be deliver to this activity. The NFC stack
+        // will fill in the intent with the details of the discovered tag before delivering to
+        // this activity.
+        mPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+        // Setup an intent filter for all MIME based dispatches
+        IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        try {
+            ndef.addDataType("*/*");
+        } catch (IntentFilter.MalformedMimeTypeException e) {
+            throw new RuntimeException("fail", e);
+        }
+        mFilters = new IntentFilter[] {
+                ndef,
+        };
+        // Setup a tech list for all NfcF tags
+        mTechLists = new String[][] { new String[] { NfcF.class.getName() } };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters,
+                mTechLists);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        String action = intent.getAction();
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+
+            String type = intent.getType();
+            if (MIME_TEXT_PLAIN.equals(type)) {
+
+                Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+                try {
+                    String str = new NdefReaderTask().execute(tag).get();
+                    StartExercise(str);
+                    Log.d(TAG,str);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                Log.d(TAG, "Wrong mime type: " + type);
+            }
+        } else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
+
+            // In case we would still use the Tech Discovered Intent
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            String[] techList = tag.getTechList();
+            String searchedTech = Ndef.class.getName();
+
+            for (String tech : techList) {
+                if (searchedTech.equals(tech)) {
+                    new NdefReaderTask().execute(tag);
+                    break;
+                }
+            }
+        }
+    }
+
+
 
     private void InitializeUserDetails() {
         //Initializing the header.xml data
@@ -164,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
                 break;
             case R.id.exercise:
-                FakeResult();
+                StartExercise("");
                 break;
             case R.id.nav_logout:
                 logout();
@@ -265,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void FakeResult(){
+    private void StartExercise(String Tagid){
         //create new visit
         VisitsRepo visitsRepo = new VisitsRepo();
         String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
@@ -279,11 +369,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
+
         Bundle bundle = new Bundle();
-        String id = "ID";
-        Random r = new Random();
-        int i1 = r.nextInt(20 - 1) + 1;
-        bundle.putString("scanresult", id+i1);
+        if (Tagid.isEmpty()){
+            String id = "ID";
+            Random r = new Random();
+            int i1 = r.nextInt(20 - 1) + 1;
+            bundle.putString("scanresult", id+i1);
+        }
+        else
+            bundle.putString("scanresult", Tagid);
+
         bundle.putString("uuid", uuid);
 
         FireBaseFragment fb = new FireBaseFragment();

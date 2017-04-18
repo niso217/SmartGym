@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,8 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by DAT on 9/1/2015.
@@ -36,6 +39,8 @@ public class FragmentChild extends Fragment {
     ArrayList<DailyAverage> mDailyAverage;
     BarChart mBarChart;
     LineChart mLineChart;
+    private static final String TAG = FragmentChild.class.getSimpleName();
+
 
 
     @Nullable
@@ -48,7 +53,7 @@ public class FragmentChild extends Fragment {
         mDailyAverage = bundle.getParcelableArrayList("data");
         getIDs(view);
         setEvents();
-        setData_BarChart();
+        setData_BarChart2();
         return view;
     }
 
@@ -118,6 +123,7 @@ public class FragmentChild extends Fragment {
         }
     }
 
+
     private void setData_BarChart2() {
 
 
@@ -126,10 +132,10 @@ public class FragmentChild extends Fragment {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 int val = (int) value;
-                if (val<mDailyAverage.size())
-                    return mDailyAverage.get((int) value).getMachine_name();
+                if (val<=mDailyAverage.size())
+                    return mDailyAverage.get(val-1).getMachine_name();
 
-                return "1";
+                return "";
             }
 
         };
@@ -140,6 +146,7 @@ public class FragmentChild extends Fragment {
         xAxis.setDrawGridLines(false);
         xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         xAxis.setLabelRotationAngle(60);
+
         xAxis.setValueFormatter(formatter);
 
 
@@ -164,15 +171,21 @@ public class FragmentChild extends Fragment {
             mLineChart.notifyDataSetChanged();
         } else {
             set1 = new LineDataSet(yVals1, "The year 2016");
+            set1.setLineWidth(2f);
+            set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+            //set1.setCubicIntensity(12f);
 
             ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
             dataSets.add(set1);
 
             LineData data = new LineData(dataSets);
             data.setValueTextSize(10f);
+
             // data.setValueTypeface(mTfLight);
 
             mLineChart.setData(data);
+            mLineChart.invalidate();
+
         }
     }
 

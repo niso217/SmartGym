@@ -31,6 +31,7 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 
     private List<List<String>> labels;
     private List<String> titles;
+    private TextView title;
 
     public ChartDataAdapter(Context context, List<BarData> objects, List<List<String>> labels,List titles) {
         super(context, 0, objects);
@@ -55,8 +56,7 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_barchart, null);
             holder.chart = (BarChart) convertView.findViewById(R.id.chart);
-            TextView title = (TextView) convertView.findViewById(R.id.title);
-            title.setText(titles.get(pos));
+            holder.mTextView = (TextView) convertView.findViewById(R.id.title);
             convertView.setTag(holder);
 
         } else {
@@ -69,7 +69,12 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return labels.get(pos).get((int)value);
+                if (labels.get(pos).size()>(int)value){
+                    String lbl = labels.get(pos).get((int)value);
+                    return lbl==null? "" : lbl;
+
+                }
+                return "";
             }
         };
 
@@ -104,12 +109,16 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 //            holder.chart.invalidate();
         holder.chart.animateY(700);
 
+        holder.mTextView.setText(titles.get(pos));
+
+
         return convertView;
     }
 
     private class ViewHolder {
 
         BarChart chart;
+        TextView mTextView;
     }
 
 

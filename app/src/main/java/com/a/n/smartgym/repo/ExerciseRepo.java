@@ -74,7 +74,7 @@ public class ExerciseRepo {
                 + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
                 + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"'"
                 + " GROUP BY " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME+" , "+Visits.TABLE +"."+Visits.KEY_DATE
-                + " ORDER BY date(" +Visits.TABLE +"."+Visits.KEY_DATE+") DESC"
+                + " ORDER BY date(" +Visits.TABLE +"."+Visits.KEY_DATE+") ASC"
 
                 ;
 

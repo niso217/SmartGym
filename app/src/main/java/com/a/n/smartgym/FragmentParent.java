@@ -31,7 +31,7 @@ public class FragmentParent extends Fragment {
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
     private ArrayList<DailyAverage> mDailyAverage;
-    private LinkedHashMap<String, Map<String, Double>> dicCodeToIndex;
+    private LinkedHashMap<String, LinkedHashMap<String, Double>> dicCodeToIndex;
 
 
 
@@ -44,37 +44,37 @@ public class FragmentParent extends Fragment {
 
         getIDs(view);
         setEvents();
-        extractData();
+        extractData2();
 
         return view;
     }
 
     //get all data from database
     private void extractData() {
-        dicCodeToIndex = new LinkedHashMap <String, Map<String, Double>>();
+        dicCodeToIndex = new LinkedHashMap <String, LinkedHashMap<String, Double>>();
 
         mDailyAverage = new ExerciseRepo().getAllDaysAverages(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         Iterator iterator = mDailyAverage.iterator();
         while (iterator.hasNext()) {
             DailyAverage temp = (DailyAverage) iterator.next();
-            Map<String, Double> in = dicCodeToIndex.get(temp.getDate());
+            LinkedHashMap<String, Double> in = dicCodeToIndex.get(temp.getDate());
             if (in != null) {
                 in.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), in);
 
             } else {
-                Map<String, Double> inner = new HashMap<>();
+                LinkedHashMap<String, Double> inner = new LinkedHashMap<>();
                 inner.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), inner);
             }
 
         }
 
-        Iterator<Map.Entry<String, Map<String, Double>>> parent = dicCodeToIndex.entrySet().iterator();
+        Iterator<Map.Entry<String, LinkedHashMap<String, Double>>> parent = dicCodeToIndex.entrySet().iterator();
         while (parent.hasNext()) {
             mDailyAverage = new ArrayList<>();
-            Map.Entry<String, Map<String, Double>> parentPair = parent.next();
+            Map.Entry<String, LinkedHashMap<String, Double>> parentPair = parent.next();
             Iterator<Map.Entry<String, Double>> mIterator = parentPair.getValue().entrySet().iterator();
             int i = 0;
             while (mIterator.hasNext()) {
@@ -90,30 +90,30 @@ public class FragmentParent extends Fragment {
     }
 
     private void extractData2() {
-        dicCodeToIndex = new LinkedHashMap <String, Map<String, Double>>();
+        dicCodeToIndex = new LinkedHashMap <String, LinkedHashMap<String, Double>>();
 
         mDailyAverage = new ExerciseRepo().getAllDaysAverages(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         Iterator iterator = mDailyAverage.iterator();
         while (iterator.hasNext()) {
             DailyAverage temp = (DailyAverage) iterator.next();
-            Map<String, Double> in = dicCodeToIndex.get(temp.getMachine_name());
+            LinkedHashMap<String, Double> in = dicCodeToIndex.get(temp.getMachine_name());
             if (in != null) {
                 in.put(temp.getDate(), temp.getAverage());
                 dicCodeToIndex.put(temp.getMachine_name(), in);
 
             } else {
-                Map<String, Double> inner = new HashMap<>();
+                LinkedHashMap<String, Double> inner = new LinkedHashMap<>();
                 inner.put(temp.getDate(), temp.getAverage());
                 dicCodeToIndex.put(temp.getMachine_name(), inner);
             }
 
         }
 
-        Iterator<Map.Entry<String, Map<String, Double>>> parent = dicCodeToIndex.entrySet().iterator();
+        Iterator<Map.Entry<String, LinkedHashMap<String, Double>>> parent = dicCodeToIndex.entrySet().iterator();
         while (parent.hasNext()) {
             mDailyAverage = new ArrayList<>();
-            Map.Entry<String, Map<String, Double>> parentPair = parent.next();
+            Map.Entry<String, LinkedHashMap<String, Double>> parentPair = parent.next();
             Iterator<Map.Entry<String, Double>> mIterator = parentPair.getValue().entrySet().iterator();
             int i = 0;
             while (mIterator.hasNext()) {
@@ -122,6 +122,7 @@ public class FragmentParent extends Fragment {
                 double val = Double.valueOf(childPair.getValue().toString());
                 mDailyAverage.add(new DailyAverage(name,val));
             }
+            if (mDailyAverage.size()>2)
             addPage(parentPair.getKey().toString());
 
         }
