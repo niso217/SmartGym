@@ -14,20 +14,22 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity="center"
+            android:textAlignment="center"
             android:orientation="horizontal">
 
 
             <android.support.design.widget.TabLayout
                 android:id="@+id/my_tab_layout"
-                app:tabGravity="fill"
-                app:tabMode="scrollable"
-                android:background="@color/material_blue_grey_800"
-                app:tabIndicatorColor="@color/orange"
-                app:tabSelectedTextColor="@color/orange"
-                app:tabTextColor="@color/white"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            </android.support.design.widget.TabLayout>
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/material_blue_grey_800"
+                app:tabGravity="center"
+                app:tabIndicatorColor="@color/orange"
+                app:tabMode="scrollable"
+                app:tabSelectedTextColor="@color/orange"
+                app:tabTextColor="@color/white"></android.support.design.widget.TabLayout>
 
         </LinearLayout>
     </android.support.design.widget.AppBarLayout>

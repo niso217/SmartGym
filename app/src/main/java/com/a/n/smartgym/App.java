@@ -3,6 +3,8 @@ package com.a.n.smartgym;
 import android.app.Application;
 import android.content.Context;
 
+import com.a.n.smartgym.Helpers.DBHelper;
+
 
 /**
  * Created by Tan on 1/26/2016.

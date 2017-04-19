@@ -1,4 +1,4 @@
-package com.a.n.smartgym;
+package com.a.n.smartgym.Helpers;
 
 /**
  * Created by Tan on 1/26/2016.
@@ -8,11 +8,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.a.n.smartgym.App;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.User;
-import com.a.n.smartgym.model.StudentCourse;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
 import com.a.n.smartgym.repo.VisitsRepo;

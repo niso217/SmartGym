@@ -8,20 +8,16 @@
             android:icon="@drawable/inbox"
             android:title="Inbox" />
 
-        <item
-            android:id="@+id/nav_item_sent"
-            android:icon="@drawable/sent"
-            android:title="Sent" />
 
         <item
             android:id="@+id/navigation_subheader"
             android:title="Statistics">
             <menu>
                 <item
-                    android:id="@+id/navigation_sub_item_1"
+                    android:id="@+id/device_day_average"
                     android:title="Day / Average" />
                 <item
-                    android:id="@+id/navigation_sub_item_2"
+                    android:id="@+id/day_device_average"
                     android:title="Trend" />
             </menu>
         </item>

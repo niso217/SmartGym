@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -25,6 +26,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Graphs.DayAverageFragment;
+import com.a.n.smartgym.Graphs.TrendAverageFragment;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Visits;
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String[][] mTechLists;
     private int mCount = 0;
     public static final String MIME_TEXT_PLAIN = "text/plain";
+    private Fragment mCurrentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +92,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mFragmentManager = getSupportFragmentManager();
         mFragmentTransaction = mFragmentManager.beginTransaction();
-        mFragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
+
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+            mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, "myFragmentName");
+        }
+        else
+        {
+            mCurrentFragment = new TabFragment();
+            mFragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+        }
 
         InitializeUserDetails();
 
@@ -112,6 +125,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //StartExercise();
 
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
     }
 
     private void nfc() {
@@ -242,20 +262,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         mDrawerLayout.closeDrawers();
-
+        Bundle arguments = new Bundle();
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
 
         switch (item.getItemId()) {
-            case R.id.nav_item_sent:
-                fragmentTransaction.replace(R.id.containerView, new FragmentParent()).commit();
-                break;
             case R.id.nav_item_inbox:
-                fragmentTransaction.replace(R.id.containerView, new TabFragment()).commit();
+                mCurrentFragment = new TabFragment();
+                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
                 break;
             case R.id.exercise:
                 StartExercise("");
                 break;
+            case R.id.device_day_average:
+                mCurrentFragment = new DayAverageFragment();
+                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                break;
+            case R.id.day_device_average:
+                mCurrentFragment = new TrendAverageFragment();
+                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                break;
+
             case R.id.nav_logout:
                 logout();
                 break;
@@ -382,10 +409,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         bundle.putString("uuid", uuid);
 
-        FireBaseFragment fb = new FireBaseFragment();
-        fb.setArguments(bundle);
+        mCurrentFragment = new FireBaseFragment();
+        mCurrentFragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
+        fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
     }
 
 }

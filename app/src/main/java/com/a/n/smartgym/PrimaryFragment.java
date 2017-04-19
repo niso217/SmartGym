@@ -39,7 +39,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 /**
  * Created by Ratan on 7/29/2015.
  */
-public class PrimaryFragment extends Fragment implements View.OnClickListener {
+public class PrimaryFragment extends Fragment {
     private DatabaseReference mFirebaseDatabase;
     private FirebaseDatabase mFirebaseInstance;
     private FirebaseAuth mAuth;
@@ -98,8 +98,6 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
         View rootFragment = inflater.inflate(R.layout.primary_layout, null);
 
 
-        getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         ListView lv = (ListView) rootFragment.findViewById(R.id.listView1);
 
@@ -150,25 +148,4 @@ public class PrimaryFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-//            case R.id.ID1:
-//                //initGraph("id1");
-//                break;
-//            case R.id.ID2:
-//                //initGraph("id2");
-//                break;
-        }
-    }
-
-    class details {
-        double weight;
-        String name;
-
-        public details(double weight, String name) {
-            this.weight = weight;
-            this.name = name;
-        }
-    }
 }
