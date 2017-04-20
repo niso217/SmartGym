@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.a.n.smartgym.Graphs.DayAverageFragment;
 import com.a.n.smartgym.Graphs.TrendAverageFragment;
+import com.a.n.smartgym.Graphs.UsageAverageFragment;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Visits;
@@ -280,6 +281,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.day_device_average:
                 mCurrentFragment = new TrendAverageFragment();
+                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                break;
+            case R.id.usage_average:
+                mCurrentFragment = new UsageAverageFragment();
                 fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
                 break;
 

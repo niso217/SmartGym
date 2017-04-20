@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.a.n.smartgym.DatabaseManager;
 import com.a.n.smartgym.Quary.DailyAverage;
+import com.a.n.smartgym.Quary.MachineUsage;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.model.User;
@@ -100,21 +101,23 @@ public class ExerciseRepo {
 
     }
 
-    public List<DailyAverage> getDayAverage(String user_id, String date){
-        DailyAverage dailyAverage;
-        List<DailyAverage> DailyAverages = new ArrayList<>();
+    public ArrayList<MachineUsage> getUsage(String user_id){
+        MachineUsage machineUsage;
+        ArrayList<MachineUsage> machineUsages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery =  " SELECT " + User.TABLE +"." + User.KEY_FIRST_NAME
-                + ", "+Visits.TABLE +"." + Visits.KEY_DATE
-                + ", "+Exercise.TABLE +"." + Exercise.KEY_MACHINE_NAME
-                + ", AVG(" + Sets.TABLE +"."+Sets.KEY_WEIGHT+") as average FROM " + User.TABLE
+        String selectQuery =  " SELECT "
+                + Exercise.TABLE +"." + Exercise.KEY_MACHINE_NAME
+                + ", COUNT(" + Sets.TABLE +"."+Sets.KEY_SET_ID+") as counter FROM " + User.TABLE
                 + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE +"."+Visits.KEY_USER_ID + "=" +User.TABLE+"."+User.KEY_USER_ID
                 + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE +"."+Exercise.KEY_VISIT_ID + "=" +Visits.TABLE+"."+Visits.KEY_VISIT_ID
                 + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE +"."+Sets.KEY_EXERCISE_ID + "=" +Exercise.TABLE+"."+Exercise.KEY_EXERCISE_ID
-                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"' AND " + Visits.TABLE +"."+Visits.KEY_DATE + "="+ "'"+date+"'"
-                + " GROUP BY " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME+" , "+Visits.TABLE +"."+Visits.KEY_DATE
-                + " ORDER BY date(" +Visits.TABLE +"."+Visits.KEY_DATE+") DESC"
+                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"'"
+                + " GROUP BY " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME
+                + " ORDER BY counter DESC "
+//                + " LIMIT 5"
+
+
                 ;
 
 
@@ -123,21 +126,35 @@ public class ExerciseRepo {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                dailyAverage= new DailyAverage();
-                dailyAverage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
-                dailyAverage.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
-                dailyAverage.setAverage(cursor.getDouble(cursor.getColumnIndex("average")));
+                machineUsage= new MachineUsage();
+                machineUsage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
+                machineUsage.setCounter(cursor.getInt(cursor.getColumnIndex("counter")));
 
-                DailyAverages.add(dailyAverage);
+                machineUsages.add(machineUsage);
             } while (cursor.moveToNext());
         }
 
         cursor.close();
         DatabaseManager.getInstance().closeDatabase();
 
-        return DailyAverages;
+        int sum = CalcSum(machineUsages);
+
+        for (int i = 0; i < machineUsages.size(); i++) {
+            machineUsages.get(i).setPresent(100L * machineUsages.get(i).getCounter() / sum);
+
+        }
+
+        return machineUsages;
 
     }
+    private int CalcSum(List<MachineUsage> list) {
+        int sum = 0;
+        for (int i = 0; i < list.size(); i++) {
+            sum += list.get(i).getCounter();
+        }
+        return sum;
+    }
+
 
 
 

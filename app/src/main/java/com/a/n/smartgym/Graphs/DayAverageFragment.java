@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.a.n.smartgym.Adapter.ChartDataAdapter;
 import com.a.n.smartgym.Adapter.ViewPagerAdapter;
 import com.a.n.smartgym.Quary.DailyAverage;
+import com.a.n.smartgym.Quary.MachineUsage;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.github.mikephil.charting.data.BarData;
@@ -161,6 +162,9 @@ public class DayAverageFragment extends Fragment {
     private void ExactDataFromDB() {
 
         ArrayList<DailyAverage> DailyAverage = new ExerciseRepo().getAllDaysAverages(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
 
         Iterator iterator = DailyAverage.iterator();
         while (iterator.hasNext()) {

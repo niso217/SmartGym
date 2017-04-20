@@ -19,6 +19,9 @@
                 <item
                     android:id="@+id/day_device_average"
                     android:title="Trend" />
+                <item
+                    android:id="@+id/usage_average"
+                    android:title="Usage" />
             </menu>
         </item>
 
