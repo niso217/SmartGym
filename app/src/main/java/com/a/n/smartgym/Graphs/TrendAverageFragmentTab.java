@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.a.n.smartgym.Quary.DailyAverage;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Utils.MyMarkerView;
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;

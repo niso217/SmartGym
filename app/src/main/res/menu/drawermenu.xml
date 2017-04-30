@@ -22,6 +22,9 @@
                 <item
                     android:id="@+id/usage_average"
                     android:title="Usage" />
+                <item
+                    android:id="@+id/visits"
+                    android:title="Visits" />
             </menu>
         </item>
 

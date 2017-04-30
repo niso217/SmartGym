@@ -18,7 +18,6 @@ import com.a.n.smartgym.R;
 
 import java.util.ArrayList;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by DAT on 8/16/2015.
@@ -65,8 +64,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     public View getTabView(final int position) {
         View view = LayoutInflater.from(context).inflate(R.layout.custom_tab_item, null);
         TextView tabItemName = (TextView) view.findViewById(R.id.textViewTabItemName);
-        CircleImageView tabItemAvatar =
-            (CircleImageView) view.findViewById(R.id.imageViewTabItemAvatar);
+
         ImageButton remove = (ImageButton) view.findViewById(R.id.imageButtonRemove);
         remove.setOnClickListener(new View.OnClickListener() {
             @Override
