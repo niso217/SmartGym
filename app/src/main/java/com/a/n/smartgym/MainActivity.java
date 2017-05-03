@@ -274,7 +274,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
                 break;
             case R.id.exercise:
-                StartExercise("");
+                //StartExercise("");
+                mCurrentFragment = new MuscleFragment();
+                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+
                 break;
             case R.id.device_day_average:
                 mCurrentFragment = new DayAverageFragment();

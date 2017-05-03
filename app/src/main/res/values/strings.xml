@@ -23,4 +23,15 @@
     <string name="name">Name</string>
     <string name="email">Email</string>
 
+    <string-array name="muscle_id">
+        <item>@drawable/abs</item>
+        <item>@drawable/arms</item>
+        <item>@drawable/shoulders</item>
+    </string-array>
+
+    <string-array name="abs_id">
+        <item>@drawable/abs_1</item>
+        <item>@drawable/abs_2</item>
+    </string-array>
+
 </resources>
