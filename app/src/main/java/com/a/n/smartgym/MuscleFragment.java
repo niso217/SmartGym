@@ -30,10 +30,15 @@ public class MuscleFragment extends Fragment {
 
     private GridView gridView;
     private GridViewAdapter gridAdapter;
+    private String UUID;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        if (getArguments() != null) {
+            UUID = getArguments().getString("uuid");
+        }
 
         View rootFragment = inflater.inflate(R.layout.fragment_muscle, null);
 
@@ -45,16 +50,15 @@ public class MuscleFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
 
-                Toast.makeText(getContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
-
                 Bundle bundle = new Bundle();
-                bundle.putString("key",ExercisesDB.getInstance().keys.get(position));
-                Fragment newFragment = new PrimaryFragment();
+                bundle.putString("group",ExercisesDB.getInstance().keys.get(position));
+                bundle.putString("uuid",UUID);
+                Fragment newFragment = new SubMuscleFragment();
                 newFragment.setArguments(bundle);
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 transaction.replace(R.id.containerView, newFragment);
                 transaction.setTransition(FragmentTransaction.TRANSIT_NONE);
-
+                transaction.addToBackStack(null);
                 transaction.commit();
 
             }
@@ -70,8 +74,9 @@ public class MuscleFragment extends Fragment {
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
         TypedArray imgs = getResources().obtainTypedArray(R.array.muscle_id);
         for (int i = 0; i < imgs.length(); i++) {
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imgs.getResourceId(i, -1));
-            imageItems.add(new ImageItem(bitmap, ExercisesDB.getInstance().keys.get(i)));
+            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imgs.getResourceId(i, -1));
+            String img = imgs.getString(i);
+            imageItems.add(new ImageItem(img, ExercisesDB.getInstance().keys.get(i)));
         }
         return imageItems;
     }

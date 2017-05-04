@@ -13,4 +13,27 @@ public class Muscles {
     String image;
     String description;
 
+    public String getName() {
+        return name;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getMainMuscles() {
+        return mainMuscles;
+    }
+
+    public String getSecondaryMuscles() {
+        return secondaryMuscles;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

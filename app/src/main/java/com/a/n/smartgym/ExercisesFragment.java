@@ -1,5 +1,9 @@
 package com.a.n.smartgym;
 
+import android.annotation.TargetApi;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,9 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
@@ -21,6 +28,7 @@ import com.a.n.smartgym.repo.SetsRepo;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,30 +36,24 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-public class FireBaseFragment extends Fragment implements View.OnClickListener {
+import static com.facebook.FacebookSdk.getApplicationContext;
 
-    private static final String TAG = FireBaseFragment.class.getSimpleName();
-    private TextView txtDetails;
-    private EditText inputName, inputEmail;
+public class ExercisesFragment extends Fragment implements View.OnClickListener {
+
+    private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
-    private DatabaseReference mFirebaseDatabase;
-    private FirebaseDatabase mFirebaseInstance;
-    private String currentDate;
-    private String userId;
     private FirebaseAuth mAuth;
-    private String ScanResult;
     private String mUUID;
     private String CurrentSession;
-
     private int Counter;
-    private SeekBar mSeekBar;
-    private TextView mID, mCounter;
-    private EditText mWeight;
     private List<Sets> mSet;
     private boolean mInProgress;
     private boolean[] arr;
-    private int achieveCounter;
-    private long mSetStart,mSetEnd;
+    private long mSetStart, mSetEnd;
+    private ImageView mImage;
+    private SeekBar mSeekBar;
+    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter;
+    private EditText mWeight;
 
 
     @Override
@@ -64,55 +66,42 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
         mSet = new ArrayList<>();
 
 
-
     }
 
-    private void AddSet(Editable weight,long start, long end) {
-            Sets s1 = new Sets();
-            s1.setSetid(UUID.randomUUID().toString());
-            s1.setWeight(Integer.parseInt(String.valueOf(weight)));
-            s1.setexerciseid(mUUID);
-            s1.setStart(start);
-            s1.setEnd(end);
+    private void AddSet(Editable weight, long start, long end) {
+        Sets s1 = new Sets();
+        s1.setSetid(UUID.randomUUID().toString());
+        s1.setWeight(Integer.parseInt(String.valueOf(weight)));
+        s1.setexerciseid(mUUID);
+        s1.setStart(start);
+        s1.setEnd(end);
 
-            mSet.add(s1);
+        mSet.add(s1);
 
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootFragment = inflater.inflate(R.layout.firebase_fragment, null);
+        View rootFragment = inflater.inflate(R.layout.exercises_fragment, null);
 
-        mSeekBar = (SeekBar) rootFragment.findViewById(R.id.seekBar);
-        mID = (TextView) rootFragment.findViewById(R.id.device_id);
-        mCounter = (TextView) rootFragment.findViewById(R.id.counter);
-        mWeight = (EditText) rootFragment.findViewById(R.id.weight);
-        mWeight.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        mSeekBar = (SeekBar) rootFragment.findViewById(R.id.seekbar_ex);
+        mName = (TextView) rootFragment.findViewById(R.id.tv_ex_name_txt);
+        mPrimaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_primary_txt);
+        mSecondaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_secondary_txt);
+        mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
+        mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
+        mWeight = (EditText) rootFragment.findViewById(R.id.tv_ex_weight_txt);
+        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex) ;
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                if (editable.length()>0)
-                    Controllers(true);
-                else
-                    Controllers(false);
+        Random r = new Random();
+        int i1 = r.nextInt(100 - 40) + 65;
+        mWeight.setText(i1+"");
 
 
-            }
-        });
-
-        btnFinish = (Button) rootFragment.findViewById(R.id.btn_finish);
+        btnFinish = (Button) rootFragment.findViewById(R.id.btn_ex_finish);
         btnFinish.setOnClickListener(this);
-        Controllers(false);
+        Controllers(true);
 
         arr = new boolean[mSeekBar.getMax()];
 
@@ -135,12 +124,10 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
                                 Counter++;
                                 mSetEnd = System.currentTimeMillis();
                                 arr = new boolean[mSeekBar.getMax()];
-                                AddSet(mWeight.getText(),mSetStart,mSetEnd);
+                                AddSet(mWeight.getText(), mSetStart, mSetEnd);
                                 mCounter.setText(Counter + "");
 
-                            }
-                            else
-                            {
+                            } else {
                                 mSetStart = System.currentTimeMillis();
 
                             }
@@ -164,13 +151,31 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
 
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
-            ScanResult = getArguments().getString("scanresult");
+            String group = getArguments().getString("group");
+            int index = getArguments().getInt("index");
+
+            Muscles current = null;
+
+            List<Muscles> lst = ExercisesDB.getInstance().DB.get(group);
+            if (lst != null) {
+                current = lst.get(index);
+            }
+            if (current != null){
+               //mImage.setImageDrawable(getDrawableForSdkVersion(current.getImage()));
+                Picasso.with(getApplicationContext()).load(current.getImage()).into(mImage);
+                mName.setText(current.getName());
+                mPrimaryMuscle.setText(current.getMainMuscles());
+                mSecondaryMuscle.setText(current.getSecondaryMuscles());
+                mInstruction.setText(current.getDescription());
+
+            }
+
             CurrentSession = getArguments().getString("uuid");
 
 
-            if (!mUUID.isEmpty() && !ScanResult.isEmpty() && !CurrentSession.isEmpty()) {
-                setNewExercise(mUUID, CurrentSession, ScanResult);
-                mID.setText(ScanResult);
+            if (!mUUID.isEmpty() && current!=null && !CurrentSession.isEmpty()) {
+                setNewExercise(mUUID, CurrentSession, current.getName());
+                //mID.setText(ScanResult);
             }
 
 
@@ -178,12 +183,29 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
         return rootFragment;
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    private Drawable getDrawableForSdkVersion(String name) {
+
+        int resId = getResources().getIdentifier(name , "drawable", getContext().getPackageName());
+
+        Drawable drawable = null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            drawable = getResources().getDrawable(resId, null);
+        } else {
+            drawable = getResources().getDrawable(resId);
+        }
+
+        return drawable;
+
+    }
+
     public boolean areAllTrue(boolean[] array) {
         for (boolean b : array) if (!b) return false;
         return true;
     }
 
-    private void Controllers(boolean b){
+    private void Controllers(boolean b) {
         btnFinish.setEnabled(b);
         mSeekBar.setEnabled(b);
     }
@@ -202,7 +224,7 @@ public class FireBaseFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_finish:
+            case R.id.btn_ex_finish:
                 SetsRepo setsRepo = new SetsRepo(getContext());
                 setsRepo.BulkSets(mSet);
                 mSet.clear();

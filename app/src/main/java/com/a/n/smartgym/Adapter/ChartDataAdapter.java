@@ -90,6 +90,8 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
         xAxis.setValueFormatter(formatter);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
+        xAxis.setLabelRotationAngle(60);
+
 
         YAxis leftAxis = holder.chart.getAxisLeft();
         //leftAxis.setTypeface(mTfLight);

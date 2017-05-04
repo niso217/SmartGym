@@ -10,8 +10,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.a.n.smartgym.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class GridViewAdapter extends ArrayAdapter<ImageItem> {
 
@@ -45,7 +48,7 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
 
         ImageItem item = data.get(position);
         holder.imageTitle.setText(item.getTitle());
-        holder.image.setImageBitmap(item.getImage());
+        Picasso.with(getApplicationContext()).load(item.getImage()).into(holder.image);
         return row;
     }
 

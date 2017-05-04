@@ -30,7 +30,7 @@ public class App extends Application {
     private static DBHelper dbHelper;
     private RequestQueue requestQueue;
     private static final String TAG =  Application.class.getSimpleName();
-    private static final String ENDPOINT = "https://api.myjson.com/bins/e3djh";
+    private static final String ENDPOINT = "https://api.myjson.com/bins/actel";
     private Gson gson;
 
     @Override

@@ -31,6 +31,10 @@ import com.a.n.smartgym.Graphs.TrendAverageFragment;
 import com.a.n.smartgym.Graphs.UsageAverageFragment;
 import com.a.n.smartgym.Graphs.VisitsFragment;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
+import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Objects.Muscles;
+import com.a.n.smartgym.Objects.NFCResult;
+import com.a.n.smartgym.Utils.Constance;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.VisitsRepo;
@@ -44,10 +48,12 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.sql.Date;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -69,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int mCount = 0;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
+    private Gson gson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+
+        gson = new Gson();
 
         InitializeGoogleApiClient();
 
@@ -274,9 +283,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
                 break;
             case R.id.exercise:
-                //StartExercise("");
-                mCurrentFragment = new MuscleFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                StartExercise("");
+                //mCurrentFragment = new MuscleFragment();
+                //fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
 
                 break;
             case R.id.device_day_average:
@@ -381,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     bundle.putString("uuid", uuid);
 
                     Log.d(TAG, barcode.displayValue);
-                    FireBaseFragment fb = new FireBaseFragment();
+                    ExercisesFragment fb = new ExercisesFragment();
                     fb.setArguments(bundle);
                     FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
@@ -396,6 +405,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void StartExercise(String Tagid){
+
+        NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
+
         //create new visit
         VisitsRepo visitsRepo = new VisitsRepo();
         String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
@@ -409,21 +421,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-
         Bundle bundle = new Bundle();
-        if (Tagid.isEmpty()){
-            String id = "ID";
-            Random r = new Random();
-            int i1 = r.nextInt(20 - 1) + 1;
-            bundle.putString("scanresult", id+i1);
-        }
-        else
-            bundle.putString("scanresult", Tagid);
-
         bundle.putString("uuid", uuid);
 
-        mCurrentFragment = new FireBaseFragment();
+        if (Tagid.isEmpty()){
+            mCurrentFragment = new MuscleFragment();
+        }
+        else{
+            bundle.putString("group", nfcTag.getMuscle());
+            bundle.putInt("index", nfcTag.getIndex());
+            mCurrentFragment = new ExercisesFragment();
+        }
         mCurrentFragment.setArguments(bundle);
+
+
+
+
+
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
     }

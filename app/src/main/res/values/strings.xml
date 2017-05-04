@@ -24,14 +24,21 @@
     <string name="email">Email</string>
 
     <string-array name="muscle_id">
-        <item>@drawable/abs</item>
-        <item>@drawable/arms</item>
-        <item>@drawable/shoulders</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2hgaIAPGGJhgUC8gbkpAIWrDDw=.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2gAAsgkMcDQIN7A3BQAha8MPA==.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2hgYADC2IAhGo0M4g3MTQGFsww8.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2gAAwgWgo8uhhCNNzA3BQCFyQw-.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2gAATAamWWAJIYuH29gbgoAhdUMPg==.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2iADAwNUPm4QbyBuSkAhZ0MOw==.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2iADRga4BKHgXgDc1MAhZsMPA==.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2hACGBXEW9gbgoAhV0MOg==.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</item>
+        <item>https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</item>
+
     </string-array>
 
-    <string-array name="abs_id">
-        <item>@drawable/abs_1</item>
-        <item>@drawable/abs_2</item>
+    <string-array name="empty_id">
     </string-array>
+
 
 </resources>
