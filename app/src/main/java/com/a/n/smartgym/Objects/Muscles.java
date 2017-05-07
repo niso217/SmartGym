@@ -6,10 +6,10 @@ package com.a.n.smartgym.Objects;
 
 public class Muscles {
 
-    long id;
+    String id;
     String name;
-    String mainMuscles;
-    String secondaryMuscles;
+    String main;
+    String secondary;
     String image;
     String description;
 
@@ -17,16 +17,24 @@ public class Muscles {
         return name;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public String getMainMuscles() {
-        return mainMuscles;
+    public String getMain() {
+        return main;
     }
 
-    public String getSecondaryMuscles() {
-        return secondaryMuscles;
+    public void setMain(String main) {
+        this.main = main;
+    }
+
+    public String getSecondary() {
+        return secondary;
+    }
+
+    public void setSecondary(String secondary) {
+        this.secondary = secondary;
     }
 
     public String getImage() {

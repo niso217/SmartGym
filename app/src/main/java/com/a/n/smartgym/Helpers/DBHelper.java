@@ -9,11 +9,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.a.n.smartgym.App;
+import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.repo.ExerciseRepo;
+import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.SetsRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
 import com.a.n.smartgym.repo.UserRepo;
@@ -23,7 +25,7 @@ public class DBHelper  extends SQLiteOpenHelper {
     //version number to upgrade database version
     //each time if you Add, Edit table, you need to change the
     //version number.
-    private static final int DATABASE_VERSION =8;
+    private static final int DATABASE_VERSION =9;
     // Database Name
     private static final String DATABASE_NAME = "data.db";
     private static final String TAG = DBHelper.class.getSimpleName().toString();
@@ -39,6 +41,8 @@ public class DBHelper  extends SQLiteOpenHelper {
         db.execSQL(UserRepo.createTable());
         db.execSQL(VisitsRepo.createTable());
         db.execSQL(SetsRepo.createTable());
+        db.execSQL(MuscleRepo.createTable());
+
     }
 
     @Override
@@ -50,20 +54,11 @@ public class DBHelper  extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + User.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + Exercise.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + Sets.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + Muscle.TABLE);
+
         onCreate(db);
     }
 
-//    select User.firstname, User.lastname, Visits.date, Exercise.start, Exercise.end, Sets.count, Sets.weight from User
-//    inner join Visits on Visits.userid=User.userid
-//    inner join Exercise on Exercise.visitid = Visits.visitid
-//    inner join Sets on Sets.exerciseid=Exercise.exerciseid
-//
-//    select User.firstname , Visits.date, AVG(Sets.weight) as avrage from User
-//    inner join Visits on Visits.userid=User.userid
-//    inner join Exercise on Exercise.visitid = Visits.visitid
-//    inner join Sets on Sets.exerciseid=Exercise.exerciseid
-//
-//    GROUP BY User.firstname, Visits.date
-//    having avrage>70
+
 
 }

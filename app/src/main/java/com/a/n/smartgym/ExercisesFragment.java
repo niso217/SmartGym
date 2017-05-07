@@ -164,8 +164,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
                //mImage.setImageDrawable(getDrawableForSdkVersion(current.getImage()));
                 Picasso.with(getApplicationContext()).load(current.getImage()).into(mImage);
                 mName.setText(current.getName());
-                mPrimaryMuscle.setText(current.getMainMuscles());
-                mSecondaryMuscle.setText(current.getSecondaryMuscles());
+                mPrimaryMuscle.setText(current.getMain());
+                mSecondaryMuscle.setText(current.getSecondary());
                 mInstruction.setText(current.getDescription());
 
             }
