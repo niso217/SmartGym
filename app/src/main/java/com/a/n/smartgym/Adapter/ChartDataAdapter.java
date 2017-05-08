@@ -12,13 +12,16 @@ import android.widget.TextView;
 import com.a.n.smartgym.R;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.vision.text.Text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
     private List<List<String>> labels;
     private List<String> titles;
     private TextView title;
+    private Legend legend;
 
     public ChartDataAdapter(Context context, List<BarData> objects, List<List<String>> labels,List titles) {
         super(context, 0, objects);
@@ -56,6 +60,16 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_barchart, null);
             holder.chart = (BarChart) convertView.findViewById(R.id.chart);
+
+            legend = holder.chart.getLegend();
+            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+            legend.setOrientation(Legend.LegendOrientation.VERTICAL);
+            legend.setDrawInside(false);
+            legend.setXEntrySpace(7f);
+            legend.setYEntrySpace(0f);
+            legend.setYOffset(0f);
+
             holder.mTextView = (TextView) convertView.findViewById(R.id.title);
             convertView.setTag(holder);
 
@@ -70,7 +84,7 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 if (labels.get(pos).size()>(int)value){
-                    String lbl = labels.get(pos).get((int)value);
+                    String lbl = shortcut(labels.get(pos).get((int)value));
                     return lbl==null? "" : lbl;
 
                 }
@@ -111,10 +125,26 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 //            holder.chart.invalidate();
         holder.chart.animateY(700);
 
+
+
+        String[] stockArr = new String[labels.get(pos).size()];
+        stockArr = (String[]) labels.get(pos).toArray(stockArr);
+        legend.setExtra(ColorTemplate.VORDIPLOM_COLORS, stockArr);
+
         holder.mTextView.setText(titles.get(pos));
 
 
+
         return convertView;
+    }
+
+    private String shortcut(String word){
+        String ans = "";
+        String [] arr = word.split("(?<=[\\S])[\\S]*\\s*");
+        for (String a : arr){
+            ans += a.toUpperCase();
+        }
+        return ans;
     }
 
     private class ViewHolder {

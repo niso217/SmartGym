@@ -16,6 +16,7 @@ import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.model.Visits;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -75,15 +76,26 @@ public class MuscleRepo {
         try {
             ContentValues values = new ContentValues();
             for (Muscle muscle : list) {
-                values.put(Muscle.KEY_ID, muscle.getId());
-                values.put(Muscle.KEY_MUSCLE, muscle.getMuscle());
-                values.put(Muscle.KEY_MAIN, muscle.getMain());
-                values.put(Muscle.KEY_SECONDARY, muscle.getSecondary());
-                values.put(Muscle.KEY_NAME, muscle.getName());
+                values.put(Muscle.KEY_ID, muscle.getId().toLowerCase());
+                values.put(Muscle.KEY_MUSCLE, muscle.getMuscle().toLowerCase());
+                values.put(Muscle.KEY_MAIN, muscle.getMain().toLowerCase());
+                values.put(Muscle.KEY_SECONDARY, muscle.getSecondary().toLowerCase());
+                values.put(Muscle.KEY_NAME, muscle.getName().toLowerCase());
                 values.put(Muscle.KEY_IMAGE, muscle.getImage());
                 values.put(Muscle.KEY_DESCRIPTION, muscle.getDescription());
 
-                db.insert(Muscle.TABLE, null, values);
+                //db.insertWithOnConflict(Muscle.TABLE, null, values,SQLiteDatabase.CONFLICT_IGNORE);
+                String quary = "REPLACE INTO " + Muscle.TABLE +
+                        " VALUES ("+
+                        "'"+muscle.getId().toLowerCase() +"'," +
+                        "'"+muscle.getMuscle().toLowerCase() +"'," +
+                        "'"+muscle.getMain().toLowerCase() +"'," +
+                        "'"+muscle.getSecondary().toLowerCase() +"'," +
+                        "'"+muscle.getName().toLowerCase() +"'," +
+                        "'"+muscle.getImage() +"'," +
+                        "'"+muscle.getDescription()+"'"+");";
+
+                db.execSQL(quary);
             }
             db.setTransactionSuccessful();
         } finally {
@@ -93,7 +105,7 @@ public class MuscleRepo {
         }
     }
 
-    public ArrayList<Muscle> getMuscle(String main,String sub){
+    public ArrayList<Muscle> getSubMuscle(String main, String sub){
         Muscle muscle;
         ArrayList<Muscle> muscleArrayList = new ArrayList<>();
 
@@ -127,6 +139,30 @@ public class MuscleRepo {
 
     }
 
+    public Hashtable<String,String> getMainMuscle(){
+        Hashtable<String,String> keyValue = new Hashtable<>();
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE
+                + ", "+Muscle.TABLE +"."+Muscle.KEY_IMAGE
+                + " FROM " + Muscle.TABLE
+                + " GROUP BY " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE;
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                keyValue.put(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE)),
+                        cursor.getString(cursor.getColumnIndex(Muscle.KEY_IMAGE)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return keyValue;
+
+    }
 
 
     public void delete( ) {

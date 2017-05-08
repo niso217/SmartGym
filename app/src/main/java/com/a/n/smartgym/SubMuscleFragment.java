@@ -19,6 +19,8 @@ import com.a.n.smartgym.Adapter.ImageItem;
 import com.a.n.smartgym.Helpers.URLtoBitmap;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
+import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.repo.MuscleRepo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,7 @@ public class SubMuscleFragment extends Fragment {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
     private String group, UUID;
-    List<Muscles> exname;
+    List<Muscle> exname;
 
     @Nullable
     @Override
@@ -44,7 +46,8 @@ public class SubMuscleFragment extends Fragment {
         if (getArguments() != null) {
             group = getArguments().getString("group");
             UUID = getArguments().getString("uuid");
-            exname = ExercisesDB.getInstance().DB.get(group);
+            MuscleRepo muscleRepo = new MuscleRepo();
+            exname = muscleRepo.getSubMuscle(group,"");
         }
 
         gridView = (GridView) rootFragment.findViewById(R.id.gridView);
@@ -60,6 +63,7 @@ public class SubMuscleFragment extends Fragment {
                 bundle.putInt("index", position);
                 bundle.putString("group", group);
                 bundle.putString("uuid", UUID);
+                bundle.putParcelable("muscle",exname.get(position));
                 Fragment newFragment = new ExercisesFragment();
                 newFragment.setArguments(bundle);
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();

@@ -1,7 +1,10 @@
 package com.a.n.smartgym.Objects;
 
+import com.a.n.smartgym.model.Muscle;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -12,8 +15,8 @@ import java.util.List;
  public class ExercisesDB {
 
 
-    public LinkedHashMap<String, List<Muscles>> DB;
-    public List<String> keys;
+    public List<Muscle> DB;
+    public Hashtable<String,String> keys;
 
 
     private static final ExercisesDB ourInstance = new ExercisesDB();
@@ -23,6 +26,6 @@ import java.util.List;
     }
 
     private ExercisesDB() {
-        DB = new LinkedHashMap<String, List<Muscles>>();
+        DB = new ArrayList<>();
     }
 }

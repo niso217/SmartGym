@@ -1,11 +1,14 @@
 package com.a.n.smartgym.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.sql.Date;
 
 /**
  * Created by Tan on 1/26/2016.
  */
-public class Muscle {
+public class Muscle implements Parcelable {
 
     public static final String TAG = Muscle.class.getSimpleName();
     public static final String TABLE = "MUSCLE";
@@ -70,6 +73,10 @@ public class Muscle {
         return image;
     }
 
+    public Muscle(){
+
+    }
+
     public void setImage(String image) {
         this.image = image;
     }
@@ -80,5 +87,46 @@ public class Muscle {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(muscle);
+        dest.writeString(main);
+        dest.writeString(secondary);
+        dest.writeString(name);
+        dest.writeString(image);
+        dest.writeString(description);
+
+    }
+
+    // Creator
+    public static final Parcelable.Creator
+            CREATOR = new Parcelable.Creator() {
+        public Muscle createFromParcel(Parcel in) {
+            return new Muscle(in);
+        }
+
+        public Muscle[] newArray(int size) {
+            return new Muscle[size];
+        }
+    };
+
+    // "De-parcel object
+    private Muscle(Parcel in) {
+        id = in.readString();
+        muscle = in.readString();
+        main = in.readString();
+        secondary = in.readString();
+        name = in.readString();
+        image = in.readString();
+        description = in.readString();
+
     }
 }

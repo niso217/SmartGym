@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.model.Exercise;
+import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
@@ -92,11 +93,11 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
         mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
         mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
         mWeight = (EditText) rootFragment.findViewById(R.id.tv_ex_weight_txt);
-        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex) ;
+        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
 
         Random r = new Random();
         int i1 = r.nextInt(100 - 40) + 65;
-        mWeight.setText(i1+"");
+        mWeight.setText(i1 + "");
 
 
         btnFinish = (Button) rootFragment.findViewById(R.id.btn_ex_finish);
@@ -151,17 +152,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
 
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
-            String group = getArguments().getString("group");
-            int index = getArguments().getInt("index");
+            Muscle current = getArguments().getParcelable("muscle");
 
-            Muscles current = null;
-
-            List<Muscles> lst = ExercisesDB.getInstance().DB.get(group);
-            if (lst != null) {
-                current = lst.get(index);
-            }
-            if (current != null){
-               //mImage.setImageDrawable(getDrawableForSdkVersion(current.getImage()));
+            if (current != null) {
                 Picasso.with(getApplicationContext()).load(current.getImage()).into(mImage);
                 mName.setText(current.getName());
                 mPrimaryMuscle.setText(current.getMain());
@@ -173,7 +166,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
             CurrentSession = getArguments().getString("uuid");
 
 
-            if (!mUUID.isEmpty() && current!=null && !CurrentSession.isEmpty()) {
+            if (!mUUID.isEmpty() && current != null && !CurrentSession.isEmpty()) {
                 setNewExercise(mUUID, CurrentSession, current.getName());
                 //mID.setText(ScanResult);
             }
@@ -186,7 +179,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     private Drawable getDrawableForSdkVersion(String name) {
 
-        int resId = getResources().getIdentifier(name , "drawable", getContext().getPackageName());
+        int resId = getResources().getIdentifier(name, "drawable", getContext().getPackageName());
 
         Drawable drawable = null;
 

@@ -23,7 +23,19 @@
     <string name="name">Name</string>
     <string name="email">Email</string>
 
-    <string-array name="muscle_id">
+    <string name="abs">https://www.freetrainers.com/redbody/eJzbY2hgaIAPGGJhgUC8gbkpAIWrDDw=.png</string>
+    <string name="arms">https://www.freetrainers.com/redbody/eJzbY2gAAsgkMcDQIN7A3BQAha8MPA==.png</string>
+    <string name="shoulders">https://www.freetrainers.com/redbody/eJzbY2hgYADC2IAhGo0M4g3MTQGFsww8.png</string>
+    <string name="back">https://www.freetrainers.com/redbody/eJzbY2gAAwgWgo8uhhCNNzA3BQCFyQw-.png</string>
+    <string name="legs">https://www.freetrainers.com/redbody/eJzbY2gAATAamWWAJIYuH29gbgoAhdUMPg==.png</string>
+    <string name="buttocks">https://www.freetrainers.com/redbody/eJzbY2iADAwNUPm4QbyBuSkAhZ0MOw==.png</string>
+    <string name="hips">https://www.freetrainers.com/redbody/eJzbY2iADRga4BKHgXgDc1MAhZsMPA==.png</string>
+    <string name="chest">https://www.freetrainers.com/redbody/eJzbY2hACGBXEW9gbgoAhV0MOg==.png</string>
+    <string name="hurt">https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</string>
+
+
+
+    <string-array name="main_muscle_value">
         <item>https://www.freetrainers.com/redbody/eJzbY2hgaIAPGGJhgUC8gbkpAIWrDDw=.png</item>
         <item>https://www.freetrainers.com/redbody/eJzbY2gAAsgkMcDQIN7A3BQAha8MPA==.png</item>
         <item>https://www.freetrainers.com/redbody/eJzbY2hgYADC2IAhGo0M4g3MTQGFsww8.png</item>
@@ -34,8 +46,10 @@
         <item>https://www.freetrainers.com/redbody/eJzbY2hACGBXEW9gbgoAhV0MOg==.png</item>
         <item>https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</item>
         <item>https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</item>
-
     </string-array>
+
+
+
 
     <string-array name="empty_id">
     </string-array>

@@ -19,9 +19,16 @@ import android.widget.Toast;
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.ImageItem;
 import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Utils.Constance;
+import com.a.n.smartgym.repo.MuscleRepo;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
+
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by Ratan on 7/29/2015.
@@ -35,6 +42,7 @@ public class MuscleFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 
         if (getArguments() != null) {
             UUID = getArguments().getString("uuid");
@@ -51,8 +59,8 @@ public class MuscleFragment extends Fragment {
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
 
                 Bundle bundle = new Bundle();
-                bundle.putString("group",ExercisesDB.getInstance().keys.get(position));
-                bundle.putString("uuid",UUID);
+                bundle.putString("group", item.getTitle());
+                bundle.putString("uuid", UUID);
                 Fragment newFragment = new SubMuscleFragment();
                 newFragment.setArguments(bundle);
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -67,17 +75,22 @@ public class MuscleFragment extends Fragment {
         return rootFragment;
     }
 
-    /**
-     * Prepare some dummy data for gridview
-     */
     private ArrayList<ImageItem> getData() {
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
-        TypedArray imgs = getResources().obtainTypedArray(R.array.muscle_id);
-        for (int i = 0; i < imgs.length(); i++) {
-            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imgs.getResourceId(i, -1));
-            String img = imgs.getString(i);
-            imageItems.add(new ImageItem(img, ExercisesDB.getInstance().keys.get(i)));
+
+        Enumeration e = ExercisesDB.getInstance().keys.keys();
+        while (e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            int s = getResources().getIdentifier(key, "string", getContext().getPackageName());
+            if (s != 0) {
+                String result = getString(s);
+                imageItems.add(new ImageItem(result, key));
+            }
+
+
         }
+
+
         return imageItems;
     }
 

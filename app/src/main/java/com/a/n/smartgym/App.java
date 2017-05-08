@@ -2,13 +2,11 @@ package com.a.n.smartgym;
 
 import android.app.Application;
 import android.content.Context;
-import android.renderscript.Sampler;
 import android.util.Log;
 
 import com.a.n.smartgym.Helpers.DBHelper;
-import com.a.n.smartgym.Objects.Muscles;
+import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.model.Muscle;
-import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.MuscleRepo;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -33,9 +31,8 @@ public class App extends Application {
     private static DBHelper dbHelper;
     private RequestQueue requestQueue;
     private static final String TAG = Application.class.getSimpleName();
-    //private static final String ENDPOINT = "https://api.myjson.com/bins/actel";
-    //private static final String ENDPOINT = "https://api.myjson.com/bins/7i3y9";
-    private static final String ENDPOINT = "https://api.myjson.com/bins/1cgy35";
+
+    private static final String ENDPOINT = "https://api.myjson.com/bins/14q51t";
 
 
     private Gson gson;
@@ -59,67 +56,40 @@ public class App extends Application {
         requestQueue.add(request);
     }
 
-//    private final Response.Listener<String> onPostsLoaded = new Response.Listener<String>() {
-//        @Override
-//        public void onResponse(String response) {
-//            Log.i(TAG, response);
-//
-//            Muscles[][] mus = gson.fromJson(response, Muscles[][].class);
-//
-//            for (int i = 0; i < mus.length; i++) {
-//                ExercisesDB.getInstance().DB.put(Constance.MuscleType.values()[i].toString(), Arrays.asList(mus[i]));
-//
-//            }
-//            ExercisesDB.getInstance().keys = new ArrayList<String>(ExercisesDB.getInstance().DB.keySet());
-//        }
-//    };
-
-//    private final Response.Listener<String> onPostsLoaded = new Response.Listener<String>() {
-//        @Override
-//        public void onResponse(String response) {
-//            Log.i(TAG, response);
-//            Map<String, Muscle> categoryMap = gson.fromJson(response, new TypeToken<Map<String, Muscle>>() {
-//            }.getType());
-//            List<Muscle> list = new ArrayList<>(categoryMap.values());
-//            MuscleRepo muscleRepo = new MuscleRepo();
-//            muscleRepo.BulkMuscle(list);
-//
-//
-//            ArrayList list2 = muscleRepo.getMuscle("ARMS","");
-//            Log.d(TAG, response.toString());
-//
-//        }
-//    };
 
     private final Response.Listener<String> onPostsLoaded = new Response.Listener<String>() {
         @Override
         public void onResponse(String response) {
             Log.i(TAG, response);
-            Map<String, Map<String,ArrayList<Muscle>>> categoryMap = gson.fromJson(response, new TypeToken<Map<String, Map<String,ArrayList<Muscle>>>>() {
+            Map<String, Map<String, Map<String, Muscle>>> categoryMap = gson.fromJson(response, new TypeToken<Map<String, Map<String, Map<String, Muscle>>>>() {
             }.getType());
-            //List<Muscle> list = new ArrayList<>(categoryMap.values());
-            //MuscleRepo muscleRepo = new MuscleRepo();
-            //muscleRepo.BulkMuscle(list);
             List<Muscle> list = new ArrayList<>();
 
-            Iterator<Map.Entry<String, Map<String, ArrayList<Muscle>>>> parent = categoryMap.entrySet().iterator();
+            Iterator<Map.Entry<String, Map<String, Map<String, Muscle>>>> parent = categoryMap.entrySet().iterator();
             while (parent.hasNext()) {
-                Map.Entry<String, Map<String, ArrayList<Muscle>>> parentPair = parent.next();
-                System.out.println("parentPair.getKey() :   " + parentPair.getKey() + " parentPair.getValue()  :  " + parentPair.getValue());
+                Map.Entry<String, Map<String, Map<String, Muscle>>> parentPair = parent.next();
 
-                Iterator<Map.Entry<String, ArrayList<Muscle>>> child = (parentPair.getValue()).entrySet().iterator();
+                Iterator<Map.Entry<String, Map<String, Muscle>>> child = (parentPair.getValue()).entrySet().iterator();
                 while (child.hasNext()) {
-                    Map.Entry childPair = child.next();
-                    System.out.println("childPair.getKey() :   " + childPair.getKey() + " childPair.getValue()  :  " + childPair.getValue());
-                    List<Muscle> mus = (List<Muscle>) childPair.getValue();
-                    list.addAll(mus);
-                    child.remove(); // avoids a ConcurrentModificationException
+
+                    Map.Entry<String, Map<String, Muscle>> ChildcarePair = child.next();
+
+                    Iterator<Map.Entry<String, Muscle>> childOfChild = (ChildcarePair.getValue()).entrySet().iterator();
+
+                    while (childOfChild.hasNext()) {
+                        Map.Entry c = childOfChild.next();
+                        Muscle muscle = (Muscle) c.getValue();
+                        list.add(muscle);
+                        Log.d(TAG, c.getValue() + "");
+                        childOfChild.remove();
+                    }
                 }
 
             }
 
-
-            //ArrayList list2 = muscleRepo.getMuscle("ARMS","");
+            MuscleRepo muscleRepo = new MuscleRepo();
+            muscleRepo.BulkMuscle(list);
+            ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
             Log.d(TAG, response.toString());
 
         }
