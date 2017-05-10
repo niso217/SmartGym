@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Graphs.DayAverageFragment;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.model.Exercise;
@@ -222,7 +223,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
                 setsRepo.BulkSets(mSet);
                 mSet.clear();
                 FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.containerView, new PrimaryFragment()).commitAllowingStateLoss();
+                fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
                 break;
 
         }

@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         else
         {
-            mCurrentFragment = new TabFragment();
+            mCurrentFragment = new DayAverageFragment();
             mFragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
         }
 
@@ -278,10 +278,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
         switch (item.getItemId()) {
-            case R.id.nav_item_inbox:
-                mCurrentFragment = new TabFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
-                break;
+//            case R.id.nav_item_inbox:
+//                mCurrentFragment = new TabFragment();
+//                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+//                break;
             case R.id.exercise:
                 StartExercise("");
                 //mCurrentFragment = new MuscleFragment();

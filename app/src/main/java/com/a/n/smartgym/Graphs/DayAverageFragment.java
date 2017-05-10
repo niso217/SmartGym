@@ -58,44 +58,48 @@ public class DayAverageFragment extends Fragment {
 
         ExactDataFromDB();
 
-        View view = inflater.inflate(R.layout.day_avg, container, false);
+        View view = inflater.inflate(R.layout.day_avrage_fragment, container, false);
 
-        SetupScreenComponents(view, getResources().getConfiguration().orientation);
+        //SetupScreenComponents(view, getResources().getConfiguration().orientation);
+
+        GetIdPortrait(view);
+        setEvents();
+        extractData1();
 
         return view;
     }
 
 
-    private void SetupScreenComponents(View view, int orientation) {
+//    private void SetupScreenComponents(View view, int orientation) {
+//
+//
+//        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            GetIdPortrait(view);
+//            setEvents();
+//            extractData1();
+//        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+//            GetIdLandscape(view);
+//            extractData3();
+//
+//        }
+//    }
 
 
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            GetIdPortrait(view);
-            setEvents();
-            extractData1();
-        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            GetIdLandscape(view);
-            extractData3();
-
-        }
-    }
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        LayoutInflater inflater = LayoutInflater.from(getActivity());
+//        populateViewForOrientation(inflater, (ViewGroup) getView(), newConfig);
+//    }
 
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        populateViewForOrientation(inflater, (ViewGroup) getView(), newConfig);
-    }
-
-
-    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup, Configuration newConfig) {
-
-        viewGroup.removeAllViewsInLayout();
-        View subview = inflater.inflate(R.layout.day_avg, viewGroup);
-
-        SetupScreenComponents(subview, newConfig.orientation);
-    }
+//    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup, Configuration newConfig) {
+//
+//        viewGroup.removeAllViewsInLayout();
+//        View subview = inflater.inflate(R.layout.day_avg, viewGroup);
+//
+//        SetupScreenComponents(subview, newConfig.orientation);
+//    }
 
 
     private BarData generateData(Iterator<Map.Entry<String, Double>> child) {

@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.a.n.smartgym.BLE.DeviceScanActivity;
 import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.repo.UserRepo;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,9 +34,16 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
         super.onStop();
     }
 
+    private void startBLEScanActivity() {
+        Log.d(TAG, "StartBLEScanActivity calling startActivity()");
+        Intent activityIntent = new Intent(this, DeviceScanActivity.class);
+        startActivity(activityIntent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //startBLEScanActivity();
         setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
     }

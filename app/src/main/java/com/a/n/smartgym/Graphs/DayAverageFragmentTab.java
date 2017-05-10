@@ -36,6 +36,7 @@ public class DayAverageFragmentTab extends Fragment {
     ArrayList<DailyAverage> mDailyAverage;
     BarChart mBarChart;
     LineChart mLineChart;
+    String [] lables;
     private static final String TAG = DayAverageFragmentTab.class.getSimpleName();
 
 
@@ -48,11 +49,29 @@ public class DayAverageFragmentTab extends Fragment {
         Bundle bundle = getArguments();
         date = bundle.getString("date");
         mDailyAverage = bundle.getParcelableArrayList("data");
+        setLabelArray();
         getIDs(view);
         setEvents();
         setData_BarChart();
 
         return view;
+    }
+
+    private void setLabelArray() {
+        int size = mDailyAverage.size();
+        lables = new String [size];
+        for (int i = 0; i < size; i++) {
+            lables[i] = mDailyAverage.get(i).getMachine_name();
+        }
+    }
+
+    private String shortcut(String word){
+        String ans = "";
+        String [] arr = word.split("(?<=[\\S])[\\S]*\\s*");
+        for (String a : arr){
+            ans += a.toUpperCase();
+        }
+        return ans;
     }
 
     @Override
@@ -70,7 +89,7 @@ public class DayAverageFragmentTab extends Fragment {
             public String getFormattedValue(float value, AxisBase axis) {
                 int val = (int) value;
                 if (val<=mDailyAverage.size())
-                return mDailyAverage.get(val-1).getMachine_name();
+                return shortcut(mDailyAverage.get(val-1).getMachine_name());
 
                 return "";
             }
@@ -106,7 +125,7 @@ public class DayAverageFragmentTab extends Fragment {
             mBarChart.getData().notifyDataChanged();
             mBarChart.notifyDataSetChanged();
         } else {
-            set1 = new BarDataSet(yVals1, "");
+            set1 = new BarDataSet(yVals1, null);
             set1.setColors(ColorTemplate.VORDIPLOM_COLORS);
             set1.setBarShadowColor(Color.rgb(203, 203, 203));
             ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
@@ -119,10 +138,19 @@ public class DayAverageFragmentTab extends Fragment {
             mBarChart.getDescription().setEnabled(false);
             mBarChart.setFitBars(true);
             mBarChart.setData(data);
+            mBarChart.getLegend().setEnabled(false);
         }
 
-        Legend l = mBarChart.getLegend();
-        l.setEnabled(false);
+
+//        Legend l = mBarChart.getLegend();
+//        l.setExtra(ColorTemplate.VORDIPLOM_COLORS, lables);
+//        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+//        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+//        l.setOrientation(Legend.LegendOrientation.VERTICAL);
+//        l.setDrawInside(false);
+//        l.setXEntrySpace(7f);
+//        l.setYEntrySpace(0f);
+//        l.setYOffset(0f);
 
     }
 

@@ -61,14 +61,7 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_barchart, null);
             holder.chart = (BarChart) convertView.findViewById(R.id.chart);
 
-            legend = holder.chart.getLegend();
-            legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-            legend.setOrientation(Legend.LegendOrientation.VERTICAL);
-            legend.setDrawInside(false);
-            legend.setXEntrySpace(7f);
-            legend.setYEntrySpace(0f);
-            legend.setYOffset(0f);
+
 
             holder.mTextView = (TextView) convertView.findViewById(R.id.title);
             convertView.setTag(holder);
@@ -127,9 +120,9 @@ public class ChartDataAdapter extends ArrayAdapter<BarData> {
 
 
 
-        String[] stockArr = new String[labels.get(pos).size()];
-        stockArr = (String[]) labels.get(pos).toArray(stockArr);
-        legend.setExtra(ColorTemplate.VORDIPLOM_COLORS, stockArr);
+//        String[] stockArr = new String[labels.get(pos).size()];
+//        stockArr = (String[]) labels.get(pos).toArray(stockArr);
+//        legend.setExtra(ColorTemplate.VORDIPLOM_COLORS, stockArr);
 
         holder.mTextView.setText(titles.get(pos));
 
