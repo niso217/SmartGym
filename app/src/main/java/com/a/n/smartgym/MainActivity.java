@@ -36,7 +36,9 @@ import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.Objects.NFCResult;
 import com.a.n.smartgym.Utils.Constance;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
+import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
+import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
@@ -81,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MuscleRepo muscleRepo = new MuscleRepo();
+        ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -406,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void StartExercise(String Tagid){
 
-        NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
+        //NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
 
         //create new visit
         VisitsRepo visitsRepo = new VisitsRepo();
@@ -428,8 +433,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new MuscleFragment();
         }
         else{
-            bundle.putString("group", nfcTag.getMuscle());
-            bundle.putInt("index", nfcTag.getIndex());
+            MuscleRepo muscleRepo = new MuscleRepo();
+            Muscle ex = muscleRepo.getExerciseByID(Tagid);
+            bundle.putParcelable("muscle",ex);
             mCurrentFragment = new ExercisesFragment();
         }
         mCurrentFragment.setArguments(bundle);

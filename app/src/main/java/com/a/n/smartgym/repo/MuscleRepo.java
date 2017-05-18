@@ -139,6 +139,38 @@ public class MuscleRepo {
 
     }
 
+
+    public Muscle getExerciseByID(String id){
+        Muscle muscle = new Muscle();
+        ArrayList<Muscle> muscleArrayList = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT * "
+                + " FROM " + Muscle.TABLE
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                muscle.setId(cursor.getString(cursor.getColumnIndex(Muscle.KEY_ID)));
+                muscle.setMuscle(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE)));
+                muscle.setMain(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MAIN)));
+                muscle.setSecondary(cursor.getString(cursor.getColumnIndex(Muscle.KEY_SECONDARY)));
+                muscle.setName(cursor.getString(cursor.getColumnIndex(Muscle.KEY_NAME)));
+                muscle.setImage(cursor.getString(cursor.getColumnIndex(Muscle.KEY_IMAGE)));
+                muscle.setDescription(cursor.getString(cursor.getColumnIndex(Muscle.KEY_DESCRIPTION)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return muscle;
+
+    }
+
     public Hashtable<String,String> getMainMuscle(){
         Hashtable<String,String> keyValue = new Hashtable<>();
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();

@@ -32,7 +32,7 @@ public class App extends Application {
     private RequestQueue requestQueue;
     private static final String TAG = Application.class.getSimpleName();
 
-    private static final String ENDPOINT = "https://api.myjson.com/bins/14q51t";
+    private static final String ENDPOINT = "https://api.myjson.com/bins/gmvr5";
 
 
     private Gson gson;
@@ -90,6 +90,8 @@ public class App extends Application {
             MuscleRepo muscleRepo = new MuscleRepo();
             muscleRepo.BulkMuscle(list);
             ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
+
+
             Log.d(TAG, response.toString());
 
         }
