@@ -4,6 +4,8 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
@@ -40,6 +42,7 @@ import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
+import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -53,6 +56,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.List;
@@ -186,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onNewIntent(Intent intent) {
+        //FacebookSdk.sdkInitialize(this);
         handleIntent(intent);
     }
 
@@ -197,15 +202,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (MIME_TEXT_PLAIN.equals(type)) {
 
                 Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                try {
-                    String str = new NdefReaderTask().execute(tag).get();
-                    StartExercise(str);
-                    Log.d(TAG,str);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+
+                    StartExercise(tag);
 
             } else {
                 Log.d(TAG, "Wrong mime type: " + type);
@@ -225,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+
 
 
 
@@ -288,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
 //                break;
             case R.id.exercise:
-                StartExercise("");
+                //StartExercise("");
                 //mCurrentFragment = new MuscleFragment();
                 //fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
 
@@ -409,8 +408,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void StartExercise(String Tagid){
+    private void StartExercise(Tag tag){
 
+        String Tagid = "";
+        try {
+             Tagid = new NdefReaderTask().execute(tag).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         //NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
 
         //create new visit
@@ -431,21 +438,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (Tagid.isEmpty()){
             mCurrentFragment = new MuscleFragment();
+            mCurrentFragment.setArguments(bundle);
+            FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
         }
         else{
             MuscleRepo muscleRepo = new MuscleRepo();
             Muscle ex = muscleRepo.getExerciseByID(Tagid);
             bundle.putParcelable("muscle",ex);
+            bundle.putParcelable("tag",tag);
             mCurrentFragment = new ExercisesFragment();
+            mCurrentFragment.setArguments(bundle);
+            FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
         }
-        mCurrentFragment.setArguments(bundle);
 
 
-
-
-
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
     }
 
 }

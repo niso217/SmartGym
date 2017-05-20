@@ -1,8 +1,17 @@
 package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,20 +37,23 @@ import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
+import com.facebook.FacebookSdk;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import static android.content.Context.SENSOR_SERVICE;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-public class ExercisesFragment extends Fragment implements View.OnClickListener {
+public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
@@ -54,23 +67,31 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
     private long mSetStart, mSetEnd;
     private ImageView mImage;
     private SeekBar mSeekBar;
-    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter;
-    private EditText mWeight;
-
+    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter,mWeight;
+    long mAccelLast,mAccelCurrent;
+    double mAccel;
+    float [] mGravity;
+    private SensorManager sensorManager;
+    private boolean mBeenHere;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)  {
         super.onCreate(savedInstanceState);
-
         mAuth = FirebaseAuth.getInstance();
 
+
+//        sensorManager=(SensorManager) getContext().getSystemService(SENSOR_SERVICE);
+//        // add listener. The listener will be HelloAndroid (this) class
+//        sensorManager.registerListener(this,
+//                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+//                SensorManager.SENSOR_DELAY_NORMAL);
 
         mSet = new ArrayList<>();
 
 
     }
 
-    private void AddSet(Editable weight, long start, long end) {
+    private void AddSet(String weight, long start, long end) {
         Sets s1 = new Sets();
         s1.setSetid(UUID.randomUUID().toString());
         s1.setWeight(Integer.parseInt(String.valueOf(weight)));
@@ -93,7 +114,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
         mSecondaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_secondary_txt);
         mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
         mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
-        mWeight = (EditText) rootFragment.findViewById(R.id.tv_ex_weight_txt);
+        mWeight = (TextView) rootFragment.findViewById(R.id.tv_ex_weight_txt);
         mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
 
         Random r = new Random();
@@ -126,7 +147,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
                                 Counter++;
                                 mSetEnd = System.currentTimeMillis();
                                 arr = new boolean[mSeekBar.getMax()];
-                                AddSet(mWeight.getText(), mSetStart, mSetEnd);
+                                AddSet(mWeight.getText().toString(), mSetStart, mSetEnd);
                                 mCounter.setText(Counter + "");
 
                             } else {
@@ -154,13 +175,22 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
             Muscle current = getArguments().getParcelable("muscle");
+            Tag tag = getArguments().getParcelable("tag");
+            getMessagesFromTag(tag);
+
+
 
             if (current != null) {
-                Picasso.with(getApplicationContext()).load(current.getImage()).into(mImage);
-                mName.setText(current.getName());
-                mPrimaryMuscle.setText(current.getMain());
-                mSecondaryMuscle.setText(current.getSecondary());
-                mInstruction.setText(current.getDescription());
+                try {
+                    mName.setText(current.getName());
+                    mPrimaryMuscle.setText(current.getMain());
+                    mSecondaryMuscle.setText(current.getSecondary());
+                    mInstruction.setText(current.getDescription());
+                    Picasso.with(getContext()).load(current.getImage()).into(mImage);
+                }
+                catch (Exception e){
+                    Log.d(TAG,e.getMessage());
+                }
 
             }
 
@@ -219,14 +249,93 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener 
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_ex_finish:
-                SetsRepo setsRepo = new SetsRepo(getContext());
-                setsRepo.BulkSets(mSet);
-                mSet.clear();
-                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
+                finishExersise();
                 break;
 
         }
     }
 
+    private void getMessagesFromTag(final Tag tag) {
+
+        new Thread(new Runnable() {
+            public void run() {
+                Ndef ndef = Ndef.get(tag);
+
+                try {
+                    while (true) {
+                        try {
+                            Thread.sleep(3000);
+
+                            ndef.connect();
+                            NdefMessage msg = ndef.getNdefMessage();
+
+                            // TODO: do something
+
+                        } catch (IOException e) {
+                            Log.d(TAG,"tag is gone");
+                            finishExersise();
+                            // if the tag is gone we might want to end the thread:
+                            break;
+                        } catch (FormatException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                ndef.close();
+                            } catch (Exception e) {}
+                        }
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        }).start();
+    }
+
+    private void finishExersise() {
+        SetsRepo setsRepo = new SetsRepo(getContext());
+        setsRepo.BulkSets(mSet);
+        mSet.clear();
+        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        try {
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                mGravity = event.values.clone();
+                // Shake detection
+                float x = mGravity[0];
+                float y = mGravity[1];
+                float z = mGravity[2];
+
+                //Log.d("TYPE_ACCELEROMETER","x " + x );
+                // Log.d("TYPE_ACCELEROMETER","y " + y );
+                // Log.d("TYPE_ACCELEROMETER","z " + z );
+
+
+
+                float yAbs = Math.abs(mGravity[1]);
+
+                mAccelLast = mAccelCurrent;
+                mAccelCurrent = (long)Math.sqrt(x * x + y * y + z * z);
+                float delta = mAccelCurrent - mAccelLast;
+                mAccel = mAccel * 0.9f + delta;
+
+                if (yAbs > 3.0 && !mBeenHere) {
+                    mBeenHere = true;
+                    Log.d("TYPE_ACCELEROMETER","===alert===");
+                    Log.d("TYPE_ACCELEROMETER",yAbs +"");
+                    finishExersise();
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }
