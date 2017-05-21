@@ -43,8 +43,8 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //startBLEScanActivity();
-        setContentView(R.layout.activity_login);
+        startBLEScanActivity();
+        //setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
     }
 
