@@ -102,7 +102,7 @@ public class BluetoothLeService extends Service {
 //                mBluetoothGatt = gatt;
 //                List<BluetoothGattService> services = gatt.getServices();
 //                Log.i("onServicesDiscovered", services.toString());
-//                BluetoothGattCharacteristic therm_char = services.get(4).getCharacteristics().get(0);
+//                BluetoothGattCharacteristic therm_char = services.get(2).getCharacteristics().get(0);
 //
 //                for (BluetoothGattDescriptor descriptor : therm_char.getDescriptors()) {
 //                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -185,7 +185,7 @@ public class BluetoothLeService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
+        public BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
     }

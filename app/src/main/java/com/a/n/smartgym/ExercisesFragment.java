@@ -53,7 +53,7 @@ import java.util.UUID;
 import static android.content.Context.SENSOR_SERVICE;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
+        public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
@@ -338,4 +338,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    public  void getMessage(String msg){
+        Log.d(TAG,msg);
+    }
+
+
 }
