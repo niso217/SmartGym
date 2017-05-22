@@ -35,6 +35,9 @@ import android.os.IBinder;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,8 +70,6 @@ public class BluetoothLeService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
-    public final static UUID UUID_HEART_RATE_MEASUREMENT =
-            UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
     private Integer mHeartRateForArtikCloud = null;
 
@@ -99,16 +100,15 @@ public class BluetoothLeService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
 
-//                mBluetoothGatt = gatt;
-//                List<BluetoothGattService> services = gatt.getServices();
-//                Log.i("onServicesDiscovered", services.toString());
-//                BluetoothGattCharacteristic therm_char = services.get(2).getCharacteristics().get(0);
-//
-//                for (BluetoothGattDescriptor descriptor : therm_char.getDescriptors()) {
-//                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-//                    mBluetoothGatt.writeDescriptor(descriptor);
-//                }
-//                gatt.setCharacteristicNotification(therm_char, true);
+                List<BluetoothGattService> services = gatt.getServices();
+                Log.i("onServicesDiscovered", services.toString());
+                BluetoothGattCharacteristic therm_char = services.get(2).getCharacteristics().get(0);
+
+                for (BluetoothGattDescriptor descriptor : therm_char.getDescriptors()) {
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
+                gatt.setCharacteristicNotification(therm_char, true);
 
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
 
@@ -142,47 +142,21 @@ public class BluetoothLeService extends Service {
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
 
-        // This is special handling for the Heart Rate Measurement profile.  Data parsing is
-        // carried out as per profile specifications:
-        // http://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-            int flag = characteristic.getProperties();
-            int format = -1;
-            if ((flag & 0x01) != 0) {
-                format = BluetoothGattCharacteristic.FORMAT_UINT16;
-                Log.d(TAG, "Heart rate format UINT16.");
-            } else {
-                format = BluetoothGattCharacteristic.FORMAT_UINT8;
-                Log.d(TAG, "Heart rate format UINT8.");
-            }
-            final int heartRate = characteristic.getIntValue(format, 1);
-            Log.d(TAG, String.format("Received heart rate: %d", heartRate));
+        String x = "";
+        final byte[] data = characteristic.getValue();
+        try {
+             x = new String(data, "UTF-8");
+            Log.d("onCharacteristicChanged", x);
 
-            intent.putExtra(EXTRA_DATA, String.valueOf(heartRate));
-            sendBroadcast(intent);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
 
-            mHeartRateForArtikCloud = heartRate;
-
-            sendHeartRateToArtikCloud();
         }
-        // Comment out the original code that sends other measurement data to UI so that
-        // only heart rate data is sent to UI and then to ARTIK Cloud
-        else {
-            // For all other profiles, writes the data formatted in HEX.
-            Log.d(TAG, "broadcastUpdate(action, characteristic): characteristics.getUuid = " + characteristic.getUuid());
-
-            final byte[] data = characteristic.getValue();
-            if (data != null && data.length > 0) {
-                final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for(byte byteChar : data)
-                    stringBuilder.append(String.format("%02X ", byteChar));
-            }
-            intent.putExtra(EXTRA_DATA, data[0] +"");
+            intent.putExtra(EXTRA_DATA, x +"");
 
             sendBroadcast(intent);
         }
 
-    }
 
     public class LocalBinder extends Binder {
         public BluetoothLeService getService() {
@@ -314,28 +288,6 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
-    /**
-     * Enables or disables notification on a give characteristic.
-     *
-     * @param characteristic Characteristic to act on.
-     * @param enabled If true, enable notification.  False otherwise.
-     */
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
-                                              boolean enabled) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
-            return;
-        }
-        mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-
-        // This is specific to Heart Rate Measurement.
-       // if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic.getUuid())) {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.BATTERY_LEVEL_UUID));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
-       // }
-    }
 
     /**
      * Retrieves a list of supported GATT services on the connected device. This should be

@@ -51,9 +51,6 @@
 
         <activity android:name=".barcode.BarcodeCaptureActivity"></activity>
 
-        <activity android:name=".BLE.DeviceScanActivity"/>
-
-        <activity android:name=".BLE.DeviceControlActivity"/>
         <service android:name=".BLE.BluetoothLeService" android:enabled="true"/>
 
 

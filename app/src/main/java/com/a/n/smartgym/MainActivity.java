@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
     }
 
-    private void ScanBLE(){
+    private void ScanBLE() {
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -264,12 +264,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         super.onDestroy();
 
-        unbindService(mServiceConnection);
-        mBluetoothLeService = null;
-
         if (mGatt == null) {
             return;
         }
+
+        if (mServiceConnection != null)
+            unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+
+
         mGatt.close();
 
         mGatt = null;
@@ -557,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new MuscleFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment,"current").commitAllowingStateLoss();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "current").commitAllowingStateLoss();
         } else {
             MuscleRepo muscleRepo = new MuscleRepo();
             Muscle ex = muscleRepo.getExerciseByID(Tagid);
@@ -566,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new ExercisesFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment,"current").commit();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "current").commit();
         }
 
 
@@ -599,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     };
 
     private void scanLeDevice(final boolean enable) {
-        if (mLEScanner==null){
+        if (mLEScanner == null) {
             ScanBLE();
         }
         if (enable) {
@@ -637,8 +640,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             BluetoothDevice btDevice = result.getDevice();
             mDeviceName = btDevice.getName();
             mDeviceAddress = btDevice.getAddress();
-            if (mDeviceName.equals("G07214"))
-            connectToDevice(btDevice);
+            if (mDeviceName.equals("GYM1"))
+                connectToDevice(btDevice);
         }
 
         @Override
@@ -678,41 +681,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.i("onConnectionStateChange", "Status: " + status);
-            switch (newState) {
-                case BluetoothProfile.STATE_CONNECTED:
-                    Log.i("gattCallback", "STATE_CONNECTED");
-                    gatt.discoverServices();
-                    break;
-                case BluetoothProfile.STATE_DISCONNECTED:
-                    Log.e("gattCallback", "STATE_DISCONNECTED");
-                    break;
-                default:
-                    Log.e("gattCallback", "STATE_OTHER");
-            }
-
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            List<BluetoothGattService> services = gatt.getServices();
-            Log.i("onServicesDiscovered", services.toString());
-            gatt.readCharacteristic(services.get(1).getCharacteristics().get
-                    (0));
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic
-                                                 characteristic, int status) {
-            Log.i("onCharacteristicRead", characteristic.toString());
-            gatt.disconnect();
-        }
-    };
-
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -726,7 +694,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
-                StartNotification();
                 StartExercise(mTag);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
@@ -735,32 +702,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 //DATA!
                 //displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                ExercisesFragment fragment = (ExercisesFragment)mCurrentFragment;
+                ExercisesFragment fragment = (ExercisesFragment) mCurrentFragment;
                 fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
     };
 
-    private void StartNotification(){
-        List<BluetoothGattService> services = mBluetoothLeService.getSupportedGattServices();
-        BluetoothGattCharacteristic characteristic = services.get(4).getCharacteristics().get(0);
-        final int charaProp = characteristic.getProperties();
-        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-            // If there is an active notification on a characteristic, clear
-            // it first so it doesn't update the data field on the user interface.
-            if (mNotifyCharacteristic != null) {
-                mBluetoothLeService.setCharacteristicNotification(
-                        mNotifyCharacteristic, false);
-                mNotifyCharacteristic = null;
-            }
-            mBluetoothLeService.readCharacteristic(characteristic);
-        }
-        if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-            mNotifyCharacteristic = characteristic;
-            mBluetoothLeService.setCharacteristicNotification(
-                    characteristic, true);
-        }
-    }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();

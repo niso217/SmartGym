@@ -341,6 +341,8 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
     public  void getMessage(String msg){
         Log.d(TAG,msg);
+        mWeight.setText(msg + "");
+
     }
 
 
