@@ -129,7 +129,10 @@ public class BluetoothLeService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            if (gatt.getDevice().getName().equals("niso217"))
+                broadcastUpdateDebug(ACTION_DATA_AVAILABLE, characteristic);
+            else
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
     };
 
@@ -145,17 +148,27 @@ public class BluetoothLeService extends Service {
         String x = "";
         final byte[] data = characteristic.getValue();
         try {
-             x = new String(data, "UTF-8");
+            x = new String(data, "UTF-8");
             Log.d("onCharacteristicChanged", x);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
 
         }
-            intent.putExtra(EXTRA_DATA, x +"");
+        intent.putExtra(EXTRA_DATA, x + "");
 
-            sendBroadcast(intent);
-        }
+        sendBroadcast(intent);
+    }
+
+    private void broadcastUpdateDebug(final String action,
+                                      final BluetoothGattCharacteristic characteristic) {
+        final Intent intent = new Intent(action);
+
+        final byte[] data = characteristic.getValue();
+        intent.putExtra(EXTRA_DATA, data[0] + "");
+
+        sendBroadcast(intent);
+    }
 
 
     public class LocalBinder extends Binder {
@@ -209,11 +222,10 @@ public class BluetoothLeService extends Service {
      * Connects to the GATT server hosted on the Bluetooth LE device.
      *
      * @param address The device address of the destination device.
-     *
      * @return Return true if the connection is initiated successfully. The connection result
-     *         is reported asynchronously through the
-     *         {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
-     *         callback.
+     * is reported asynchronously through the
+     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
+     * callback.
      */
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {

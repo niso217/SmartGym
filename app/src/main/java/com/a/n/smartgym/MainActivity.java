@@ -640,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             BluetoothDevice btDevice = result.getDevice();
             mDeviceName = btDevice.getName();
             mDeviceAddress = btDevice.getAddress();
-            if (mDeviceName.equals("GYM1"))
+            if (mDeviceName.equals("niso217"))
                 connectToDevice(btDevice);
         }
 
