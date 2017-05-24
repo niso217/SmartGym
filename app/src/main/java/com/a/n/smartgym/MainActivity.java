@@ -1,20 +1,9 @@
 package com.a.n.smartgym;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,12 +18,9 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -48,6 +34,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,7 +44,9 @@ import com.a.n.smartgym.Graphs.DayAverageFragment;
 import com.a.n.smartgym.Graphs.TrendAverageFragment;
 import com.a.n.smartgym.Graphs.UsageAverageFragment;
 import com.a.n.smartgym.Graphs.VisitsFragment;
+import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
+import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.Objects.NFCResult;
@@ -83,15 +72,14 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+@TargetApi(21)
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener, BluetoothListener {
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
     FragmentManager mFragmentManager;
@@ -105,36 +93,56 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private PendingIntent mPendingIntent;
     private IntentFilter[] mFilters;
     private String[][] mTechLists;
-    private int mCount = 0;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
-    private Gson gson;
-    private BluetoothAdapter mBluetoothAdapter;
     private int REQUEST_ENABLE_BT = 1;
-    private Handler mHandler;
-    private static final long SCAN_PERIOD = 10000;
-    private BluetoothLeScanner mLEScanner;
-    private ScanSettings settings;
-    private List<ScanFilter> filters;
-    private BluetoothGatt mGatt;
-    private Tag mTag;
-    private String mDeviceName;
-    private String mDeviceAddress;
+    private Button mStart, mEnd, mConnection;
+    private TextView mValue, mConnectionState;
+    private BluetoothScanner mBluetoothScanner;
+    private BluetoothLeService mBluetoothLeService;
+    private BluetoothDevice mBluetoothDevice;
+    private boolean mConnectionStatus;
+
+    // Code to manage Service lifecycle.
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE Not Supported",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
-        InitBluetooth();
+        mBluetoothScanner = new BluetoothScanner(this);
+
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         MuscleRepo muscleRepo = new MuscleRepo();
         ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
 
         mAuth = FirebaseAuth.getInstance();
-
-        gson = new Gson();
 
         InitializeGoogleApiClient();
 
@@ -180,23 +188,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         handleIntent(getIntent());
 
 
-        //insertSampleData();
-        //StartExercise();
 
 
-    }
 
-
-    private void InitBluetooth() {
-        mHandler = new Handler();
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "BLE Not Supported",
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        }
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
     }
 
     @Override
@@ -205,81 +199,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
     }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        } else {
-            if (Build.VERSION.SDK_INT >= 21) {
-                mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                settings = new ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        .build();
-                filters = new ArrayList<ScanFilter>();
-            }
-            //scanLeDevice(true);
-        }
-
-        if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters,
-                mTechLists);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            scanLeDevice(false);
-        }
-        unregisterReceiver(mGattUpdateReceiver);
-
-        if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
-    }
-
-    private void ScanBLE() {
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        } else {
-            if (Build.VERSION.SDK_INT >= 21) {
-                mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                settings = new ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        .build();
-                filters = new ArrayList<ScanFilter>();
-            }
-            //scanLeDevice(true);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        super.onDestroy();
-
-        if (mGatt == null) {
-            return;
-        }
-
-        if (mServiceConnection != null)
-            unbindService(mServiceConnection);
-        mBluetoothLeService = null;
-
-
-        mGatt.close();
-
-        mGatt = null;
-
-
-    }
-
 
     private void nfc() {
         mAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -303,8 +222,85 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        mBluetoothScanner.setListener(this);
+        mBluetoothScanner.scanLeDevice(true);
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+//        if (mBluetoothLeService != null) {
+//            final boolean result = mBluetoothLeService.connect(mBluetoothDevice.getAddress());
+//            Log.d(TAG, "Connect request result=" + result);
+//        }
+
+        if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters,
+                mTechLists);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mBluetoothScanner.getBluetoothAdapter() != null && mBluetoothScanner.getBluetoothAdapter().isEnabled()) {
+            mBluetoothScanner.scanLeDevice(false);
+            mBluetoothScanner.setListener(null);
+        }
+        unregisterReceiver(mGattUpdateReceiver);
+
+        if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
+
+    public void connectToDevice(BluetoothDevice device) {
+        mBluetoothLeService.connect(device.getAddress());
+        mBluetoothScanner.scanLeDevice(false);
+    }
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                //UpdateUi(mConnectionState,getString(R.string.connected));
+                mConnectionStatus = true;
+                //invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+               // UpdateUi(mConnectionState,getString(R.string.disconnected));
+                //invalidateOptionsMenu();
+                //clearUI();
+                mBluetoothLeService.setCharacteristicNotification(false);
+                mConnectionStatus = false;
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                //displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                mBluetoothLeService.setCharacteristicNotification(true);
+
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                Log.d(TAG,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                ExercisesFragment fragment = (ExercisesFragment)getSupportFragmentManager().findFragmentByTag("EX");
+                if (fragment!=null && fragment.isVisible())
+                {
+                    fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }
+              //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            }
+        }
+    };
+
+    @Override
     public void onNewIntent(Intent intent) {
-        //FacebookSdk.sdkInitialize(this);
         handleIntent(intent);
     }
 
@@ -315,8 +311,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String type = intent.getType();
             if (MIME_TEXT_PLAIN.equals(type)) {
 
-                mTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                scanLeDevice(true);
+                Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+                StartExercise(tag);
 
             } else {
                 Log.d(TAG, "Wrong mime type: " + type);
@@ -336,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+
 
     private void InitializeUserDetails() {
         //Initializing the header.xml data
@@ -389,7 +387,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.closeDrawers();
         Bundle arguments = new Bundle();
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-
 
         switch (item.getItemId()) {
 //            case R.id.nav_item_inbox:
@@ -478,7 +475,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Bluetooth not enabled.
@@ -486,46 +482,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return;
             }
         }
-
-        if (requestCode == BARCODE_READER_REQUEST_CODE) {
-            if (resultCode == CommonStatusCodes.SUCCESS) {
-                if (data != null) {
-                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    Point[] p = barcode.cornerPoints;
-                    //mResultTextView.setText(barcode.displayValue);
-
-                    //create new visit
-                    VisitsRepo visitsRepo = new VisitsRepo();
-                    String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
-                    if (uuid.isEmpty()) {
-                        Visits visits = new Visits();
-                        uuid = UUID.randomUUID().toString();
-                        visits.setVisitid(uuid);
-                        visits.setUserid(mAuth.getCurrentUser().getUid());
-                        visits.setDate(new Date(Calendar.getInstance().getTime().getTime()));
-                        visitsRepo.insert(visits);
-
-                    }
-
-
-                    Bundle bundle = new Bundle();
-                    bundle.putString("scanresult", barcode.displayValue);
-                    bundle.putString("uuid", uuid);
-
-                    Log.d(TAG, barcode.displayValue);
-                    ExercisesFragment fb = new ExercisesFragment();
-                    fb.setArguments(bundle);
-                    FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-                    fragmentTransaction.replace(R.id.containerView, fb).commitAllowingStateLoss();
-
-                } else
-                    Log.d(TAG, "No barcode captured");
-
-                //mResultTextView.setText(R.string.no_barcode_captured);
-            } else Log.e(TAG, String.format(getString(R.string.barcode_error_format),
-                    CommonStatusCodes.getStatusCodeString(resultCode)));
-        }
         super.onActivityResult(requestCode, resultCode, data);
+
     }
 
     private void StartExercise(Tag tag) {
@@ -560,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new MuscleFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "current").commitAllowingStateLoss();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
         } else {
             MuscleRepo muscleRepo = new MuscleRepo();
             Muscle ex = muscleRepo.getExerciseByID(Tagid);
@@ -569,145 +527,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new ExercisesFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "current").commit();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment,"EX").commit();
         }
 
 
     }
 
-    //============BLE=============
-
-    private BluetoothLeService mBluetoothLeService;
-    private boolean mConnected = false;
-    private BluetoothGattCharacteristic mNotifyCharacteristic;
-
-    // Code to manage Service lifecycle.
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-            if (!mBluetoothLeService.initialize()) {
-                Log.e(TAG, "Unable to initialize Bluetooth");
-                finish();
-            }
-            // Automatically connects to the device upon successful start-up initialization.
-            mBluetoothLeService.connect(mDeviceAddress);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBluetoothLeService = null;
-        }
-    };
-
-    private void scanLeDevice(final boolean enable) {
-        if (mLEScanner == null) {
-            ScanBLE();
-        }
-        if (enable) {
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT < 21) {
-                        mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    } else {
-                        mLEScanner.stopScan(mScanCallback);
-
-                    }
-                }
-            }, SCAN_PERIOD);
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.startScan(filters, settings, mScanCallback);
-            }
-        } else {
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.stopScan(mScanCallback);
-            }
-        }
+    @Override
+    public void DeviceAvailable(BluetoothDevice device) {
+        connectToDevice(mBluetoothDevice = device);
+        Log.d(TAG,"DeviceAvailable");
     }
-
-
-    private ScanCallback mScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            Log.i("callbackType", String.valueOf(callbackType));
-            Log.i("result", result.toString());
-            BluetoothDevice btDevice = result.getDevice();
-            mDeviceName = btDevice.getName();
-            mDeviceAddress = btDevice.getAddress();
-            if (mDeviceName.equals("niso217"))
-                connectToDevice(btDevice);
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
-        }
-    };
-
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi,
-                                     byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i("onLeScan", device.toString());
-                            connectToDevice(device);
-                        }
-                    });
-                }
-            };
-
-    public void connectToDevice(BluetoothDevice device) {
-        if (mGatt == null) {
-            Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-            bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-            //mGatt = device.connectGatt(this, false, gattCallback);
-            scanLeDevice(false);// will stop after first device detection
-        }
-    }
-
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
-
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-                StartExercise(mTag);
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Show all the supported services and characteristics on the user interface.
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                //DATA!
-                //displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                ExercisesFragment fragment = (ExercisesFragment) mCurrentFragment;
-                fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-            }
-        }
-    };
-
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();

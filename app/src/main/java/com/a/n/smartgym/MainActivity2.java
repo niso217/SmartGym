@@ -8,55 +8,58 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v7.app.ActionBarActivity;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.a.n.smartgym.BLE.BluetoothLeService;
+import com.a.n.smartgym.Helpers.BluetoothScanner;
+import com.a.n.smartgym.Listener.BluetoothListener;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 
 @TargetApi(21)
-public class MainActivity2 extends AppCompatActivity {
-    private BluetoothAdapter mBluetoothAdapter;
+public class MainActivity2 extends AppCompatActivity implements BluetoothListener {
     private int REQUEST_ENABLE_BT = 1;
-    private Handler mHandler;
-    private static final long SCAN_PERIOD = 20000;
-    private BluetoothLeScanner mLEScanner;
-    private ScanSettings settings;
-    private List<ScanFilter> filters;
-    private BluetoothGatt mGatt;
-    private BluetoothDevice mCurrentBluetoothDevice;
-    private BluetoothGattCharacteristic mBluetoothGattCharacteristic;
     private Button mStart, mEnd,mConnection;
-    private TextView mValue, mStatus;
-    private int mCurrentState;
+    private TextView mValue, mConnectionState;
+    private  BluetoothScanner mBluetoothScanner;
+    private static final String TAG = MainActivity2.class.getSimpleName().toString();
+    private BluetoothLeService mBluetoothLeService;
+    private BluetoothDevice mBluetoothDevice;
+
+
+
+    // Code to manage Service lifecycle.
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,118 +69,75 @@ public class MainActivity2 extends AppCompatActivity {
         mStart = (Button) findViewById(R.id.btn_start);
         mEnd = (Button) findViewById(R.id.btn_end);
         mValue = (TextView) findViewById(R.id.tv_val);
-        mStatus = (TextView) findViewById(R.id.tv_status);
+        mConnectionState = (TextView) findViewById(R.id.tv_status);
         mConnection = (Button) findViewById(R.id.btn_connect);
 
         mStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EnableCharacteristicNotification();
+                mBluetoothLeService.setCharacteristicNotification(true);
             }
         });
 
         mEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DisableCharacteristicNotification();
+                mBluetoothLeService.setCharacteristicNotification(false);
             }
         });
 
         mConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mGatt!=null){
-                    switch (mCurrentState){
-                        case BluetoothProfile.STATE_CONNECTED:
-                            DisableCharacteristicNotification();
-                            mGatt.disconnect();
-                            break;
-                        default:
-                            scanLeDevice(true);
-                            break;
-                    }
-
-                }
+                mBluetoothLeService.disconnect();
             }
         });
 
-
-        mHandler = new Handler();
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, "BLE Not Supported",
                     Toast.LENGTH_SHORT).show();
             finish();
         }
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        mBluetoothScanner = new BluetoothScanner(this);
+
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        } else {
-            if (Build.VERSION.SDK_INT >= 21) {
-
-                ScanFilter scanFilter = new ScanFilter.Builder()
-                        .setDeviceName("niso217")
-                        .build();
-                mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                settings = new ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-                        .build();
-                filters = new ArrayList<>();
-                filters.add(scanFilter);
-            }
-            scanLeDevice(true);
+        mBluetoothScanner.setListener(this);
+        mBluetoothScanner.scanLeDevice(true);
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mBluetoothDevice.getAddress());
+            Log.d(TAG, "Connect request result=" + result);
         }
 
-        //scan specified devices only with ScanFilter
-
-
-        ScanSettings scanSettings =
-                new ScanSettings.Builder().build();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            scanLeDevice(false);
+        if (mBluetoothScanner.getBluetoothAdapter() != null && mBluetoothScanner.getBluetoothAdapter().isEnabled()) {
+            mBluetoothScanner.scanLeDevice(false);
+            mBluetoothScanner.setListener(null);
         }
+        unregisterReceiver(mGattUpdateReceiver);
     }
+
+
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if (mGatt == null) {
-            return;
-        }
-        mGatt.close();
-        mGatt = null;
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
     }
 
-    private void DisableCharacteristicNotification() {
-
-        for (BluetoothGattDescriptor descriptor : mBluetoothGattCharacteristic.getDescriptors()) {
-            descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-            mGatt.writeDescriptor(descriptor);
-        }
-        mGatt.setCharacteristicNotification(mBluetoothGattCharacteristic, false);
-    }
-
-    private void EnableCharacteristicNotification() {
-        for (BluetoothGattDescriptor descriptor : mBluetoothGattCharacteristic.getDescriptors()) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mGatt.writeDescriptor(descriptor);
-        }
-        mGatt.setCharacteristicNotification(mBluetoothGattCharacteristic, true);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -191,155 +151,42 @@ public class MainActivity2 extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT < 21) {
-                        mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    } else {
-                        mLEScanner.stopScan(mScanCallback);
 
-                    }
-                }
-            }, SCAN_PERIOD);
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.startScan(filters, settings, mScanCallback);
-            }
-        } else {
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.stopScan(mScanCallback);
-            }
-        }
-    }
-
-
-    private ScanCallback mScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            Log.i("callbackType", String.valueOf(callbackType));
-            Log.i("result", result.toString());
-            BluetoothDevice btDevice = result.getDevice();
-            Log.d("result", btDevice.getName());
-            if (btDevice.getName().equals("niso217")) {
-                mCurrentBluetoothDevice = btDevice;
-                connectToDevice(btDevice);
-
-            }
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
-        }
-    };
-
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi,
-                                     byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i("onLeScan", device.toString());
-                            connectToDevice(device);
-                        }
-                    });
-                }
-            };
 
     public void connectToDevice(BluetoothDevice device) {
-        mGatt = device.connectGatt(this, false, gattCallback);
-        scanLeDevice(false);
+        mBluetoothLeService.connect(device.getAddress());
+        mBluetoothScanner.scanLeDevice(false);
     }
 
-    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.i("onConnectionStateChange", "Status: " + status);
-            switch (newState) {
-                case BluetoothProfile.STATE_CONNECTED:
-                    Log.i("gattCallback", "STATE_CONNECTED");
-                    gatt.discoverServices();
-                    UpdateUi(mStatus, "CONNECTED");
-                    UpdateUi(mConnection,"DISCONNECT");
-                    break;
-                case BluetoothProfile.STATE_DISCONNECTED:
-                    if (status == 133) {
-                        mGatt.disconnect();
-                        connectToDevice(mCurrentBluetoothDevice);
-                    }
-                    UpdateUi(mStatus, "DISCONNECTED");
-                    Log.e("gattCallback", "STATE_DISCONNECTED");
-                    UpdateUi(mConnection,"CONNECT");
-                    break;
-                case BluetoothProfile.STATE_CONNECTING:
-                    Log.e("gattCallback", "STATE_CONNECTING");
-                    UpdateUi(mStatus, "CONNECTING");
-                    break;
-                default:
-                    Log.e("gattCallback", "STATE_OTHER");
-                    UpdateUi(mStatus, "OTHER");
-
-
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                UpdateUi(mConnectionState,getString(R.string.connected));
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                UpdateUi(mConnectionState,getString(R.string.disconnected));
+                //invalidateOptionsMenu();
+                //clearUI();
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                //displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                mBluetoothLeService.setCharacteristicNotification(true);
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
-            mCurrentState = newState;
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            List<BluetoothGattService> services = gatt.getServices();
-            Log.i("onServicesDiscovered", services.toString());
-            mBluetoothGattCharacteristic = services.get(2).getCharacteristics().get(0);
-
-
-        }
-
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic
-                                                 characteristic, int status) {
-            Log.i("onCharacteristicRead", characteristic.toString());
-            gatt.disconnect();
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt,
-                                            BluetoothGattCharacteristic characteristic) {
-            final byte[] data = characteristic.getValue();
-
-            if (gatt.getDevice().getName().equals("niso217")) {
-                Log.d("onCharacteristicChanged", data[0] + "");
-                UpdateUi(mValue, data[0] + "");
-
-            } else {
-                try {
-                    String x = new String(data, "UTF-8");
-                    Log.d("onCharacteristicChanged", x);
-
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-
-                }
-            }
-
-
         }
     };
+
+
+
 
     private void UpdateUi(final View view, final String str) {
 
@@ -351,7 +198,7 @@ public class MainActivity2 extends AppCompatActivity {
                         mValue.setText(str);
                         break;
                     case R.id.tv_status:
-                        mStatus.setText(str);
+                        mConnectionState.setText(str);
                         break;
                     case R.id.btn_connect:
                         mConnection.setText(str);
@@ -362,4 +209,18 @@ public class MainActivity2 extends AppCompatActivity {
 
     }
 
+    @Override
+    public void DeviceAvailable(BluetoothDevice device) {
+        connectToDevice(mBluetoothDevice = device);
+        Log.d(TAG,"DeviceAvailable");
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
 }

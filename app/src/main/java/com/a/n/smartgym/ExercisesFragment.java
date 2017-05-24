@@ -176,7 +176,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
             mUUID = UUID.randomUUID().toString();
             Muscle current = getArguments().getParcelable("muscle");
             Tag tag = getArguments().getParcelable("tag");
-            getMessagesFromTag(tag);
+            //getMessagesFromTag(tag);
 
 
 
