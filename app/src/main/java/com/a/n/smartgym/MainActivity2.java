@@ -37,6 +37,7 @@ public class MainActivity2 extends AppCompatActivity implements BluetoothListene
     private static final String TAG = MainActivity2.class.getSimpleName().toString();
     private BluetoothLeService mBluetoothLeService;
     private BluetoothDevice mBluetoothDevice;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
 
 
@@ -184,9 +185,6 @@ public class MainActivity2 extends AppCompatActivity implements BluetoothListene
             }
         }
     };
-
-
-
 
     private void UpdateUi(final View view, final String str) {
 

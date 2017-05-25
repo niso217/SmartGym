@@ -2,16 +2,19 @@ package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
+import android.net.Uri;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
@@ -19,10 +22,12 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -30,6 +35,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +57,7 @@ import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.Objects.NFCResult;
 import com.a.n.smartgym.Utils.Constance;
+import com.a.n.smartgym.Utils.PermissionsUtil;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
@@ -73,6 +80,7 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -102,6 +110,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private BluetoothLeService mBluetoothLeService;
     private BluetoothDevice mBluetoothDevice;
     private boolean mConnectionStatus;
+    final public static int REQUEST_CODE = 123;
+    public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
+    public static final String WRITE_EXTERNAL_STORAGE = "an" + "droid.permission.WRITE_EXTERNAL_STORAGE";
+    public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
 
     // Code to manage Service lifecycle.
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -126,6 +138,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AskForPermissions();
+
         setContentView(R.layout.activity_main);
 
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -175,9 +190,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNavigationView.setNavigationItemSelectedListener(this);
 
 
-        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.app_name,
                 R.string.app_name);
+
+
 
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
@@ -224,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
+
 
         mBluetoothScanner.setListener(this);
         mBluetoothScanner.scanLeDevice(true);
@@ -373,9 +391,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            mCurrentFragment = new SettingsFragment();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
         }
 
         return super.onOptionsItemSelected(item);
@@ -546,6 +567,151 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
+    }
+
+
+    private void AskForPermissions() {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                requestPermissions();
+            }
+        });
+    }
+
+    private void requestPermissions() {
+        List<String> unGranted = PermissionsUtil.getInstance(this).checkPermissions();
+        if (unGranted.size() != 0)
+            PermissionsUtil.getInstance(this).requestPermissions(unGranted, REQUEST_CODE);
+        else {
+            Log.d(TAG, "SetUpDisplayView requestPermissions");
+
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        List<String> unGranted = PermissionsUtil.getInstance(this).checkPermissionsRequest(permissions, grantResults);
+        switch (requestCode) {
+            //Confirm the result of which request to return
+            case REQUEST_CODE:
+                if (unGranted.size() == 0) {
+                    //All permissions have been granted
+                } else {
+                    Iterator<String> iterator = unGranted.iterator();
+                    PermissionResolver(iterator.next());
+                }
+                break;
+        }
+    }
+
+    private void PermissionResolver(String Permission) {
+        boolean messege = false;
+        String AlertMessege = "";
+        switch (Permission) {
+
+
+            case ACCESS_COARSE_LOCATION:
+                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+                AlertMessege = getResources().getString(R.string.request_location);
+                break;
+            case READ_EXTERNAL_STORAGE:
+                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.READ_EXTERNAL_STORAGE);
+                AlertMessege = getResources().getString(R.string.request_read_write);
+                break;
+            case WRITE_EXTERNAL_STORAGE:
+                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                AlertMessege = getResources().getString(R.string.request_read_write);
+                break;
+        }
+        if (messege) {
+            AlertDialog(AlertMessege);
+        } else {
+            //user has denied with `Never Ask Again`, go to settings
+            promptAppSettings();
+        }
+    }
+
+    private void AlertDialog(String message) {
+        //user denied without Never ask again, just show rationale explanation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.permission_denied));
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setNegativeButton(getResources().getString(R.string.re_try), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                requestPermissions();
+            }
+
+        });
+        builder.show();
+    }
+
+    private void promptAppSettings() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.permission_denied));
+        builder.setMessage(getResources().getString(R.string.please_fix));
+        builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                goToAppSettings();
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        builder.show();
+    }
+
+    private void promptLocationSettings() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.location_denied));
+        builder.setMessage(getResources().getString(R.string.location_fix));
+        builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                goLocationSettings();
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                finish();
+            }
+        });
+        builder.show();
+    }
+
+    private void goToAppSettings() {
+        Intent AppSettings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + this.getPackageName()));
+        AppSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        AppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        this.startActivity(AppSettings);
+        finish();
+    }
+
+    private void goLocationSettings() {
+        Intent LocationSettings = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        LocationSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        LocationSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        this.startActivity(LocationSettings);
+        finish();
     }
 
 }

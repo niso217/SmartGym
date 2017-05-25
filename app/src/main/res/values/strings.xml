@@ -86,5 +86,23 @@
     <string name="create_artikcloud_device_hint">You do not have a compatible device on ARTIK Cloud. Please create one</string>
     <string name="select_device">Please select a device on the list to use</string>
 
+    <string name="movies_categories_key">categoriesKey</string>
+    <string name="default_movies_categories">popular</string>
+
+    <!-- LogInActivity-->
+    <string name="permission_denied">Permission Denied</string>
+    <string name="re_try">RE-TRY</string>
+    <string name="please_fix">Please fix Permissions manually</string>
+    <string name="go_settings">Go to settings</string>
+
+    <string name="location_denied">OpenSSME requires location</string>
+    <string name="location_fix">Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="request_read_write"> Read Write from external storage permission is necessary, Without this permission the app is unable to work properly</string>
+    <string name="request_location"> Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
+
+
+
 
 </resources>
