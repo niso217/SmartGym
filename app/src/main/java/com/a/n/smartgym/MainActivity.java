@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,12 +12,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Point;
 import android.net.Uri;
-import android.nfc.FormatException;
-import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
@@ -24,7 +24,9 @@ import android.nfc.tech.NfcF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -54,40 +56,46 @@ import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Objects.ExercisesDB;
-import com.a.n.smartgym.Objects.Muscles;
-import com.a.n.smartgym.Objects.NFCResult;
-import com.a.n.smartgym.Utils.Constance;
+import com.a.n.smartgym.Utils.Constants;
 import com.a.n.smartgym.Utils.PermissionsUtil;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
-import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStates;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @TargetApi(21)
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener, BluetoothListener {
+public class MainActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        GoogleApiClient.OnConnectionFailedListener,
+        GoogleApiClient.ConnectionCallbacks,
+        SettingsFragment.onSharedPreferenceChangedListener,
+        ExercisesFragment.onExercisesStatusListener,
+        View.OnClickListener,
+        BluetoothListener {
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
     FragmentManager mFragmentManager;
@@ -96,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int BARCODE_READER_REQUEST_CODE = 1;
     private FirebaseAuth mAuth;
     private FloatingActionButton fab;
-    private GoogleApiClient mGoogleApiClient;
     private NfcAdapter mAdapter;
     private PendingIntent mPendingIntent;
     private IntentFilter[] mFilters;
@@ -107,13 +114,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Button mStart, mEnd, mConnection;
     private TextView mValue, mConnectionState;
     private BluetoothScanner mBluetoothScanner;
+    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeService mBluetoothLeService;
     private BluetoothDevice mBluetoothDevice;
+    private String mBluetoothDeviceAddress;
     private boolean mConnectionStatus;
     final public static int REQUEST_CODE = 123;
-    public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
-    public static final String WRITE_EXTERNAL_STORAGE = "an" + "droid.permission.WRITE_EXTERNAL_STORAGE";
-    public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
+    final public static int REQUEST_CHECK_SETTINGS = 1;
+
+
+    private GoogleApiClient mGoogleApiClient;
+    private SharedPreferences sharedPreferences;
+    private String mCurrentMode;
 
     // Code to manage Service lifecycle.
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -125,8 +137,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up initialization.
-
         }
 
         @Override
@@ -138,41 +148,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "OnCreate");
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        setCurrentMode();
+
+        InitializeGoogleApiClient();
 
         AskForPermissions();
 
         setContentView(R.layout.activity_main);
 
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "BLE Not Supported",
-                    Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        setCurrentMode();
 
         mBluetoothScanner = new BluetoothScanner(this);
 
-        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
-        MuscleRepo muscleRepo = new MuscleRepo();
-        ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
-
         mAuth = FirebaseAuth.getInstance();
 
-        InitializeGoogleApiClient();
+        bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
+
+        ExercisesDB.getInstance().keys = new MuscleRepo().getMainMuscle();
 
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
         fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
-                startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
-            }
-        });
+        fab.setOnClickListener(this);
 
         mFragmentManager = getSupportFragmentManager();
         mFragmentTransaction = mFragmentManager.beginTransaction();
@@ -195,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 R.string.app_name);
 
 
-
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
         mDrawerToggle.syncState();
@@ -205,15 +206,81 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         handleIntent(getIntent());
 
 
+    }
+
+    private void setCurrentMode(){
+        if (sharedPreferences != null)
+            mCurrentMode = sharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
+    }
+
+    private void CheckBluetooth() {
+
+        if (BluetoothAdapter.getDefaultAdapter() == null || !getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE Not Supported",
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.getDefaultAdapter().ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
+        }
+    }
 
 
+    private void setLocation() {
+        LocationRequest mLocationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest)
+                .setNeedBle(true);
+
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                final LocationSettingsStates mLocationSettingsStates = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        Log.d(TAG, "LocationSettingsStatusCodes.SUCCESS");
+                        // All location settings are satisfied. The client can initialize location
+                        // requests here.
+                        CheckBluetooth();
+
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        Log.d(TAG, "LocationSettingsStatusCodes.RESOLUTION_REQUIRED");
+                        // Location settings are not satisfied. But could be fixed by showing the user
+                        // a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            Log.d(TAG, "startResolutionForResult");
+                            status.startResolutionForResult(
+                                    MainActivity.this,
+                                    REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        Log.d(TAG, "LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE");
+
+                        // Location settings are not satisfied. However, we have no way to fix the
+                        // settings so we won't show the dialog.
+
+                        break;
+                }
+            }
+        });
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
         getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
     }
 
@@ -242,14 +309,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
 
+        setCurrentMode();
 
+        Log.d(TAG, "Current Mode " + mCurrentMode);
         mBluetoothScanner.setListener(this);
-        mBluetoothScanner.scanLeDevice(true);
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-//        if (mBluetoothLeService != null) {
-//            final boolean result = mBluetoothLeService.connect(mBluetoothDevice.getAddress());
-//            Log.d(TAG, "Connect request result=" + result);
-//        }
 
         if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters,
                 mTechLists);
@@ -275,8 +339,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mBluetoothLeService = null;
     }
 
-    public void connectToDevice(BluetoothDevice device) {
-        mBluetoothLeService.connect(device.getAddress());
+    public void connectToDevice(String deviceAddress) {
+        final boolean result = mBluetoothLeService.connect(deviceAddress);
+        Log.d(TAG, "Connect request result=" + result);
         mBluetoothScanner.scanLeDevice(false);
     }
 
@@ -295,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mConnectionStatus = true;
                 //invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-               // UpdateUi(mConnectionState,getString(R.string.disconnected));
+                // UpdateUi(mConnectionState,getString(R.string.disconnected));
                 //invalidateOptionsMenu();
                 //clearUI();
                 mBluetoothLeService.setCharacteristicNotification(false);
@@ -306,13 +371,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 mBluetoothLeService.setCharacteristicNotification(true);
 
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                Log.d(TAG,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                ExercisesFragment fragment = (ExercisesFragment)getSupportFragmentManager().findFragmentByTag("EX");
-                if (fragment!=null && fragment.isVisible())
-                {
+                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("EX");
+                if (fragment != null && fragment.isVisible()) {
                     fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
                 }
-              //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
             }
         }
     };
@@ -447,6 +511,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void InitializeGoogleApiClient() {
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -455,7 +520,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
                 .build();
+
+        mGoogleApiClient.connect();
+
     }
 
     @Override
@@ -472,6 +543,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             super.onBackPressed();
         }
+        Log.d(TAG, "onBackPressed");
     }
 
     public void logout() {
@@ -503,6 +575,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return;
             }
         }
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    Log.d(TAG, "REQUEST_CHECK_SETTINGS: RESULT_OK");
+                    CheckBluetooth();
+                    break;
+                case Activity.RESULT_CANCELED:
+                    Log.d(TAG, "REQUEST_CHECK_SETTINGS: RESULT_CANCELED");
+                    // The user was asked to change settings, but chose not to
+
+                    break;
+                default:
+                    break;
+            }
+        }
         super.onActivityResult(requestCode, resultCode, data);
 
     }
@@ -517,6 +604,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+        Log.d(TAG,mCurrentMode + mBluetoothLeService);
+        if (mCurrentMode.equals(Constants.DEVICE_NAME)){
+            if (mBluetoothLeService != null) {
+                connectToDevice(mBluetoothDeviceAddress = Constants.GYM1_ADDRESS);
+
+            }
+        }
+        else
+            mBluetoothScanner.scanLeDevice(true);
+
         //NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
 
         //create new visit
@@ -548,7 +645,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mCurrentFragment = new ExercisesFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment,"EX").commit();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "EX").commit();
         }
 
 
@@ -556,8 +653,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void DeviceAvailable(BluetoothDevice device) {
-        connectToDevice(mBluetoothDevice = device);
-        Log.d(TAG,"DeviceAvailable");
+        connectToDevice(mBluetoothDeviceAddress = device.getAddress());
+        Log.d(TAG, "DeviceAvailable");
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -612,15 +709,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (Permission) {
 
 
-            case ACCESS_COARSE_LOCATION:
+            case Constants.ACCESS_COARSE_LOCATION:
                 messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
                 AlertMessege = getResources().getString(R.string.request_location);
                 break;
-            case READ_EXTERNAL_STORAGE:
+            case Constants.READ_EXTERNAL_STORAGE:
                 messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.READ_EXTERNAL_STORAGE);
                 AlertMessege = getResources().getString(R.string.request_read_write);
                 break;
-            case WRITE_EXTERNAL_STORAGE:
+            case Constants.WRITE_EXTERNAL_STORAGE:
                 messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 AlertMessege = getResources().getString(R.string.request_read_write);
                 break;
@@ -714,4 +811,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         finish();
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        setLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void isModeChanged(String mode) {
+        mBluetoothLeService.ChangeMode(mCurrentMode = mode);
+        Log.d(TAG, "Current Mode " + mCurrentMode);
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.fab:
+                Intent intent = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
+                startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
+                break;
+        }
+    }
+
+    @Override
+    public void isExercisesStatusChanged(boolean change) {
+        mBluetoothLeService.close();
+    }
 }

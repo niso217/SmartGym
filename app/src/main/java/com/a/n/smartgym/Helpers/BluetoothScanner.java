@@ -14,22 +14,14 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.content.Intent;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.Tag;
-import android.nfc.tech.Ndef;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.a.n.smartgym.Listener.BluetoothListener;
+import com.a.n.smartgym.Utils.Constants;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -47,7 +39,6 @@ public class BluetoothScanner {
     private ScanSettings settings;
     private List<ScanFilter> filters;
     private static final long SCAN_PERIOD = 10000;
-    private final static String EMULATOR_NAME = "niso217";
     private static final String TAG = BluetoothScanner.class.getSimpleName().toString();
     private BluetoothListener mBluetoothListener;
 
@@ -73,7 +64,7 @@ public class BluetoothScanner {
         if (Build.VERSION.SDK_INT >= 21) {
 
             ScanFilter scanFilter = new ScanFilter.Builder()
-                    .setDeviceName(EMULATOR_NAME)
+                    .setDeviceName(Constants.EMULATOR_NAME)
                     .build();
             mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
             settings = new ScanSettings.Builder()

@@ -1,34 +1,21 @@
 package com.a.n.smartgym;
 
-import android.content.Intent;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.ImageItem;
 import com.a.n.smartgym.Objects.ExercisesDB;
-import com.a.n.smartgym.Utils.Constance;
-import com.a.n.smartgym.repo.MuscleRepo;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.List;
-
-import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by Ratan on 7/29/2015.

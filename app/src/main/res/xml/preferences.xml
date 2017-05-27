@@ -4,9 +4,9 @@
 
     <ListPreference
         android:defaultValue="popular"
-        android:entries="@array/categories"
-        android:entryValues="@array/categories_value"
-        android:summary="Select categories of movies"
-        android:title="Categories"
-        android:key="@string/movies_categories_key" />
+        android:entries="@array/mode"
+        android:entryValues="@array/mode_value"
+        android:summary="Select Run Mode"
+        android:title="Run Mode"
+        android:key="@string/mode_key" />
 </PreferenceScreen>

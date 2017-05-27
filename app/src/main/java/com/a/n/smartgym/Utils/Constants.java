@@ -11,7 +11,7 @@ import java.util.Random;
  * Created by nirb on 03/05/2017.
  */
 
-public class Constance {
+public class Constants {
 
 
     public enum MuscleType {
@@ -41,5 +41,14 @@ public class Constance {
     public static MuscleType getRandom() {
         return MuscleType.values()[(int) (Math.random() * MuscleType.values().length)];
     }
+
+    public final static String EMULATOR_NAME = "niso217";
+    public final static String DEVICE_NAME = "GYM1";
+
+    public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
+    public static final String WRITE_EXTERNAL_STORAGE = "an" + "droid.permission.WRITE_EXTERNAL_STORAGE";
+    public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
+    public static final String GYM1_ADDRESS = "B8:27:EB:6B:29:BF";
+
 
 }

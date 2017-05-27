@@ -1,6 +1,7 @@
 package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -53,7 +54,7 @@ import java.util.UUID;
 import static android.content.Context.SENSOR_SERVICE;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-        public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
+public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
@@ -67,15 +68,18 @@ import static com.facebook.FacebookSdk.getApplicationContext;
     private long mSetStart, mSetEnd;
     private ImageView mImage;
     private SeekBar mSeekBar;
-    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter,mWeight;
-    long mAccelLast,mAccelCurrent;
+    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight;
+    long mAccelLast, mAccelCurrent;
     double mAccel;
-    float [] mGravity;
+    float[] mGravity;
     private SensorManager sensorManager;
     private boolean mBeenHere;
+    private Context activity;
+
+
 
     @Override
-    public void onCreate(Bundle savedInstanceState)  {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
 
@@ -89,6 +93,12 @@ import static com.facebook.FacebookSdk.getApplicationContext;
         mSet = new ArrayList<>();
 
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.activity = context;
     }
 
     private void AddSet(String weight, long start, long end) {
@@ -179,7 +189,6 @@ import static com.facebook.FacebookSdk.getApplicationContext;
             //getMessagesFromTag(tag);
 
 
-
             if (current != null) {
                 try {
                     mName.setText(current.getName());
@@ -187,9 +196,8 @@ import static com.facebook.FacebookSdk.getApplicationContext;
                     mSecondaryMuscle.setText(current.getSecondary());
                     mInstruction.setText(current.getDescription());
                     Picasso.with(getContext()).load(current.getImage()).into(mImage);
-                }
-                catch (Exception e){
-                    Log.d(TAG,e.getMessage());
+                } catch (Exception e) {
+                    Log.d(TAG, e.getMessage());
                 }
 
             }
@@ -205,6 +213,16 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
         }
         return rootFragment;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try{
+            ((onExercisesStatusListener) activity).isExercisesStatusChanged(true); //finisdhed
+        }catch (ClassCastException cce){
+
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
@@ -272,7 +290,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
                             // TODO: do something
 
                         } catch (IOException e) {
-                            Log.d(TAG,"tag is gone");
+                            Log.d(TAG, "tag is gone");
                             finishExersise();
                             // if the tag is gone we might want to end the thread:
                             break;
@@ -281,7 +299,8 @@ import static com.facebook.FacebookSdk.getApplicationContext;
                         } finally {
                             try {
                                 ndef.close();
-                            } catch (Exception e) {}
+                            } catch (Exception e) {
+                            }
                         }
                     }
                 } catch (InterruptedException e) {
@@ -313,18 +332,17 @@ import static com.facebook.FacebookSdk.getApplicationContext;
                 // Log.d("TYPE_ACCELEROMETER","z " + z );
 
 
-
                 float yAbs = Math.abs(mGravity[1]);
 
                 mAccelLast = mAccelCurrent;
-                mAccelCurrent = (long)Math.sqrt(x * x + y * y + z * z);
+                mAccelCurrent = (long) Math.sqrt(x * x + y * y + z * z);
                 float delta = mAccelCurrent - mAccelLast;
                 mAccel = mAccel * 0.9f + delta;
 
                 if (yAbs > 3.0 && !mBeenHere) {
                     mBeenHere = true;
-                    Log.d("TYPE_ACCELEROMETER","===alert===");
-                    Log.d("TYPE_ACCELEROMETER",yAbs +"");
+                    Log.d("TYPE_ACCELEROMETER", "===alert===");
+                    Log.d("TYPE_ACCELEROMETER", yAbs + "");
                     finishExersise();
 
                 }
@@ -339,10 +357,14 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
     }
 
-    public  void getMessage(String msg){
-        Log.d(TAG,msg);
+    public void getMessage(String msg) {
+        Log.d(TAG, msg);
         mWeight.setText(msg + "");
 
+    }
+
+    public interface onExercisesStatusListener {
+        public void isExercisesStatusChanged(boolean change);
     }
 
 

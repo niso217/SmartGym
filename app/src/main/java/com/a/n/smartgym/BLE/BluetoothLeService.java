@@ -29,9 +29,15 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.a.n.smartgym.R;
+import com.a.n.smartgym.SettingsFragment;
+import com.a.n.smartgym.Utils.Constants;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -65,8 +71,11 @@ public class BluetoothLeService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
-    public  boolean mIsCharacteristicNotificationOn;
+    public boolean mIsCharacteristicNotificationOn;
     public BluetoothGattCharacteristic mBluetoothGattCharacteristic;
+    private SharedPreferences mSharedPreferences;
+    private String mCurrentMode;
+
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -130,16 +139,48 @@ public class BluetoothLeService extends Service {
 
 
         final byte[] data = characteristic.getValue();
+        String val = "";
 
-        intent.putExtra(EXTRA_DATA, data[0] + "");
+        if (mCurrentMode.equals(Constants.EMULATOR_NAME)) {
+            val = data[0] + "";
+            intent.putExtra(EXTRA_DATA, val);
+
+        } else {
+            try {
+                val = new String(data, "UTF-8");
+                Log.d("onCharacteristicChanged", val);
+                
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+
+            }
+        }
+
+        intent.putExtra(EXTRA_DATA, val);
+
 
         sendBroadcast(intent);
     }
 
+
     public class LocalBinder extends Binder {
         public BluetoothLeService getService() {
+            setCurrentMode();
             return BluetoothLeService.this;
         }
+    }
+
+    public void ChangeMode(String mode) {
+        mCurrentMode = mode;
+        setCurrentMode();
+    }
+
+    private void setCurrentMode() {
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if (mSharedPreferences != null)
+            mCurrentMode = mSharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
+
+        Log.d(TAG, mCurrentMode);
     }
 
     @Override
@@ -268,7 +309,7 @@ public class BluetoothLeService extends Service {
     /**
      * Enables or disables notification on a give characteristic.
      *
-     * @param enabled        If true, enable notification.  False otherwise.
+     * @param enabled If true, enable notification.  False otherwise.
      */
     public void setCharacteristicNotification(boolean enabled) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
@@ -280,7 +321,7 @@ public class BluetoothLeService extends Service {
     }
 
     private void SetCharacteristicNotification(boolean enable) {
-        if (mBluetoothGattCharacteristic!=null) {
+        if (mBluetoothGattCharacteristic != null) {
             mIsCharacteristicNotificationOn = enable;
             mBluetoothGatt.setCharacteristicNotification(mBluetoothGattCharacteristic, enable);
             for (BluetoothGattDescriptor descriptor : mBluetoothGattCharacteristic.getDescriptors()) {
@@ -291,8 +332,7 @@ public class BluetoothLeService extends Service {
 
                 mBluetoothGatt.writeDescriptor(descriptor);
             }
-        }
-        else
+        } else
             mIsCharacteristicNotificationOn = false;
 
 
@@ -346,6 +386,7 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "Failed to write characteristic");
         }
     }
+
 
 }
 

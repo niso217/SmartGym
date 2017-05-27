@@ -33,12 +33,8 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
 
     private static final String TAG = LogInActivity.class.getSimpleName();
 
-
-
-
-
-
     private FirebaseAuth mAuth;
+    private boolean mIgnorehStateChanged;
 
     @Override
     protected void onStart() {
@@ -74,7 +70,8 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
         FirebaseUser user = firebaseAuth.getCurrentUser();
-        if (user != null) {
+        if (user != null && !mIgnorehStateChanged) {
+            mIgnorehStateChanged = true;
             // Rounds is signed in
             SaveUserToDataBase(user);
             Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());

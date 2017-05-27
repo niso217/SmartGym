@@ -4,6 +4,8 @@ package com.a.n.smartgym;
  * Created by nirb on 25/05/2017.
  */
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -17,6 +19,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
  */
 public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = SettingsFragment.class.getSimpleName();
+    private Context activity;
 
     SharedPreferences sharedPreferences;
 
@@ -27,10 +30,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        onSharedPreferenceChanged(sharedPreferences, getString(R.string.movies_categories_key));
+        onSharedPreferenceChanged(sharedPreferences, getString(R.string.mode_key));
 
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.activity = context;
+    }
 
     @Override
     public void onResume() {
@@ -49,11 +57,19 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             if (prefIndex >= 0) {
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
                 //post the event of movie categories changed
+                try{
+
+                    ((onSharedPreferenceChangedListener) activity).isModeChanged(sharedPreferences.getString(getActivity().getString(R.string.mode_key), getActivity().getString(R.string.default_mode)));
+                }catch (ClassCastException cce){
+
+                }
             }
         } else {
             preference.setSummary(sharedPreferences.getString(key, ""));
 
         }
+
+
 
 
     }
@@ -70,5 +86,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     public void onDestroy() {
         super.onDestroy();
         //unregister event bus.
+    }
+
+    public interface onSharedPreferenceChangedListener{
+        public void isModeChanged(String mode);
     }
 }
