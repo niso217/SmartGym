@@ -43,6 +43,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.UUID;
 
+import static com.a.n.smartgym.Utils.Constants.STATE_CONNECTED;
+import static com.a.n.smartgym.Utils.Constants.STATE_CONNECTING;
+import static com.a.n.smartgym.Utils.Constants.STATE_DISCONNECTED;
+
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
@@ -56,9 +60,7 @@ public class BluetoothLeService extends Service {
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
 
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
+
 
     public final static String ACTION_GATT_CONNECTED =
             "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
@@ -76,6 +78,9 @@ public class BluetoothLeService extends Service {
     private SharedPreferences mSharedPreferences;
     private String mCurrentMode;
 
+    public int getConnectionState() {
+        return mConnectionState;
+    }
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -95,7 +100,7 @@ public class BluetoothLeService extends Service {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
-                Log.i(TAG, "Disconnected from GATT server.");
+                Log.i(TAG, "Disconnected from GATT server. " + status);
                 broadcastUpdate(intentAction);
             }
         }
@@ -141,23 +146,16 @@ public class BluetoothLeService extends Service {
         final byte[] data = characteristic.getValue();
         String val = "";
 
-        if (mCurrentMode.equals(Constants.EMULATOR_NAME)) {
-            val = data[0] + "";
-            intent.putExtra(EXTRA_DATA, val);
+        try {
+            val = new String(data, "UTF-8");
+            Log.d("onCharacteristicChanged", val);
 
-        } else {
-            try {
-                val = new String(data, "UTF-8");
-                Log.d("onCharacteristicChanged", val);
-                
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
 
-            }
         }
 
         intent.putExtra(EXTRA_DATA, val);
-
 
         sendBroadcast(intent);
     }
@@ -289,6 +287,8 @@ public class BluetoothLeService extends Service {
         }
         mBluetoothGatt.close();
         mBluetoothGatt = null;
+        mConnectionState = STATE_DISCONNECTED;
+
     }
 
     /**

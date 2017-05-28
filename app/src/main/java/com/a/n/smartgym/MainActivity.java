@@ -104,21 +104,16 @@ public class MainActivity extends AppCompatActivity implements
     private static final int BARCODE_READER_REQUEST_CODE = 1;
     private FirebaseAuth mAuth;
     private FloatingActionButton fab;
-    private NfcAdapter mAdapter;
-    private PendingIntent mPendingIntent;
+    private NfcAdapter mNfcAdapter;
+    private PendingIntent mNfcPendingIntent;
     private IntentFilter[] mFilters;
     private String[][] mTechLists;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
     private int REQUEST_ENABLE_BT = 1;
-    private Button mStart, mEnd, mConnection;
-    private TextView mValue, mConnectionState;
     private BluetoothScanner mBluetoothScanner;
-    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeService mBluetoothLeService;
-    private BluetoothDevice mBluetoothDevice;
     private String mBluetoothDeviceAddress;
-    private boolean mConnectionStatus;
     final public static int REQUEST_CODE = 123;
     final public static int REQUEST_CHECK_SETTINGS = 1;
 
@@ -126,6 +121,41 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences sharedPreferences;
     private String mCurrentMode;
+
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                //UpdateUi(mConnectionState,getString(R.string.connected));
+                //invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                // UpdateUi(mConnectionState,getString(R.string.disconnected));
+                //invalidateOptionsMenu();
+                //clearUI();
+                mBluetoothLeService.setCharacteristicNotification(false);
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                //displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                mBluetoothLeService.setCharacteristicNotification(true);
+            }
+//            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+//                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("EX");
+//                if (fragment != null && fragment.isVisible()) {
+//                    fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//                }
+//                //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+//            }
+        }
+    };
 
     // Code to manage Service lifecycle.
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -280,16 +310,17 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG,"onSaveInstanceState");
         super.onSaveInstanceState(outState);
         getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
     }
 
     private void nfc() {
-        mAdapter = NfcAdapter.getDefaultAdapter(this);
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         // Create a generic PendingIntent that will be deliver to this activity. The NFC stack
         // will fill in the intent with the details of the discovered tag before delivering to
         // this activity.
-        mPendingIntent = PendingIntent.getActivity(this, 0,
+        mNfcPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         // Setup an intent filter for all MIME based dispatches
         IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
@@ -315,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements
         mBluetoothScanner.setListener(this);
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
-        if (mAdapter != null) mAdapter.enableForegroundDispatch(this, mPendingIntent, mFilters,
+        if (mNfcAdapter != null) mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mFilters,
                 mTechLists);
     }
 
@@ -329,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         unregisterReceiver(mGattUpdateReceiver);
 
-        if (mAdapter != null) mAdapter.disableForegroundDispatch(this);
+        if (mNfcAdapter != null) mNfcAdapter.disableForegroundDispatch(this);
     }
 
     @Override
@@ -340,46 +371,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void connectToDevice(String deviceAddress) {
-        final boolean result = mBluetoothLeService.connect(deviceAddress);
-        Log.d(TAG, "Connect request result=" + result);
-        mBluetoothScanner.scanLeDevice(false);
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(deviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+            mBluetoothScanner.scanLeDevice(false);
+        }
+        Log.d(TAG, "mBluetoothLeService=null");
+
     }
 
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                //UpdateUi(mConnectionState,getString(R.string.connected));
-                mConnectionStatus = true;
-                //invalidateOptionsMenu();
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                // UpdateUi(mConnectionState,getString(R.string.disconnected));
-                //invalidateOptionsMenu();
-                //clearUI();
-                mBluetoothLeService.setCharacteristicNotification(false);
-                mConnectionStatus = false;
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Show all the supported services and characteristics on the user interface.
-                //displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                mBluetoothLeService.setCharacteristicNotification(true);
 
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("EX");
-                if (fragment != null && fragment.isVisible()) {
-                    fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                }
-                //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-            }
-        }
-    };
 
     @Override
     public void onNewIntent(Intent intent) {
@@ -387,6 +388,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleIntent(Intent intent) {
+
+        if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState()==Constants.STATE_CONNECTED) return;
+
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
@@ -510,6 +514,25 @@ public class MainActivity extends AppCompatActivity implements
         return false;
     }
 
+    public void replaceFragment(Fragment fragment, boolean addToBackStack) {
+
+        FragmentTransaction transaction = getSupportFragmentManager()
+                .beginTransaction();
+
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+
+        } else {
+            getSupportFragmentManager().popBackStack(null,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        }
+        transaction.replace(R.id.containerView, fragment);
+        transaction.commit();
+        getSupportFragmentManager().executePendingTransactions();
+
+    }
+
     private void InitializeGoogleApiClient() {
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -606,10 +629,9 @@ public class MainActivity extends AppCompatActivity implements
         }
         Log.d(TAG,mCurrentMode + mBluetoothLeService);
         if (mCurrentMode.equals(Constants.DEVICE_NAME)){
-            if (mBluetoothLeService != null) {
                 connectToDevice(mBluetoothDeviceAddress = Constants.GYM1_ADDRESS);
 
-            }
+
         }
         else
             mBluetoothScanner.scanLeDevice(true);

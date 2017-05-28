@@ -1,8 +1,10 @@
 package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
@@ -30,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.a.n.smartgym.BLE.BluetoothLeService;
 import com.a.n.smartgym.Graphs.DayAverageFragment;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Objects.Muscles;
@@ -66,16 +69,31 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private boolean mInProgress;
     private boolean[] arr;
     private long mSetStart, mSetEnd;
-    private ImageView mImage;
+    private ImageView mImage,mArrowImage;
     private SeekBar mSeekBar;
-    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight;
+    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight,mCurrentWeightTV;
     long mAccelLast, mAccelCurrent;
     double mAccel;
     float[] mGravity;
     private SensorManager sensorManager;
     private boolean mBeenHere;
     private Context activity;
+    private int mCurrentWeight, mCurrentRepetition,mCurrentDirection;
 
+
+    // Handles various events fired by the Service.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                String extra=  intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+                Log.d(TAG, extra);
+                ToIntArray(extra);
+            }
+        }
+    };
 
 
     @Override
@@ -95,10 +113,43 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
+    private void ToIntArray(String val) {
+        String[] stringArray = val.split(",");
+        if (stringArray.length != 4) return;
+        int[] intArray = new int[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            String numberAsString = stringArray[i];
+            intArray[i] = Integer.parseInt(numberAsString);
+        }
+        if (intArray[1] != mCurrentRepetition){
+            mCurrentRepetition = intArray[1];
+            AddSet(intArray[2], mSetStart, mSetEnd);
+        }
+        mCurrentDirection = intArray[3];
+        mWeight.setText(""+intArray[2]);
+        mCounter.setText(""+intArray[1]);
+        mCurrentWeightTV.setText(""+intArray[0]);
+
+
+        if (mCurrentDirection==-1)
+            mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_downward_black_48dp"));
+        if(mCurrentDirection==1)
+            mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
+
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         this.activity = context;
+        activity.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        activity.unregisterReceiver(mGattUpdateReceiver);
     }
 
     private void AddSet(String weight, long start, long end) {
@@ -113,6 +164,19 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
+    private void AddSet(int weight, long start, long end) {
+        Sets s1 = new Sets();
+        s1.setSetid(UUID.randomUUID().toString());
+        s1.setWeight(Integer.parseInt(String.valueOf(weight)));
+        s1.setexerciseid(mUUID);
+        s1.setStart(start);
+        s1.setEnd(end);
+
+        mSet.add(s1);
+
+    }
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -126,11 +190,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
         mWeight = (TextView) rootFragment.findViewById(R.id.tv_ex_weight_txt);
         mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
-
-        Random r = new Random();
-        int i1 = r.nextInt(100 - 40) + 65;
-        mWeight.setText(i1 + "");
-
+        mArrowImage = (ImageView) rootFragment.findViewById(R.id.img_arrow);
+        mCurrentWeightTV = (TextView) rootFragment.findViewById(R.id.tv_current_weight);
 
         btnFinish = (Button) rootFragment.findViewById(R.id.btn_ex_finish);
         btnFinish.setOnClickListener(this);
@@ -139,48 +200,48 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         arr = new boolean[mSeekBar.getMax()];
 
 
-        mSeekBar.setOnSeekBarChangeListener(
-                new SeekBar.OnSeekBarChangeListener() {
-                    int progress = 0;
-
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
-                        if (mInProgress) {
-
-                            if (progressValue == 0)
-                                arr[progressValue] = true;
-                            else
-                                arr[progressValue - 1] = true;
-
-
-                            if (areAllTrue(arr)) {
-                                Counter++;
-                                mSetEnd = System.currentTimeMillis();
-                                arr = new boolean[mSeekBar.getMax()];
-                                AddSet(mWeight.getText().toString(), mSetStart, mSetEnd);
-                                mCounter.setText(Counter + "");
-
-                            } else {
-                                mSetStart = System.currentTimeMillis();
-
-                            }
-                        }
-
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        mInProgress = true;
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        mInProgress = false;
-                        arr = new boolean[mSeekBar.getMax()];
-
-                        // Display the value in textview
-                    }
-                });
+//        mSeekBar.setOnSeekBarChangeListener(
+//                new SeekBar.OnSeekBarChangeListener() {
+//                    int progress = 0;
+//
+//                    @Override
+//                    public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
+//                        if (mInProgress) {
+//
+//                            if (progressValue == 0)
+//                                arr[progressValue] = true;
+//                            else
+//                                arr[progressValue - 1] = true;
+//
+//
+//                            if (areAllTrue(arr)) {
+//                                Counter++;
+//                                mSetEnd = System.currentTimeMillis();
+//                                arr = new boolean[mSeekBar.getMax()];
+//                                AddSet(mWeight.getText().toString(), mSetStart, mSetEnd);
+//                                mCounter.setText(Counter + "");
+//
+//                            } else {
+//                                mSetStart = System.currentTimeMillis();
+//
+//                            }
+//                        }
+//
+//                    }
+//
+//                    @Override
+//                    public void onStartTrackingTouch(SeekBar seekBar) {
+//                        mInProgress = true;
+//                    }
+//
+//                    @Override
+//                    public void onStopTrackingTouch(SeekBar seekBar) {
+//                        mInProgress = false;
+//                        arr = new boolean[mSeekBar.getMax()];
+//
+//                        // Display the value in textview
+//                    }
+//                });
 
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
@@ -218,9 +279,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        try{
+        try {
             ((onExercisesStatusListener) activity).isExercisesStatusChanged(true); //finisdhed
-        }catch (ClassCastException cce){
+        } catch (ClassCastException cce) {
 
         }
     }
@@ -239,7 +300,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         }
 
         return drawable;
-
     }
 
     public boolean areAllTrue(boolean[] array) {
@@ -357,14 +417,14 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    public void getMessage(String msg) {
-        Log.d(TAG, msg);
-        mWeight.setText(msg + "");
-
-    }
-
     public interface onExercisesStatusListener {
         public void isExercisesStatusChanged(boolean change);
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
     }
 
 
