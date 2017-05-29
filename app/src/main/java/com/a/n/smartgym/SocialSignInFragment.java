@@ -241,6 +241,8 @@ public class SocialSignInFragment extends Fragment implements
             mProgressDialog = new ProgressDialog(getActivity());
             mProgressDialog.setMessage(getString(R.string.loading));
             mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setCancelable(false);
+
         }
 
         mProgressDialog.show();

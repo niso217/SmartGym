@@ -394,10 +394,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private void handleIntent(Intent intent) {
 
-        boolean isnull = mBluetoothLeService==null;
-        Log.d(TAG,"Is Service null ?" + isnull);
-        if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState()==Constants.STATE_CONNECTED) return;
-
         String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
@@ -521,24 +517,6 @@ public class MainActivity extends AppCompatActivity implements
         return false;
     }
 
-    public void replaceFragment(Fragment fragment, boolean addToBackStack) {
-
-        FragmentTransaction transaction = getSupportFragmentManager()
-                .beginTransaction();
-
-        if (addToBackStack) {
-            transaction.addToBackStack(null);
-
-        } else {
-            getSupportFragmentManager().popBackStack(null,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-        }
-        transaction.replace(R.id.containerView, fragment);
-        transaction.commit();
-        getSupportFragmentManager().executePendingTransactions();
-
-    }
 
     private void InitializeGoogleApiClient() {
 
@@ -634,7 +612,6 @@ public class MainActivity extends AppCompatActivity implements
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        Log.d(TAG,mCurrentMode + mBluetoothLeService);
         if (mCurrentMode.equals(Constants.DEVICE_NAME)){
                 connectToDevice(mBluetoothDeviceAddress = Constants.GYM1_ADDRESS);
 

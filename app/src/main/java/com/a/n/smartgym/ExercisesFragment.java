@@ -1,6 +1,7 @@
 package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -31,6 +33,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
 import com.a.n.smartgym.Graphs.DayAverageFragment;
@@ -69,16 +72,40 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private boolean mInProgress;
     private boolean[] arr;
     private long mSetStart, mSetEnd;
-    private ImageView mImage,mArrowImage;
+    private ImageView mImage, mArrowImage;
     private SeekBar mSeekBar;
-    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight,mCurrentWeightTV;
+    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight, mCurrentWeightTV;
     long mAccelLast, mAccelCurrent;
     double mAccel;
     float[] mGravity;
     private SensorManager sensorManager;
     private boolean mBeenHere;
     private Context activity;
-    private int mCurrentWeight, mCurrentRepetition,mCurrentDirection;
+    private String mCurrentWeight = "", mCurrentRepetition = "0", mCalculatedWeight = "", mCurrentDirection = "";
+    private Handler mHandler = new Handler();
+    private int mZeroValueCounter;
+    private int mSameReapedCounter;
+    public ProgressDialog mProgressDialog;
+
+
+
+    private final Runnable mTicker = new Runnable() {
+        public void run() {
+            //user interface interactions and updates on screen
+            if (mCalculatedWeight.equals("0")) {
+                mZeroValueCounter++;
+                if (mZeroValueCounter > 10) { //3 seconds pasted throw data to database
+                    InsertToDataBase();
+                    mZeroValueCounter = 0;
+                }
+            } else
+                mZeroValueCounter = 0;
+
+            mHandler.postDelayed(mTicker, 1000);
+
+
+        }
+    };
 
 
     // Handles various events fired by the Service.
@@ -88,8 +115,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                String extra=  intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                Log.d(TAG, extra);
+                if (mProgressDialog!=null) hideProgressDialog();
+                String extra = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 ToIntArray(extra);
             }
         }
@@ -100,41 +127,47 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
-
-
-//        sensorManager=(SensorManager) getContext().getSystemService(SENSOR_SERVICE);
-//        // add listener. The listener will be HelloAndroid (this) class
-//        sensorManager.registerListener(this,
-//                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-//                SensorManager.SENSOR_DELAY_NORMAL);
-
+        mHandler = new Handler();
         mSet = new ArrayList<>();
+
+        mTicker.run();
 
 
     }
 
+
     private void ToIntArray(String val) {
         String[] stringArray = val.split(",");
         if (stringArray.length != 4) return;
-        int[] intArray = new int[stringArray.length];
-        for (int i = 0; i < stringArray.length; i++) {
-            String numberAsString = stringArray[i];
-            intArray[i] = Integer.parseInt(numberAsString);
+
+        mCalculatedWeight = stringArray[2];
+        if (!stringArray[1].equals(mCurrentRepetition)) {
+            mCurrentRepetition = stringArray[1];
+            if (!mCurrentRepetition.equals("0")){
+                AddSet(mCalculatedWeight, mSetStart, mSetEnd);
+                Log.d(TAG,"AddSet");
+
+            }
         }
-        if (intArray[1] != mCurrentRepetition){
-            mCurrentRepetition = intArray[1];
-            AddSet(intArray[2], mSetStart, mSetEnd);
-        }
-        mCurrentDirection = intArray[3];
-        mWeight.setText(""+intArray[2]);
-        mCounter.setText(""+intArray[1]);
-        mCurrentWeightTV.setText(""+intArray[0]);
+
+        mCurrentWeight = stringArray[0];
+
+        mCurrentDirection = stringArray[3];
+        mWeight.setText(mCalculatedWeight);
+        mCounter.setText(mCurrentRepetition);
+        mCurrentWeightTV.setText(mCurrentWeight);
 
 
-        if (mCurrentDirection==-1)
+        if (mCurrentDirection.equals("-1")) {
             mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_downward_black_48dp"));
-        if(mCurrentDirection==1)
+            mSetEnd = System.currentTimeMillis();
+
+        } else if (mCurrentDirection.equals("1")) {
+            mSetStart = System.currentTimeMillis();
             mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
+
+        } else
+            mArrowImage.setImageDrawable(null);
 
     }
 
@@ -143,6 +176,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         super.onAttach(context);
         this.activity = context;
         activity.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        showProgressDialog();
+
 
     }
 
@@ -150,21 +185,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     public void onDetach() {
         super.onDetach();
         activity.unregisterReceiver(mGattUpdateReceiver);
+        stop();
     }
 
     private void AddSet(String weight, long start, long end) {
-        Sets s1 = new Sets();
-        s1.setSetid(UUID.randomUUID().toString());
-        s1.setWeight(Integer.parseInt(String.valueOf(weight)));
-        s1.setexerciseid(mUUID);
-        s1.setStart(start);
-        s1.setEnd(end);
-
-        mSet.add(s1);
-
-    }
-
-    private void AddSet(int weight, long start, long end) {
         Sets s1 = new Sets();
         s1.setSetid(UUID.randomUUID().toString());
         s1.setWeight(Integer.parseInt(String.valueOf(weight)));
@@ -199,49 +223,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
         arr = new boolean[mSeekBar.getMax()];
 
-
-//        mSeekBar.setOnSeekBarChangeListener(
-//                new SeekBar.OnSeekBarChangeListener() {
-//                    int progress = 0;
-//
-//                    @Override
-//                    public void onProgressChanged(SeekBar seekBar, int progressValue, boolean fromUser) {
-//                        if (mInProgress) {
-//
-//                            if (progressValue == 0)
-//                                arr[progressValue] = true;
-//                            else
-//                                arr[progressValue - 1] = true;
-//
-//
-//                            if (areAllTrue(arr)) {
-//                                Counter++;
-//                                mSetEnd = System.currentTimeMillis();
-//                                arr = new boolean[mSeekBar.getMax()];
-//                                AddSet(mWeight.getText().toString(), mSetStart, mSetEnd);
-//                                mCounter.setText(Counter + "");
-//
-//                            } else {
-//                                mSetStart = System.currentTimeMillis();
-//
-//                            }
-//                        }
-//
-//                    }
-//
-//                    @Override
-//                    public void onStartTrackingTouch(SeekBar seekBar) {
-//                        mInProgress = true;
-//                    }
-//
-//                    @Override
-//                    public void onStopTrackingTouch(SeekBar seekBar) {
-//                        mInProgress = false;
-//                        arr = new boolean[mSeekBar.getMax()];
-//
-//                        // Display the value in textview
-//                    }
-//                });
 
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
@@ -279,12 +260,18 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mHandler.removeCallbacks(mTicker);
+    }
+
+
+    private void stop(){
         try {
             ((onExercisesStatusListener) activity).isExercisesStatusChanged(true); //finisdhed
         } catch (ClassCastException cce) {
 
         }
     }
+
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     private Drawable getDrawableForSdkVersion(String name) {
@@ -370,11 +357,19 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     }
 
     private void finishExersise() {
-        SetsRepo setsRepo = new SetsRepo(getContext());
-        setsRepo.BulkSets(mSet);
-        mSet.clear();
+        InsertToDataBase();
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
+    }
+
+    private void InsertToDataBase() {
+        if (mSet.size() > 0) {
+            SetsRepo setsRepo = new SetsRepo(getContext());
+            setsRepo.BulkSets(mSet);
+            Toast.makeText(activity,mSet.size() +" " + getString(R.string.database_update),Toast.LENGTH_SHORT).show();
+            mSet.clear();
+            Log.d(TAG, "Sets Inserted to DataBase");
+        }
     }
 
     @Override
@@ -427,5 +422,23 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         return intentFilter;
     }
 
+
+    public void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(getActivity());
+            mProgressDialog.setMessage(getString(R.string.connecting));
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setCancelable(false);
+        }
+
+        mProgressDialog.show();
+    }
+
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+            mProgressDialog=null;
+        }
+    }
 
 }

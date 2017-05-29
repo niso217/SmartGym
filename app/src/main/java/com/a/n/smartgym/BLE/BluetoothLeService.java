@@ -77,6 +77,7 @@ public class BluetoothLeService extends Service {
     public BluetoothGattCharacteristic mBluetoothGattCharacteristic;
     private SharedPreferences mSharedPreferences;
     private String mCurrentMode;
+    private String mCurrentAddress;
 
     public int getConnectionState() {
         return mConnectionState;
@@ -98,6 +99,10 @@ public class BluetoothLeService extends Service {
                         mBluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                if (status==133){
+                    close();
+                    connect(mCurrentAddress);
+                }
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server. " + status);
@@ -237,6 +242,7 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
+        mCurrentAddress = address;
         // Previously connected device.  Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
