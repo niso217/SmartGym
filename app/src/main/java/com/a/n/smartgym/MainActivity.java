@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements
     private String mBluetoothDeviceAddress;
     final public static int REQUEST_CODE = 123;
     final public static int REQUEST_CHECK_SETTINGS = 1;
+    private Intent mCurrentIntent;
 
 
     private GoogleApiClient mGoogleApiClient;
@@ -167,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
+            handleIntent(getIntent());
         }
 
         @Override
@@ -179,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "OnCreate");
+
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         setCurrentMode();
@@ -194,8 +197,6 @@ public class MainActivity extends AppCompatActivity implements
         mBluetoothScanner = new BluetoothScanner(this);
 
         mAuth = FirebaseAuth.getInstance();
-
-        bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
 
         ExercisesDB.getInstance().keys = new MuscleRepo().getMainMuscle();
 
@@ -233,7 +234,8 @@ public class MainActivity extends AppCompatActivity implements
 
         nfc();
 
-        handleIntent(getIntent());
+        bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
+
 
 
     }
@@ -376,7 +378,8 @@ public class MainActivity extends AppCompatActivity implements
             Log.d(TAG, "Connect request result=" + result);
             mBluetoothScanner.scanLeDevice(false);
         }
-        Log.d(TAG, "mBluetoothLeService=null");
+        else
+        Log.d(TAG, "mBluetoothLeService is null");
 
     }
 
@@ -384,11 +387,15 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onNewIntent(Intent intent) {
+        Log.d(TAG,"onNewIntent");
         handleIntent(intent);
+
     }
 
     private void handleIntent(Intent intent) {
 
+        boolean isnull = mBluetoothLeService==null;
+        Log.d(TAG,"Is Service null ?" + isnull);
         if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState()==Constants.STATE_CONNECTED) return;
 
         String action = intent.getAction();
