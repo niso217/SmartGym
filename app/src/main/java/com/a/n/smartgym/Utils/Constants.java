@@ -16,6 +16,8 @@ public class Constants {
     public static final int STATE_DISCONNECTED = 0;
     public static final int STATE_CONNECTING = 1;
     public static final int STATE_CONNECTED = 2;
+    public static final int RECONNECT_ATTEMPTING = 3;
+
 
     public enum MuscleType {
         ABS,

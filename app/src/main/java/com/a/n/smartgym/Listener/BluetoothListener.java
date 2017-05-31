@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothDevice;
  */
 
 public interface BluetoothListener {
-    public void DeviceAvailable(BluetoothDevice device);
+    public void ScanResult(BluetoothDevice device);
+    public void ScanTroubleshoot(String msg);
+
 }
 

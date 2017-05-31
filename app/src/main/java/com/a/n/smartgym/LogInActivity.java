@@ -53,11 +53,11 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
         super.onResume();
     }
 
-    private void startBLEScanActivity() {
-        Log.d(TAG, "StartBLEScanActivity calling startActivity()");
-        Intent activityIntent = new Intent(this, MainActivity2.class);
-        startActivity(activityIntent);
-    }
+//    private void startBLEScanActivity() {
+//        Log.d(TAG, "StartBLEScanActivity calling startActivity()");
+//        Intent activityIntent = new Intent(this, MainActivity2.class);
+//        startActivity(activityIntent);
+//    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

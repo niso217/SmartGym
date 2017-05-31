@@ -22,14 +22,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".LogInActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <!--<activity android:name=".LogInActivity">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+        <!--</intent-filter>-->
 
-        </activity>
+        <!--</activity>-->
         <activity
 
             android:name=".MainActivity"
@@ -42,13 +42,21 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
         </activity>
 
 
 
         <activity android:name=".barcode.BarcodeCaptureActivity"></activity>
 
-        <service android:name=".BLE.BluetoothLeService" android:enabled="true"/>
+        <service android:name=".BLE.BluetoothLeService"
+            android:enabled="true"
+            android:stopWithTask="true"/>
 
 
         <meta-data

@@ -85,8 +85,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private Handler mHandler = new Handler();
     private int mZeroValueCounter;
     private int mSameReapedCounter;
-    public ProgressDialog mProgressDialog;
-
 
 
     private final Runnable mTicker = new Runnable() {
@@ -115,9 +113,14 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                if (mProgressDialog!=null) hideProgressDialog();
+                showProgressDialog(null, false);
                 String extra = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 ToIntArray(extra);
+            }
+            else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                showProgressDialog(null, false);
+                Toast.makeText(activity,getString(R.string.disconnected_device), Toast.LENGTH_SHORT).show();
+                finishExersise();
             }
         }
     };
@@ -143,9 +146,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         mCalculatedWeight = stringArray[2];
         if (!stringArray[1].equals(mCurrentRepetition)) {
             mCurrentRepetition = stringArray[1];
-            if (!mCurrentRepetition.equals("0")){
+            if (!mCurrentRepetition.equals("0")) {
                 AddSet(mCalculatedWeight, mSetStart, mSetEnd);
-                Log.d(TAG,"AddSet");
+                Log.d(TAG, "AddSet");
 
             }
         }
@@ -176,8 +179,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         super.onAttach(context);
         this.activity = context;
         activity.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        showProgressDialog();
-
+        showProgressDialog(getString(R.string.waiting), true);
 
     }
 
@@ -185,7 +187,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     public void onDetach() {
         super.onDetach();
         activity.unregisterReceiver(mGattUpdateReceiver);
-        stop();
     }
 
     private void AddSet(String weight, long start, long end) {
@@ -200,6 +201,18 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+
+    }
 
     @Nullable
     @Override
@@ -260,16 +273,34 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stop();
         mHandler.removeCallbacks(mTicker);
     }
 
 
-    private void stop(){
+    private void stop() {
         try {
-            ((onExercisesStatusListener) activity).isExercisesStatusChanged(true); //finisdhed
+            ((MainActivity) activity).closeBLE(); //finisdhed
         } catch (ClassCastException cce) {
 
         }
+    }
+
+    private void showProgressDialog(String msg, boolean show) {
+        if (show) {
+            try {
+                ((MainActivity) activity).showProgressDialog(msg); //finisdhed
+            } catch (ClassCastException cce) {
+
+            }
+        } else {
+            try {
+                ((MainActivity) activity).hideProgressDialog(); //finisdhed
+            } catch (ClassCastException cce) {
+
+            }
+        }
+
     }
 
 
@@ -366,7 +397,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         if (mSet.size() > 0) {
             SetsRepo setsRepo = new SetsRepo(getContext());
             setsRepo.BulkSets(mSet);
-            Toast.makeText(activity,mSet.size() +" " + getString(R.string.database_update),Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, mSet.size() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
             mSet.clear();
             Log.d(TAG, "Sets Inserted to DataBase");
         }
@@ -412,33 +443,13 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    public interface onExercisesStatusListener {
-        public void isExercisesStatusChanged(boolean change);
-    }
-
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+
         return intentFilter;
     }
 
-
-    public void showProgressDialog() {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(getActivity());
-            mProgressDialog.setMessage(getString(R.string.connecting));
-            mProgressDialog.setIndeterminate(true);
-            mProgressDialog.setCancelable(false);
-        }
-
-        mProgressDialog.show();
-    }
-
-    public void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.dismiss();
-            mProgressDialog=null;
-        }
-    }
 
 }

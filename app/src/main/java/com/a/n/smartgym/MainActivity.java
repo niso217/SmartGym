@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -16,6 +17,7 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -25,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -93,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,
         SettingsFragment.onSharedPreferenceChangedListener,
-        ExercisesFragment.onExercisesStatusListener,
         View.OnClickListener,
         BluetoothListener {
     DrawerLayout mDrawerLayout;
@@ -111,17 +113,20 @@ public class MainActivity extends AppCompatActivity implements
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
     private int REQUEST_ENABLE_BT = 1;
+    private int REQUEST_NFC = 2;
     private BluetoothScanner mBluetoothScanner;
     private BluetoothLeService mBluetoothLeService;
     private String mBluetoothDeviceAddress;
     final public static int REQUEST_CODE = 123;
     final public static int REQUEST_CHECK_SETTINGS = 1;
     private Intent mCurrentIntent;
-
-
+    public ProgressDialog mProgressDialog;
+    private Handler mHandler;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences sharedPreferences;
     private String mCurrentMode;
+    private String mCurrentTagId = "";
+    private Tag mCurrentTag;
 
 
     // Handles various events fired by the Service.
@@ -135,17 +140,31 @@ public class MainActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                if (mCurrentTag != null)
+                    StartExerciseActivity();
                 //UpdateUi(mConnectionState,getString(R.string.connected));
                 //invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 // UpdateUi(mConnectionState,getString(R.string.disconnected));
                 //invalidateOptionsMenu();
                 //clearUI();
-                mBluetoothLeService.setCharacteristicNotification(false);
+                //mBluetoothLeService.setCharacteristicNotification(false);
+                setBLENotification(false);
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 //displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                mBluetoothLeService.setCharacteristicNotification(true);
+                // mBluetoothLeService.setCharacteristicNotification(true);
+                setBLENotification(true);
+
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+
+            } else if (BluetoothLeService.TROUBLESHOOT.equals(action)) {
+
+                hideProgressDialog();
+
+                //showProgressDialog(getString(R.string.reconnecting));
+                Toast.makeText(getApplicationContext(), "Unable connect to BLE Device",
+                        Toast.LENGTH_SHORT).show();
             }
 //            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -166,8 +185,10 @@ public class MainActivity extends AppCompatActivity implements
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
             if (!mBluetoothLeService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
+                Log.d(TAG,"finish");
                 finish();
             }
+
             handleIntent(getIntent());
         }
 
@@ -180,9 +201,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "OnCreate");
 
+        Resources appR = getResources();
+        CharSequence txt = appR.getText(appR.getIdentifier("app_name",
+                "string", getPackageName()));
 
+        Log.d(TAG, "OnCreate " + txt);
+
+        mHandler = new Handler();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         setCurrentMode();
 
@@ -237,12 +263,17 @@ public class MainActivity extends AppCompatActivity implements
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
 
 
-
     }
 
-    private void setCurrentMode(){
+    private void setCurrentMode() {
         if (sharedPreferences != null)
             mCurrentMode = sharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
+    }
+
+    public void setBLENotification(boolean val) {
+        if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() == Constants.STATE_CONNECTED)
+            mBluetoothLeService.setCharacteristicNotification(val);
+
     }
 
     private void CheckBluetooth() {
@@ -250,12 +281,29 @@ public class MainActivity extends AppCompatActivity implements
         if (BluetoothAdapter.getDefaultAdapter() == null || !getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, "BLE Not Supported",
                     Toast.LENGTH_SHORT).show();
+            Log.d(TAG,"finish");
             finish();
         } else {
             if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.getDefaultAdapter().ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
+            else
+                CheckNFC();
+        }
+    }
+
+    public void CheckNFC() {
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (mNfcAdapter == null) {
+            Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
+                    .show();
+            finish();
+        }
+        if (!mNfcAdapter.isEnabled()) {
+            //Toast.makeText(getApplicationContext(), "Please activate NFC and press Back to return to the application!", Toast.LENGTH_LONG).show();
+            //startActivityForResult(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS),REQUEST_NFC);
+            promptWIFISettings();
         }
     }
 
@@ -276,6 +324,7 @@ public class MainActivity extends AppCompatActivity implements
                 final Status status = result.getStatus();
                 final LocationSettingsStates mLocationSettingsStates = result.getLocationSettingsStates();
                 switch (status.getStatusCode()) {
+
                     case LocationSettingsStatusCodes.SUCCESS:
                         Log.d(TAG, "LocationSettingsStatusCodes.SUCCESS");
                         // All location settings are satisfied. The client can initialize location
@@ -310,12 +359,15 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG,"onSaveInstanceState");
-        super.onSaveInstanceState(outState);
-        getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
-    }
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        Log.d(TAG, "onSaveInstanceState");
+//        super.onSaveInstanceState(outState);
+//        Fragment current = getSupportFragmentManager().getFragment(outState, "myFragmentName");
+//        if (current != null)
+//            getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
+//        //getSupportFragmentManager().beginTransaction().add(R.id.containerView,mCurrentFragment, "myFragmentName").commit();
+//    }
 
     private void nfc() {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -348,8 +400,9 @@ public class MainActivity extends AppCompatActivity implements
         mBluetoothScanner.setListener(this);
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
-        if (mNfcAdapter != null) mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mFilters,
-                mTechLists);
+        if (mNfcAdapter != null)
+            mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mFilters,
+                    mTechLists);
     }
 
     @Override
@@ -367,9 +420,17 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG,"onDestroy");
         super.onDestroy();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG,"onStop");
+
     }
 
     public void connectToDevice(String deviceAddress) {
@@ -377,24 +438,39 @@ public class MainActivity extends AppCompatActivity implements
             final boolean result = mBluetoothLeService.connect(deviceAddress);
             Log.d(TAG, "Connect request result=" + result);
             mBluetoothScanner.scanLeDevice(false);
-        }
-        else
-        Log.d(TAG, "mBluetoothLeService is null");
+        } else
+            Log.d(TAG, "mBluetoothLeService is null");
 
     }
 
 
-
     @Override
     public void onNewIntent(Intent intent) {
-        Log.d(TAG,"onNewIntent");
-        handleIntent(intent);
+        Log.d(TAG, "onNewIntent");
+        if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() == Constants.STATE_DISCONNECTED) {
+            handleIntent(intent);
+
+        } else {
+            ExercisesFragment myFragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("myFragmentName");
+            if (myFragment != null && myFragment.isVisible()) {
+                return;
+            } else
+
+                StartExerciseActivity();
+        }
+
 
     }
 
     private void handleIntent(Intent intent) {
 
+//        if (mBluetoothLeService!=null && mBluetoothLeService.getConnectionState()==Constants.STATE_CONNECTED){
+//            Log.d(TAG, "the device is connected, trying to restart...");
+//            return;
+//        }
+
         String action = intent.getAction();
+        Log.d(TAG,action);
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
             String type = intent.getType();
@@ -556,6 +632,8 @@ public class MainActivity extends AppCompatActivity implements
 
     public void logout() {
 
+        Log.d(TAG,"LOGOUT");
+
         // Firebase sign out
         mAuth.signOut();
 
@@ -571,6 +649,7 @@ public class MainActivity extends AppCompatActivity implements
                 });
 
         startActivity(new Intent(getApplicationContext(), LogInActivity.class));
+        Log.d(TAG,"finish");
         finish();
     }
 
@@ -579,7 +658,12 @@ public class MainActivity extends AppCompatActivity implements
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Bluetooth not enabled.
+                Log.d(TAG,"Bluetooth not enabled");
                 finish();
+                return;
+            }
+            if (resultCode == Activity.RESULT_OK) {
+                CheckNFC();
                 return;
             }
         }
@@ -597,6 +681,19 @@ public class MainActivity extends AppCompatActivity implements
                 default:
                     break;
             }
+
+        }
+
+        if (requestCode == REQUEST_NFC) {
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    Log.d(TAG," REQUEST_NFC OK");
+                    break;
+                default:
+                    Log.d(TAG," REQUEST_NFC default");
+                    break;
+            }
+
         }
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -604,25 +701,37 @@ public class MainActivity extends AppCompatActivity implements
 
     private void StartExercise(Tag tag) {
 
-        String Tagid = "";
+        mCurrentTag = tag;
         try {
-            Tagid = new NdefReaderTask().execute(tag).get();
+            mCurrentTagId = new NdefReaderTask().execute(tag).get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        if (mCurrentMode.equals(Constants.DEVICE_NAME)){
+
+        hideProgressDialog();
+
+        if (mBluetoothLeService.getConnectionState() != Constants.STATE_CONNECTED) {
+
+            if (mCurrentMode.equals(Constants.DEVICE_NAME)) {
+
+                showProgressDialog(getString(R.string.connecting));
                 connectToDevice(mBluetoothDeviceAddress = Constants.GYM1_ADDRESS);
 
+            } else {
+                showProgressDialog(getString(R.string.scanning));
+                mBluetoothScanner.scanLeDevice(true);
 
+            }
+        } else {
+            StartExerciseActivity();
         }
-        else
-            mBluetoothScanner.scanLeDevice(true);
 
-        //NFCResult nfcTag = gson.fromJson(Tagid, NFCResult.class);
+    }
 
-        //create new visit
+
+    private void StartExerciseActivity() {
         VisitsRepo visitsRepo = new VisitsRepo();
         String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
         if (uuid.isEmpty()) {
@@ -637,30 +746,38 @@ public class MainActivity extends AppCompatActivity implements
 
         Bundle bundle = new Bundle();
         bundle.putString("uuid", uuid);
+        hideProgressDialog();
 
-        if (Tagid.isEmpty()) {
+        if (mCurrentTagId.isEmpty()) {
             mCurrentFragment = new MuscleFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
         } else {
             MuscleRepo muscleRepo = new MuscleRepo();
-            Muscle ex = muscleRepo.getExerciseByID(Tagid);
+            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
             bundle.putParcelable("muscle", ex);
-            bundle.putParcelable("tag", tag);
+            bundle.putParcelable("tag", mCurrentTag);
             mCurrentFragment = new ExercisesFragment();
             mCurrentFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "EX").commit();
+            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "myFragmentName").commit();
         }
-
-
     }
 
     @Override
-    public void DeviceAvailable(BluetoothDevice device) {
+    public void ScanResult(BluetoothDevice device) {
+        hideProgressDialog();
+        showProgressDialog(getString(R.string.connecting));
         connectToDevice(mBluetoothDeviceAddress = device.getAddress());
-        Log.d(TAG, "DeviceAvailable");
+        Log.d(TAG, "ScanResult");
+    }
+
+    @Override
+    public void ScanTroubleshoot(String msg) {
+        hideProgressDialog();
+        Toast.makeText(this, msg,
+                Toast.LENGTH_SHORT).show();
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -669,6 +786,8 @@ public class MainActivity extends AppCompatActivity implements
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.TROUBLESHOOT);
+
         return intentFilter;
     }
 
@@ -767,21 +886,22 @@ public class MainActivity extends AppCompatActivity implements
         builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG,"finish");
                 finish();
             }
         });
         builder.show();
     }
 
-    private void promptLocationSettings() {
+    private void promptWIFISettings() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.location_denied));
-        builder.setMessage(getResources().getString(R.string.location_fix));
+        builder.setTitle(getResources().getString(R.string.nfc_denied));
+        builder.setMessage(getResources().getString(R.string.nfc_fix));
         builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                goLocationSettings();
+                goWIFISettings();
             }
         });
         builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -793,6 +913,7 @@ public class MainActivity extends AppCompatActivity implements
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
+                Log.d(TAG,"finish");
                 finish();
             }
         });
@@ -805,16 +926,28 @@ public class MainActivity extends AppCompatActivity implements
         AppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         this.startActivity(AppSettings);
+        Log.d(TAG,"finish");
         finish();
     }
 
-    private void goLocationSettings() {
-        Intent LocationSettings = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        LocationSettings.addCategory(Intent.CATEGORY_DEFAULT);
-        LocationSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//    private void goLocationSettings() {
+//        Intent LocationSettings = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//        LocationSettings.addCategory(Intent.CATEGORY_DEFAULT);
+//        LocationSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        this.startActivity(LocationSettings);
+//        Log.d(TAG,"finish");
+//        finish();
+//    }
+
+    private void goWIFISettings() {
+        Intent WIFISettings = new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+        WIFISettings.addCategory(Intent.CATEGORY_DEFAULT);
+        WIFISettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        this.startActivity(LocationSettings);
-        finish();
+        this.startActivity(WIFISettings);
+        //Log.d(TAG,"finish");
+        //finish();
     }
 
     @Override
@@ -844,8 +977,27 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public void isExercisesStatusChanged(boolean change) {
+
+    public void showProgressDialog(String msg) {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.setMessage(msg);
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setCancelable(false);
+        }
+
+        mProgressDialog.show();
+    }
+
+    public void closeBLE() {
         mBluetoothLeService.close();
     }
+
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
+    }
 }
+

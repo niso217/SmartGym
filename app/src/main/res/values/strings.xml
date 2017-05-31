@@ -3,7 +3,12 @@
     <string name="app_name">Smart Gym</string>
     <string name="loading">Loading...</string>
     <string name="connecting">Connecting to device, please wait...</string>
+    <string name="scanning">Scanning for BLE devices, please wait...</string>
+    <string name="waiting">Waiting for data, please wait...</string>
+
     <string name="database_update"> Sets updated.</string>
+    <string name="disconnected_device">The device has been disconnected or is unavailable</string>
+    <string name="reconnecting">The device has been disconnected trying to reconnect</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -97,8 +102,8 @@
     <string name="please_fix">Please fix Permissions manually</string>
     <string name="go_settings">Go to settings</string>
 
-    <string name="location_denied">OpenSSME requires location</string>
-    <string name="location_fix">Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
+    <string name="nfc_denied">OpenSSME requires NFC</string>
+    <string name="nfc_fix">Since NFC access has not been granted, this app will not be able to discover beacons when in the background.</string>
     <string name="cancel">Cancel</string>
 
     <string name="request_read_write"> Read Write from external storage permission is necessary, Without this permission the app is unable to work properly</string>

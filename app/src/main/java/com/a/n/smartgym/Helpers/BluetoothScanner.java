@@ -33,14 +33,16 @@ import java.util.List;
 public class BluetoothScanner {
 
     private Context mContext;
-    private Handler mHandler = new Handler();;
+    private Handler mHandler = new Handler();
+    ;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private List<ScanFilter> filters;
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 30000;
     private static final String TAG = BluetoothScanner.class.getSimpleName().toString();
     private BluetoothListener mBluetoothListener;
+    private boolean mScanResultStatus;
 
     public BluetoothScanner(Context mContext) {
         this.mContext = mContext;
@@ -56,6 +58,7 @@ public class BluetoothScanner {
     }
 
     private void InitBluetooth() {
+
 
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -77,6 +80,8 @@ public class BluetoothScanner {
 
     public void scanLeDevice(final boolean enable) {
         if (enable) {
+            mScanResultStatus = false;
+            if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -86,6 +91,10 @@ public class BluetoothScanner {
                         mLEScanner.stopScan(mScanCallback);
 
                     }
+                    if (!mScanResultStatus)
+                        if (mBluetoothListener != null)
+                            mBluetoothListener.ScanTroubleshoot("Scan timeout");
+
                 }
             }, SCAN_PERIOD);
             if (Build.VERSION.SDK_INT < 21) {
@@ -116,9 +125,11 @@ public class BluetoothScanner {
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            mScanResultStatus = true;
             BluetoothDevice device = result.getDevice();
             Log.d(TAG, "name:" + device.getName() + " address " + device.getAddress());
-            mBluetoothListener.DeviceAvailable(device);
+            if (mBluetoothListener!=null)
+            mBluetoothListener.ScanResult(device);
         }
 
         @Override
@@ -130,7 +141,9 @@ public class BluetoothScanner {
 
         @Override
         public void onScanFailed(int errorCode) {
+            mScanResultStatus = false;
             Log.e("Scan Failed", "Error Code: " + errorCode);
+            mBluetoothListener.ScanTroubleshoot("Scan Failed Error Code: " + errorCode);
         }
     };
 

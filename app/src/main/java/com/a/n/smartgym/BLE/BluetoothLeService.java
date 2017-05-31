@@ -30,7 +30,10 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -53,13 +56,16 @@ import static com.a.n.smartgym.Utils.Constants.STATE_DISCONNECTED;
  */
 public class BluetoothLeService extends Service {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
+    private static final long TIMEOUT = 5000;
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
-
+    private Handler mHandler = new Handler();
+    ;
+    private int mReconnectionAttemptCounter;
 
 
     public final static String ACTION_GATT_CONNECTED =
@@ -72,6 +78,8 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
+    public final static String TROUBLESHOOT =
+            "com.example.bluetooth.le.TROUBLESHOOT";
 
     public boolean mIsCharacteristicNotificationOn;
     public BluetoothGattCharacteristic mBluetoothGattCharacteristic;
@@ -90,6 +98,8 @@ public class BluetoothLeService extends Service {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             String intentAction;
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                mReconnectionAttemptCounter = 0;
+                mHandler.removeCallbacksAndMessages(null);
                 intentAction = ACTION_GATT_CONNECTED;
                 mConnectionState = STATE_CONNECTED;
                 broadcastUpdate(intentAction);
@@ -99,10 +109,6 @@ public class BluetoothLeService extends Service {
                         mBluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                if (status==133){
-                    close();
-                    connect(mCurrentAddress);
-                }
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server. " + status);
@@ -196,6 +202,7 @@ public class BluetoothLeService extends Service {
         // After using a given device, you should make sure that BluetoothGatt.close() is called
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
+        mHandler.removeCallbacks(null);
         close();
         return super.onUnbind(intent);
     }
@@ -241,6 +248,25 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
+
+        if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
+
+        if (mReconnectionAttemptCounter < Constants.RECONNECT_ATTEMPTING) {
+            Log.d(TAG,"Counter "+mReconnectionAttemptCounter);
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mConnectionState != STATE_CONNECTED) {
+                        Log.i(TAG, "=======TIMEOUT=======");
+                        closeAndReconnect();
+                    }
+
+                }
+            }, TIMEOUT);
+        }
+        else
+            broadcastUpdate(TROUBLESHOOT);
+
 
         mCurrentAddress = address;
         // Previously connected device.  Try to reconnect.
@@ -294,6 +320,25 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.close();
         mBluetoothGatt = null;
         mConnectionState = STATE_DISCONNECTED;
+
+    }
+
+    public void closeAndReconnect() {
+        mReconnectionAttemptCounter++;
+        new AsyncTask<Void, Void, Void>() {
+            @Override protected Void doInBackground(Void... params) {
+                try {
+                    disconnect();
+                    Thread.sleep(1000);
+                    close();
+                    Thread.sleep(1000);
+                    connect(mCurrentAddress);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
 
     }
 

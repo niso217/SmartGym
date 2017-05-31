@@ -55,6 +55,7 @@ public class UsageAverageFragment extends Fragment {
     private LinkedHashMap<String, LinkedHashMap<String, Double>> dicCodeToIndex;
     private List<List<String>> labels = new ArrayList<>();
     private PieChart mChart;
+    private final static int MAX_EXERCISE = 4;
 
 
 
@@ -79,7 +80,6 @@ public class UsageAverageFragment extends Fragment {
 
         mChart.setDragDecelerationFrictionCoef(0.95f);
 
-        mChart.setCenterText(generateCenterSpannableText());
 
         mChart.setDrawHoleEnabled(true);
         mChart.setHoleColor(Color.WHITE);
@@ -102,7 +102,7 @@ public class UsageAverageFragment extends Fragment {
 
         // add a selection listener
 
-        setData(4);
+        setData();
 
         mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
         // mChart.spin(2000, 0, 360);
@@ -122,9 +122,9 @@ public class UsageAverageFragment extends Fragment {
         mChart.setEntryLabelTextSize(12f);
     }
 
-    private SpannableString generateCenterSpannableText() {
+    private SpannableString generateCenterSpannableText(int size) {
 
-        SpannableString s = new SpannableString("Top 5 Exercises");
+        SpannableString s = new SpannableString("Top " +size +  " Exercises");
         s.setSpan(new RelativeSizeSpan(1.7f), 0, 15, 0);
 //        s.setSpan(new StyleSpan(Typeface.NORMAL), 15, s.length() - 15, 0);
 //        s.setSpan(new ForegroundColorSpan(Color.GRAY), 15, s.length() - 15, 0);
@@ -135,31 +135,34 @@ public class UsageAverageFragment extends Fragment {
 
 
 
-    private void setData(int count) {
+    private void setData() {
 
+        int size = 0;
         long other = 0;
         ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        if (machineUsages.size()<5) return;
+        //if (machineUsages.size()<5) return;
 
 
         ArrayList<PieEntry> entries = new ArrayList<PieEntry>();
 
-        for (int i = count; i < machineUsages.size(); i++) {
-            other += machineUsages.get(i).getPresent();
+        if (MAX_EXERCISE < machineUsages.size()){
+            for (int i = MAX_EXERCISE; i < machineUsages.size(); i++) {
+                other += machineUsages.get(i).getPresent();
+            }
+            size = MAX_EXERCISE;
+            entries.add(new PieEntry(other, "Others"));
+        }
+        else{
+            size = machineUsages.size();
         }
 
-        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
-        // the chart.
-        for (int i = 0; i < count ; i++) {
+        for (int i = 0; i < size ; i++) {
             entries.add(new PieEntry(machineUsages.get(i).getPresent(),
-                            machineUsages.get(i).getMachine_name(),
-                    getResources().getDrawable(R.drawable.star)));
+                            machineUsages.get(i).getMachine_name()));
         }
 
-        entries.add(new PieEntry(other,
-                "Others",
-                getResources().getDrawable(R.drawable.star)));
+
 
 
         PieDataSet dataSet = new PieDataSet(entries, "");
@@ -199,6 +202,8 @@ public class UsageAverageFragment extends Fragment {
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.WHITE);
         mChart.setData(data);
+        mChart.setCenterText(generateCenterSpannableText(size));
+
 
         // undo all highlights
         mChart.highlightValues(null);
