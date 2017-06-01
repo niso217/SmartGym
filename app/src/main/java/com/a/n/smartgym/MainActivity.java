@@ -19,6 +19,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.location.LocationManager;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements
     private String[][] mTechLists;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
-
+    private SettingsDialogFragment mHeadlessFrag;
     private BluetoothScanner mBluetoothScanner;
     private BluetoothLeService mBluetoothLeService;
     private String mBluetoothDeviceAddress;
@@ -122,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements
     private String mCurrentTagId = "";
     private Tag mCurrentTag;
     boolean mPermissionInProgress;
-
 
 
     // Handles various events fired by the Service.
@@ -161,6 +161,12 @@ public class MainActivity extends AppCompatActivity implements
                 //showProgressDialog(getString(R.string.reconnecting));
                 Toast.makeText(getApplicationContext(), "Unable connect to BLE Device",
                         Toast.LENGTH_SHORT).show();
+            } else if (
+                    BluetoothAdapter.ACTION_STATE_CHANGED.equals(action) ||
+                            NfcAdapter.ACTION_ADAPTER_STATE_CHANGED.equals(action) ||
+                            LocationManager.PROVIDERS_CHANGED_ACTION.equals(action)) {
+
+                mHeadlessFrag.setLocation();
             }
 //            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
@@ -181,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
             if (!mBluetoothLeService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
-                Log.d(TAG,"finish");
+                Log.d(TAG, "finish");
                 finish();
             }
 
@@ -196,13 +202,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
 
-        Resources appR = getResources();
-        CharSequence txt = appR.getText(appR.getIdentifier("app_name",
-                "string", getPackageName()));
-
-        Log.d(TAG, "OnCreate " + txt);
 
         mHandler = new Handler();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -236,6 +239,7 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             mCurrentFragment = new DayAverageFragment();
             mFragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+
         }
 
         InitializeUserDetails();
@@ -257,6 +261,21 @@ public class MainActivity extends AppCompatActivity implements
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
 
 
+    }
+
+    private void HeadLessFragment(boolean add) {
+        mHeadlessFrag = (SettingsDialogFragment) getSupportFragmentManager()
+                .findFragmentByTag(SettingsDialogFragment.TAG);
+        if (mHeadlessFrag == null && add) {
+
+            if (add) {
+                mHeadlessFrag = SettingsDialogFragment.newInstance();
+                getSupportFragmentManager().beginTransaction()
+                        .add(mHeadlessFrag, SettingsDialogFragment.TAG)
+                        .commit();
+            }
+        } else if (!add)
+            getSupportFragmentManager().beginTransaction().remove(mHeadlessFrag);
     }
 
     private void setCurrentMode() {
@@ -305,6 +324,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
 
+
         if (!mPermissionInProgress)
             navigateToCaptureFragment();
 
@@ -334,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG,"onDestroy");
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
@@ -343,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG,"onStop");
+        Log.d(TAG, "onStop");
 
     }
 
@@ -384,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements
 //        }
 
         String action = intent.getAction();
-        Log.d(TAG,action);
+        Log.d(TAG, action);
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
 
             String type = intent.getType();
@@ -546,7 +566,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void logout() {
 
-        Log.d(TAG,"LOGOUT");
+        Log.d(TAG, "LOGOUT");
 
         // Firebase sign out
         mAuth.signOut();
@@ -563,10 +583,9 @@ public class MainActivity extends AppCompatActivity implements
                 });
 
         startActivity(new Intent(getApplicationContext(), LogInActivity.class));
-        Log.d(TAG,"finish");
+        Log.d(TAG, "finish");
         finish();
     }
-
 
 
     private void StartExercise(Tag tag) {
@@ -657,6 +676,9 @@ public class MainActivity extends AppCompatActivity implements
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothLeService.TROUBLESHOOT);
+        intentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        intentFilter.addAction(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+        intentFilter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
 
         return intentFilter;
     }
@@ -716,11 +738,13 @@ public class MainActivity extends AppCompatActivity implements
     public void navigateToCaptureFragment() {
         if (isPermissionGranted()) {
             mPermissionInProgress = false;
-            SettingsDialogFragment.newInstance().show(getSupportFragmentManager(), SettingsDialogFragment.class.getName());
-
+            HeadLessFragment(true);
+            //SettingsDialogFragment.newInstance().show(getSupportFragmentManager(), SettingsDialogFragment.class.getName());
         } else {
+            HeadLessFragment(false);
             mPermissionInProgress = true;
             PermissionsDialogFragment.newInstance().show(getSupportFragmentManager(), PermissionsDialogFragment.class.getName());
+
         }
     }
 
@@ -740,6 +764,11 @@ public class MainActivity extends AppCompatActivity implements
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mHeadlessFrag.onActivityResult(requestCode, resultCode, data);
 
+    }
 }
 

@@ -80,6 +80,9 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     public final static String TROUBLESHOOT =
             "com.example.bluetooth.le.TROUBLESHOOT";
+    public final static String ACTION_STATE_CHANGED =
+            "android.bluetooth.adapter.action.STATE_CHANGED";
+
 
     public boolean mIsCharacteristicNotificationOn;
     public BluetoothGattCharacteristic mBluetoothGattCharacteristic;

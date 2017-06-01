@@ -17,6 +17,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
@@ -38,7 +39,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
  * Created by tylerjroach on 8/31/16.
  */
 
-public class SettingsDialogFragment extends DialogFragment implements
+public class SettingsDialogFragment extends Fragment implements
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks {
     private int REQUEST_ENABLE_BT = 1;
@@ -52,8 +53,8 @@ public class SettingsDialogFragment extends DialogFragment implements
 
     private boolean shouldResolve;
     private boolean shouldRetry;
-    private boolean mBluetoothInProgress;
-    private static final String TAG = PrimaryFragment.class.getSimpleName();
+    private boolean mSettingsInProgress;
+    public static final String TAG = PrimaryFragment.class.getSimpleName();
 
 
     public static SettingsDialogFragment newInstance() {
@@ -62,6 +63,10 @@ public class SettingsDialogFragment extends DialogFragment implements
 
     public SettingsDialogFragment() {
 
+    }
+
+    public void ConnectGoogleApi(){
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -73,17 +78,13 @@ public class SettingsDialogFragment extends DialogFragment implements
         }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_TITLE, R.style.PermissionsDialogFragmentStyle);
-        setCancelable(false);
+        setRetainInstance(true);
         InitializeGoogleApiClient();
+
     }
 
     @Override
@@ -125,11 +126,13 @@ public class SettingsDialogFragment extends DialogFragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == REQUEST_ENABLE_BT) {
-            mBluetoothInProgress = false;
+
+            getActivity().setRequestedOrientation(
+                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Bluetooth not enabled.
                 Log.d(TAG, "Bluetooth not enabled");
-                dismiss();
                 close();
                 return;
             }
@@ -137,8 +140,7 @@ public class SettingsDialogFragment extends DialogFragment implements
                 CheckNFC();
                 return;
             }
-            getActivity().setRequestedOrientation(
-                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
         }
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             switch (resultCode) {
@@ -149,6 +151,7 @@ public class SettingsDialogFragment extends DialogFragment implements
                 case Activity.RESULT_CANCELED:
                     Log.d(TAG, "REQUEST_CHECK_SETTINGS: RESULT_CANCELED");
                     // The user was asked to change settings, but chose not to
+                    close();
 
                     break;
                 default:
@@ -187,7 +190,6 @@ public class SettingsDialogFragment extends DialogFragment implements
         builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dismiss();
                 close();
             }
         });
@@ -195,7 +197,6 @@ public class SettingsDialogFragment extends DialogFragment implements
             @Override
             public void onDismiss(DialogInterface dialog) {
                 Log.d(TAG, "finish");
-                dismiss();
                 close();
             }
         });
@@ -203,50 +204,17 @@ public class SettingsDialogFragment extends DialogFragment implements
     }
 
     private void goWIFISettings() {
+        mSettingsInProgress = false;
         Intent WIFISettings = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
         WIFISettings.addCategory(Intent.CATEGORY_DEFAULT);
         WIFISettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(WIFISettings);
     }
 
-    private void promptLocationSettings() {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
-        builder.setTitle(getResources().getString(R.string.gps_denied));
-        builder.setMessage(getResources().getString(R.string.gps_fix));
-        builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                goLocationSettings();
-            }
-        });
-        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dismiss();
-                close();
-            }
-        });
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.d(TAG, "finish");
-                dismiss();
-                close();
-            }
-        });
-        builder.show();
-    }
 
-    private void goLocationSettings() {
-       // startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), REQUEST_CHECK_SETTINGS);
 
-        Intent mIntent= new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        mIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivityForResult(mIntent, REQUEST_CHECK_SETTINGS);
-    }
-
-    private void setLocation() {
+    public void setLocation() {
+        mSettingsInProgress = true;
         LocationRequest mLocationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
@@ -274,18 +242,17 @@ public class SettingsDialogFragment extends DialogFragment implements
                         Log.d(TAG, "LocationSettingsStatusCodes.RESOLUTION_REQUIRED");
                         // Location settings are not satisfied. But could be fixed by showing the user
                         // a dialog.
-//                        try {
-//                            // Show the dialog by calling startResolutionForResult(),
-//                            // and check the result in onActivityResult().
-//                            Log.d(TAG, "startResolutionForResult");
-//                            MainActivity main = (MainActivity)context;
-//                            status.startResolutionForResult(
-//                                    getActivity(),
-//                                    REQUEST_CHECK_SETTINGS);
-//                        } catch (IntentSender.SendIntentException e) {
-//                            // Ignore the error.
-//                        }
-                        promptLocationSettings();
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            Log.d(TAG, "startResolutionForResult");
+                            status.startResolutionForResult(
+                                    getActivity(),
+                                    REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                        }
+                        //promptLocationSettings();
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         Log.d(TAG, "LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE");
@@ -299,13 +266,12 @@ public class SettingsDialogFragment extends DialogFragment implements
         });
     }
 
-    private void CheckBluetooth() {
+    public void CheckBluetooth() {
 
         if (BluetoothAdapter.getDefaultAdapter() == null || !context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(context, "BLE Not Supported",
                     Toast.LENGTH_SHORT).show();
             Log.d(TAG, "finish");
-            dismiss();
             close();
         } else {
             if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
@@ -318,31 +284,25 @@ public class SettingsDialogFragment extends DialogFragment implements
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        Log.d(TAG,"onConfigurationChanged");
-        //dismiss();
-    }
 
     public void CheckNFC() {
         NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(context);
         if (mNfcAdapter == null) {
             Toast.makeText(context, "NFC is not available", Toast.LENGTH_LONG)
                     .show();
-            dismiss();
             close();
         }
         if (!mNfcAdapter.isEnabled()) {
             promptWIFISettings();
         } else
-            dismiss();
+            mSettingsInProgress = false;
 
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        setLocation();
+        if (!mSettingsInProgress)
+            setLocation();
 
     }
 
@@ -357,8 +317,7 @@ public class SettingsDialogFragment extends DialogFragment implements
     }
 
     public void close() {
-        if (listener != null)
-            listener.closeActivity();
+        getActivity().finish();
     }
 
 }
