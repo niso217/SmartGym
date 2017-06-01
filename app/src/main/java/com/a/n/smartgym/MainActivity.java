@@ -1,5 +1,6 @@
 package com.a.n.smartgym;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,7 +19,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
@@ -27,15 +27,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,7 +44,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,9 +56,9 @@ import com.a.n.smartgym.Graphs.VisitsFragment;
 import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.Listener.BluetoothListener;
+import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Utils.Constants;
-import com.a.n.smartgym.Utils.PermissionsUtil;
 import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
@@ -85,8 +83,6 @@ import com.squareup.picasso.Picasso;
 
 import java.sql.Date;
 import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -96,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,
         SettingsFragment.onSharedPreferenceChangedListener,
+        PermissionsGrantedCallback,
         View.OnClickListener,
         BluetoothListener {
     DrawerLayout mDrawerLayout;
@@ -112,13 +109,10 @@ public class MainActivity extends AppCompatActivity implements
     private String[][] mTechLists;
     public static final String MIME_TEXT_PLAIN = "text/plain";
     private Fragment mCurrentFragment;
-    private int REQUEST_ENABLE_BT = 1;
-    private int REQUEST_NFC = 2;
+
     private BluetoothScanner mBluetoothScanner;
     private BluetoothLeService mBluetoothLeService;
     private String mBluetoothDeviceAddress;
-    final public static int REQUEST_CODE = 123;
-    final public static int REQUEST_CHECK_SETTINGS = 1;
     private Intent mCurrentIntent;
     public ProgressDialog mProgressDialog;
     private Handler mHandler;
@@ -127,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements
     private String mCurrentMode;
     private String mCurrentTagId = "";
     private Tag mCurrentTag;
+    boolean mPermissionInProgress;
+
 
 
     // Handles various events fired by the Service.
@@ -214,8 +210,6 @@ public class MainActivity extends AppCompatActivity implements
 
         InitializeGoogleApiClient();
 
-        AskForPermissions();
-
         setContentView(R.layout.activity_main);
 
         setCurrentMode();
@@ -276,89 +270,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void CheckBluetooth() {
-
-        if (BluetoothAdapter.getDefaultAdapter() == null || !getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "BLE Not Supported",
-                    Toast.LENGTH_SHORT).show();
-            Log.d(TAG,"finish");
-            finish();
-        } else {
-            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.getDefaultAdapter().ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
-            else
-                CheckNFC();
-        }
-    }
-
-    public void CheckNFC() {
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (mNfcAdapter == null) {
-            Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
-                    .show();
-            finish();
-        }
-        if (!mNfcAdapter.isEnabled()) {
-            //Toast.makeText(getApplicationContext(), "Please activate NFC and press Back to return to the application!", Toast.LENGTH_LONG).show();
-            //startActivityForResult(new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS),REQUEST_NFC);
-            promptWIFISettings();
-        }
-    }
-
-
-    private void setLocation() {
-        LocationRequest mLocationRequest = new LocationRequest().setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest)
-                .setNeedBle(true);
-
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
-
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                final LocationSettingsStates mLocationSettingsStates = result.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        Log.d(TAG, "LocationSettingsStatusCodes.SUCCESS");
-                        // All location settings are satisfied. The client can initialize location
-                        // requests here.
-                        CheckBluetooth();
-
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        Log.d(TAG, "LocationSettingsStatusCodes.RESOLUTION_REQUIRED");
-                        // Location settings are not satisfied. But could be fixed by showing the user
-                        // a dialog.
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            Log.d(TAG, "startResolutionForResult");
-                            status.startResolutionForResult(
-                                    MainActivity.this,
-                                    REQUEST_CHECK_SETTINGS);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        Log.d(TAG, "LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE");
-
-                        // Location settings are not satisfied. However, we have no way to fix the
-                        // settings so we won't show the dialog.
-
-                        break;
-                }
-            }
-        });
-    }
-
 //    @Override
 //    protected void onSaveInstanceState(Bundle outState) {
 //        Log.d(TAG, "onSaveInstanceState");
@@ -393,6 +304,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!mPermissionInProgress)
+            navigateToCaptureFragment();
 
         setCurrentMode();
 
@@ -619,16 +533,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-        Log.d(TAG, "onBackPressed");
-    }
+//    @Override
+//    public void onBackPressed() {
+//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+//            super.onBackPressed();
+//        }
+//        Log.d(TAG, "onBackPressed");
+//    }
 
     public void logout() {
 
@@ -653,51 +567,7 @@ public class MainActivity extends AppCompatActivity implements
         finish();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_ENABLE_BT) {
-            if (resultCode == Activity.RESULT_CANCELED) {
-                //Bluetooth not enabled.
-                Log.d(TAG,"Bluetooth not enabled");
-                finish();
-                return;
-            }
-            if (resultCode == Activity.RESULT_OK) {
-                CheckNFC();
-                return;
-            }
-        }
-        if (requestCode == REQUEST_CHECK_SETTINGS) {
-            switch (resultCode) {
-                case Activity.RESULT_OK:
-                    Log.d(TAG, "REQUEST_CHECK_SETTINGS: RESULT_OK");
-                    CheckBluetooth();
-                    break;
-                case Activity.RESULT_CANCELED:
-                    Log.d(TAG, "REQUEST_CHECK_SETTINGS: RESULT_CANCELED");
-                    // The user was asked to change settings, but chose not to
 
-                    break;
-                default:
-                    break;
-            }
-
-        }
-
-        if (requestCode == REQUEST_NFC) {
-            switch (resultCode) {
-                case Activity.RESULT_OK:
-                    Log.d(TAG," REQUEST_NFC OK");
-                    break;
-                default:
-                    Log.d(TAG," REQUEST_NFC default");
-                    break;
-            }
-
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-
-    }
 
     private void StartExercise(Tag tag) {
 
@@ -792,167 +662,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private void AskForPermissions() {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                requestPermissions();
-            }
-        });
-    }
-
-    private void requestPermissions() {
-        List<String> unGranted = PermissionsUtil.getInstance(this).checkPermissions();
-        if (unGranted.size() != 0)
-            PermissionsUtil.getInstance(this).requestPermissions(unGranted, REQUEST_CODE);
-        else {
-            Log.d(TAG, "SetUpDisplayView requestPermissions");
-
-
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        List<String> unGranted = PermissionsUtil.getInstance(this).checkPermissionsRequest(permissions, grantResults);
-        switch (requestCode) {
-            //Confirm the result of which request to return
-            case REQUEST_CODE:
-                if (unGranted.size() == 0) {
-                    //All permissions have been granted
-                } else {
-                    Iterator<String> iterator = unGranted.iterator();
-                    PermissionResolver(iterator.next());
-                }
-                break;
-        }
-    }
-
-    private void PermissionResolver(String Permission) {
-        boolean messege = false;
-        String AlertMessege = "";
-        switch (Permission) {
-
-
-            case Constants.ACCESS_COARSE_LOCATION:
-                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
-                AlertMessege = getResources().getString(R.string.request_location);
-                break;
-            case Constants.READ_EXTERNAL_STORAGE:
-                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.READ_EXTERNAL_STORAGE);
-                AlertMessege = getResources().getString(R.string.request_read_write);
-                break;
-            case Constants.WRITE_EXTERNAL_STORAGE:
-                messege = ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                AlertMessege = getResources().getString(R.string.request_read_write);
-                break;
-        }
-        if (messege) {
-            AlertDialog(AlertMessege);
-        } else {
-            //user has denied with `Never Ask Again`, go to settings
-            promptAppSettings();
-        }
-    }
-
-    private void AlertDialog(String message) {
-        //user denied without Never ask again, just show rationale explanation
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.permission_denied));
-        builder.setMessage(message);
-        builder.setCancelable(false);
-        builder.setNegativeButton(getResources().getString(R.string.re_try), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                requestPermissions();
-            }
-
-        });
-        builder.show();
-    }
-
-    private void promptAppSettings() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.permission_denied));
-        builder.setMessage(getResources().getString(R.string.please_fix));
-        builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                goToAppSettings();
-            }
-        });
-        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.d(TAG,"finish");
-                finish();
-            }
-        });
-        builder.show();
-    }
-
-    private void promptWIFISettings() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.nfc_denied));
-        builder.setMessage(getResources().getString(R.string.nfc_fix));
-        builder.setPositiveButton(getResources().getString(R.string.go_settings), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                goWIFISettings();
-            }
-        });
-        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.d(TAG,"finish");
-                finish();
-            }
-        });
-        builder.show();
-    }
-
-    private void goToAppSettings() {
-        Intent AppSettings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + this.getPackageName()));
-        AppSettings.addCategory(Intent.CATEGORY_DEFAULT);
-        AppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        this.startActivity(AppSettings);
-        Log.d(TAG,"finish");
-        finish();
-    }
-
-//    private void goLocationSettings() {
-//        Intent LocationSettings = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//        LocationSettings.addCategory(Intent.CATEGORY_DEFAULT);
-//        LocationSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        this.startActivity(LocationSettings);
-//        Log.d(TAG,"finish");
-//        finish();
-//    }
-
-    private void goWIFISettings() {
-        Intent WIFISettings = new Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS);
-        WIFISettings.addCategory(Intent.CATEGORY_DEFAULT);
-        WIFISettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //myAppSettings.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        this.startActivity(WIFISettings);
-        //Log.d(TAG,"finish");
-        //finish();
-    }
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        setLocation();
+
     }
 
     @Override
@@ -999,5 +711,35 @@ public class MainActivity extends AppCompatActivity implements
             mProgressDialog = null;
         }
     }
+
+    @Override
+    public void navigateToCaptureFragment() {
+        if (isPermissionGranted()) {
+            mPermissionInProgress = false;
+            SettingsDialogFragment.newInstance().show(getSupportFragmentManager(), SettingsDialogFragment.class.getName());
+
+        } else {
+            mPermissionInProgress = true;
+            PermissionsDialogFragment.newInstance().show(getSupportFragmentManager(), PermissionsDialogFragment.class.getName());
+        }
+    }
+
+    @Override
+    public void closeActivity() {
+        finish();
+    }
+
+    @Override
+    public void progressState(boolean progress) {
+        mPermissionInProgress = progress;
+    }
+
+    private boolean isPermissionGranted() {
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+
 }
 

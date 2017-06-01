@@ -11,32 +11,36 @@ import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
+import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
+
 /**
  * Created by tylerjroach on 8/31/16.
  */
 
-public class CameraPermissionsDialogFragment extends DialogFragment {
+public class PermissionsDialogFragment extends DialogFragment {
   private final int PERMISSION_REQUEST_CODE = 11;
 
   private Context context;
-  private CameraPermissionsGrantedCallback listener;
+  private PermissionsGrantedCallback listener;
 
   private boolean shouldResolve;
   private boolean shouldRetry;
   private boolean externalGrantNeeded;
+  private static final String TAG = PrimaryFragment.class.getSimpleName();
 
-  public static CameraPermissionsDialogFragment newInstance() {
-    return new CameraPermissionsDialogFragment();
+
+  public static PermissionsDialogFragment newInstance() {
+    return new PermissionsDialogFragment();
   }
 
-  public CameraPermissionsDialogFragment() {}
+  public PermissionsDialogFragment() {}
 
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
     this.context = context;
-    if (context instanceof CameraPermissionsGrantedCallback) {
-      listener = (CameraPermissionsGrantedCallback) context;
+    if (context instanceof PermissionsGrantedCallback) {
+      listener = (PermissionsGrantedCallback) context;
     }
   }
 
@@ -95,8 +99,7 @@ public class CameraPermissionsDialogFragment extends DialogFragment {
 
   private void requestNecessaryPermissions() {
     requestPermissions(new String[] {
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.CAMERA,Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
   }
 
@@ -112,15 +115,17 @@ public class CameraPermissionsDialogFragment extends DialogFragment {
             Uri uri = Uri.fromParts("package", context.getApplicationContext().getPackageName(), null);
             intent.setData(uri);
             context.startActivity(intent);
+            listener.progressState(false);
             dismiss();
           }
         })
         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialogInterface, int i) {
+            listener.closeActivity();
             dismiss();
           }
-        }).create().show();
+        }).setCancelable(false).create().show();
   }
 
   private void showRetryDialog() {
@@ -136,12 +141,11 @@ public class CameraPermissionsDialogFragment extends DialogFragment {
         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialogInterface, int i) {
+            listener.closeActivity();
             dismiss();
           }
         }).create().show();
   }
 
-  public interface CameraPermissionsGrantedCallback {
-    void navigateToCaptureFragment();
-  }
+
 }

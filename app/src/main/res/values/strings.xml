@@ -102,8 +102,11 @@
     <string name="please_fix">Please fix Permissions manually</string>
     <string name="go_settings">Go to settings</string>
 
-    <string name="nfc_denied">OpenSSME requires NFC</string>
-    <string name="nfc_fix">Since NFC access has not been granted, this app will not be able to discover beacons when in the background.</string>
+    <string name="gps_denied">SmartGym requires GPS</string>
+    <string name="gps_fix">Since GPS access has not been granted, SmartGym will not be able to discover Bluetooth when in the background.</string>
+
+    <string name="nfc_denied">SmartGym requires NFC</string>
+    <string name="nfc_fix">Since NFC access has not been granted, SmartGym will not be able to discover Bluetooth when in the background.</string>
     <string name="cancel">Cancel</string>
 
     <string name="request_read_write"> Read Write from external storage permission is necessary, Without this permission the app is unable to work properly</string>
