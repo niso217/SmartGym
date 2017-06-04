@@ -16,7 +16,7 @@
         android:layout_height="200dp"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_margin="0dp"
-        circular:cpb_subtitle="subtitle"
+        circular:cpb_subtitle="subtitle1"
         circular:cpb_title="Title" />
 
 
