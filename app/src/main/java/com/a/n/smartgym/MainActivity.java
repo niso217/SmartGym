@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements
                 case BluetoothLeService.ACTION_GATT_CONNECTED: //BLE device connected
                     setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_connected_white_36dp);
                     //if (mCurrentTag != null)
-                        StartExerciseActivity(); //
+                    StartExerciseActivity(); //
                     Log.d(TAG, "ACTION_GATT_CONNECTED");
 
                     break;
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements
             }
             //StartBLEScan(true, true);
 
-            if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED))
+            if (getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED))
                 handleIntent(getIntent());
         }
 
@@ -213,11 +213,16 @@ public class MainActivity extends AppCompatActivity implements
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
             mCurrentFragment = new DayAverageFragment();
-            mNavigationView.getMenu().performIdentifierAction(R.id.device_day_average, 0);
+            performIdentifierAction();
         }
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
 
+
+    }
+
+    public void performIdentifierAction() {
+        mNavigationView.getMenu().performIdentifierAction(R.id.device_day_average, 0);
 
     }
 
@@ -432,11 +437,11 @@ public class MainActivity extends AppCompatActivity implements
         MenuItem item = null;
         isModeChanged(mCurrentMode);
         switch (mCurrentMode) {
-            case Constants.EMULATOR_NAME:
-                item = menu.findItem(R.id.emulator);
-                break;
             case Constants.DEVICE_NAME:
                 item = menu.findItem(R.id.device);
+                break;
+            default:
+                item = menu.findItem(R.id.emulator);
                 break;
         }
         item.setChecked(true);
@@ -479,7 +484,6 @@ public class MainActivity extends AppCompatActivity implements
 
         return super.onOptionsItemSelected(item);
     }
-
 
 
     @Override
@@ -590,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void StartExercise(Tag tag) {
 
-        if (mBluetoothDeviceAddress == null && mCurrentMode!=Constants.DEVICE_NAME){
+        if (mBluetoothDeviceAddress == null && mCurrentMode != Constants.DEVICE_NAME) {
             showScanBLEDialog();
             return;
         }
@@ -728,8 +732,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void isModeChanged(String mode) {
-        mBluetoothLeService.ChangeMode(mCurrentMode = mode);
-        mBluetoothScanner.ChangeFilter(mCurrentMode);
+        if (mBluetoothLeService != null)
+            mBluetoothLeService.ChangeMode(mCurrentMode = mode);
+
+        if (mBluetoothScanner != null)
+            mBluetoothScanner.ChangeFilter(mCurrentMode);
         switch (mode) {
             case Constants.DEVICE_NAME:
                 mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
@@ -749,9 +756,9 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fake_nfc:
-                ArrayList<String> muscle =  new MuscleRepo().getAllMuscleID();
+                ArrayList<String> muscle = new MuscleRepo().getAllMuscleID();
                 Random r = new Random();
-                int i1 = r.nextInt(muscle.size()-1);
+                int i1 = r.nextInt(muscle.size() - 1);
                 mCurrentTagId = muscle.get(i1);
                 StartExercise(null);
                 break;
@@ -771,7 +778,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void closeBLE() {
-        mBluetoothLeService.Slowclose();
+        mBluetoothLeService.close();
     }
 
     public void hideProgressDialog() {

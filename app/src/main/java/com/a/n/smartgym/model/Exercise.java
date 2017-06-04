@@ -19,8 +19,8 @@ public class Exercise {
     private String exerciseid;
     private String visitid;
     private String machinename;
-    private Date start;
-    private Date end;
+    private long start;
+    private long end;
 
     public String getMachinename() {
         return machinename;
@@ -46,19 +46,19 @@ public class Exercise {
         this.visitid = visitid;
     }
 
-    public Date getStart() {
+    public long getStart() {
         return start;
     }
 
-    public void setStart(Date start) {
+    public void setStart(long start) {
         this.start = start;
     }
 
-    public Date getEnd() {
+    public long getEnd() {
         return end;
     }
 
-    public void setEnd(Date end) {
+    public void setEnd(long end) {
         this.end = end;
     }
 }

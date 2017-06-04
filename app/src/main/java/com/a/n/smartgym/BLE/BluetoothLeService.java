@@ -327,7 +327,6 @@ public class BluetoothLeService extends Service {
     }
 
     public void Slowclose() {
-        mReconnectionAttemptCounter++;
         new AsyncTask<Void, Void, Void>() {
             @Override protected Void doInBackground(Void... params) {
                 try {

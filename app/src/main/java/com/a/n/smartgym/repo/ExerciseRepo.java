@@ -39,8 +39,8 @@ public class ExerciseRepo {
                 + Exercise.KEY_EXERCISE_ID + " TEXT  PRIMARY KEY,"
                 + Exercise.KEY_VISIT_ID + " TEXT, "
                 + Exercise.KEY_MACHINE_NAME + " TEXT, "
-                + Exercise.KEY_START + " DATETIME DEFAULT CURRENT_TIME, "
-                + Exercise.KEY_END + " DATETIME DEFAULT CURRENT_TIME )";
+                + Exercise.KEY_START + " INTEGER, "
+                + Exercise.KEY_END + " INTEGER )";
     }
 
 
@@ -57,6 +57,17 @@ public class ExerciseRepo {
 
         // Inserting Row
         db.insert(Exercise.TABLE, null, values);
+        DatabaseManager.getInstance().closeDatabase();
+
+    }
+
+    public void update(String id, long time) {
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Exercise.KEY_END, time);
+        // update Row
+        db.update(Exercise.TABLE, values,Exercise.TABLE +"."+Exercise.KEY_EXERCISE_ID +"="+ "'"+id+"'",null);
         DatabaseManager.getInstance().closeDatabase();
 
     }

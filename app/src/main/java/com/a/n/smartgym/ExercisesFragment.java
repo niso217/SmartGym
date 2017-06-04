@@ -1,12 +1,10 @@
 package com.a.n.smartgym;
 
 import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -21,57 +19,42 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
-import com.a.n.smartgym.Graphs.DayAverageFragment;
-import com.a.n.smartgym.Objects.ExercisesDB;
-import com.a.n.smartgym.Objects.Muscles;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
-import com.facebook.FacebookSdk;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
-
-import static android.content.Context.SENSOR_SERVICE;
-import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
     private FirebaseAuth mAuth;
-    private String mUUID;
-    private String CurrentSession;
+    private String CurrentExercisesId;
+    private String CurrentVisitId;
     private int Counter;
-    private List<Sets> mSet;
+    private Sets mCurrentSet;
     private boolean mInProgress;
     private boolean[] arr;
-    private long mSetStart, mSetEnd;
     private ImageView mImage, mArrowImage;
     private SeekBar mSeekBar;
     private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight, mCurrentWeightTV;
@@ -81,7 +64,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private SensorManager sensorManager;
     private boolean mBeenHere;
     private Context activity;
-    private String mCurrentWeight = "", mCurrentRepetition = "0", mCalculatedWeight = "", mCurrentDirection = "";
+    private String mCurrentWeight = "0", mCurrentRepetition = "0", mCalculatedWeight = "0", mCurrentDirection = "0";
     private Handler mHandler = new Handler();
     private int mZeroValueCounter;
     private int mSameReapedCounter;
@@ -90,9 +73,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (mCurrentWeight.equals("0")) {
+            if (Integer.parseInt(mCalculatedWeight) < 1) {
                 mZeroValueCounter++;
-                if (mZeroValueCounter > 10) { //3 seconds pasted throw data to database
+                if (mZeroValueCounter > 5) { //3 seconds pasted throw data to database
                     InsertToDataBase();
                     mZeroValueCounter = 0;
                 }
@@ -116,10 +99,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
                 showProgressDialog(null, false);
                 String extra = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
                 ToIntArray(extra);
-            }
-            else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 showProgressDialog(null, false);
-                Toast.makeText(activity,getString(R.string.disconnected_device), Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, getString(R.string.disconnected_device), Toast.LENGTH_SHORT).show();
                 finishExersise();
             }
         }
@@ -129,9 +111,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         mAuth = FirebaseAuth.getInstance();
         mHandler = new Handler();
-        mSet = new ArrayList<>();
 
         mTicker.run();
 
@@ -147,7 +130,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         if (!stringArray[1].equals(mCurrentRepetition)) {
             mCurrentRepetition = stringArray[1];
             if (!mCurrentRepetition.equals("0")) {
-                AddSet(mCalculatedWeight, mSetStart, mSetEnd);
+                StartNewSetInstance(Integer.parseInt(mCurrentRepetition), Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
             }
@@ -163,10 +146,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
         if (mCurrentDirection.equals("-1")) {
             mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_downward_black_48dp"));
-            mSetEnd = System.currentTimeMillis();
 
         } else if (mCurrentDirection.equals("1")) {
-            mSetStart = System.currentTimeMillis();
             mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
 
         } else
@@ -189,15 +170,15 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         activity.unregisterReceiver(mGattUpdateReceiver);
     }
 
-    private void AddSet(String weight, long start, long end) {
-        Sets s1 = new Sets();
-        s1.setSetid(UUID.randomUUID().toString());
-        s1.setWeight(Integer.parseInt(String.valueOf(weight)));
-        s1.setexerciseid(mUUID);
-        s1.setStart(start);
-        s1.setEnd(end);
+    private void StartNewSetInstance(int count, int weight) {
+        if (mCurrentSet == null) {
+            mCurrentSet = new Sets();
+            mCurrentSet.setSetid(UUID.randomUUID().toString());
+            mCurrentSet.setexerciseid(CurrentExercisesId);
+        }
 
-        mSet.add(s1);
+        mCurrentSet.setCount(count);
+        mCurrentSet.setWeight(weight);
 
     }
 
@@ -234,11 +215,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         btnFinish.setOnClickListener(this);
         Controllers(true);
 
-        arr = new boolean[mSeekBar.getMax()];
-
-
         if (getArguments() != null) {
-            mUUID = UUID.randomUUID().toString();
+
+            CurrentExercisesId = UUID.randomUUID().toString();
             Muscle current = getArguments().getParcelable("muscle");
             //Tag tag = getArguments().getParcelable("tag");
             //getMessagesFromTag(tag);
@@ -257,11 +236,13 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
             }
 
-            CurrentSession = getArguments().getString("uuid");
+            CurrentVisitId = getArguments().getString("uuid");
 
 
-            if (!mUUID.isEmpty() && current != null && !CurrentSession.isEmpty()) {
-                setNewExercise(mUUID, CurrentSession, current.getName());
+            if (!CurrentExercisesId.isEmpty() && current != null && !CurrentVisitId.isEmpty()) {
+                setNewExercise(CurrentExercisesId, CurrentVisitId, current.getName());
+                StartNewSetInstance(0, 0);
+
                 //mID.setText(ScanResult);
             }
 
@@ -270,11 +251,22 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         return rootFragment;
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         stop();
         mHandler.removeCallbacks(mTicker);
+    }
+
+    private void closeFragment() {
+
+        try {
+            ((MainActivity) activity).performIdentifierAction(); //finisdhed
+        } catch (ClassCastException cce) {
+
+        }
+
     }
 
 
@@ -320,10 +312,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         return drawable;
     }
 
-    public boolean areAllTrue(boolean[] array) {
-        for (boolean b : array) if (!b) return false;
-        return true;
-    }
 
     private void Controllers(boolean b) {
         btnFinish.setEnabled(b);
@@ -336,8 +324,17 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         exercise.setexerciseid(uuid);
         exercise.setVisitid(session);
         exercise.setMachinename(scan);
-        exercise.setStart(new java.sql.Date(Calendar.getInstance().getTime().getTime()));
+        exercise.setStart(System.currentTimeMillis());
         exerciseRepo.insert(exercise);
+    }
+
+    private void updateExerciseEndTime() {
+        if (CurrentExercisesId != null) {
+            ExerciseRepo exerciseRepo = new ExerciseRepo();
+            exerciseRepo.update(CurrentExercisesId, System.currentTimeMillis());
+            Log.d(TAG, "End time updated");
+
+        }
     }
 
 
@@ -389,18 +386,19 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void finishExersise() {
         InsertToDataBase();
+        updateExerciseEndTime();
         stop();
-        FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
+        closeFragment();
     }
 
     private void InsertToDataBase() {
-        if (mSet.size() > 0) {
+        if (mCurrentSet != null && mCurrentSet.getCount()>0) {
             SetsRepo setsRepo = new SetsRepo(getContext());
-            setsRepo.BulkSets(mSet);
-            Toast.makeText(activity, mSet.size() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
-            mSet.clear();
-            Log.d(TAG, "Sets Inserted to DataBase");
+            setsRepo.insert(mCurrentSet);
+            Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
+            Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");
+            mCurrentSet = null;
+
         }
     }
 
