@@ -252,7 +252,7 @@ public class CircularProgressBar extends ProgressBar{
 		this.mTitle = title;
 		invalidate();
 	}
-//
+
 	public synchronized void setTitleFontSize(int size){
 		this.mTitlePaint.setTextSize(size);
 		invalidate();

@@ -9,7 +9,6 @@
         <attr name="cpb_subtitle" format="string"/>
         <attr name="cpb_subtitleColor" format="string"/>
         <attr name="cpb_strokeWidth" format="integer"/>
-        <attr name="cpb_strokeWidth1" format="integer"/>
 
     </declare-styleable>
 </resources>

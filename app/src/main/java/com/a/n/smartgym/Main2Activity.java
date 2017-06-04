@@ -24,7 +24,7 @@ public class Main2Activity extends ActionBarActivity {
 
 
          c2 = (CircularProgressBar) findViewById(R.id.circularprogressbar2);
-        c2.setTitleFontSize(100); //nir
+        c2.setTitleFontSize(100);
         c2.animateProgressTo(0, 77, new CircularProgressBar.ProgressAnimationListener() {
 
             @Override
