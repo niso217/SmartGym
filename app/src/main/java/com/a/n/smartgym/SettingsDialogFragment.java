@@ -54,7 +54,7 @@ public class SettingsDialogFragment extends Fragment implements
     private boolean shouldResolve;
     private boolean shouldRetry;
     private boolean mSettingsInProgress;
-    public static final String TAG = PrimaryFragment.class.getSimpleName();
+    public static final String TAG = SettingsDialogFragment.class.getSimpleName();
 
 
     public static SettingsDialogFragment newInstance() {
@@ -65,9 +65,6 @@ public class SettingsDialogFragment extends Fragment implements
 
     }
 
-    public void ConnectGoogleApi(){
-        mGoogleApiClient.connect();
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -90,6 +87,7 @@ public class SettingsDialogFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
+        Log.d(TAG,"onStart");
         mGoogleApiClient.connect();
     }
 

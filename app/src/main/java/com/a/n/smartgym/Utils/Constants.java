@@ -13,6 +13,8 @@ import java.util.Random;
 
 public class Constants {
 
+
+
     public static final int STATE_DISCONNECTED = 0;
     public static final int STATE_CONNECTING = 1;
     public static final int STATE_CONNECTED = 2;

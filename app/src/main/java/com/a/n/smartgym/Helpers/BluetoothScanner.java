@@ -39,7 +39,7 @@ public class BluetoothScanner {
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private List<ScanFilter> filters;
-    private static final long SCAN_PERIOD = 30000;
+    private static final long SCAN_PERIOD = 10000;
     private static final String TAG = BluetoothScanner.class.getSimpleName().toString();
     private BluetoothListener mBluetoothListener;
     private boolean mScanResultStatus;
@@ -78,6 +78,14 @@ public class BluetoothScanner {
         }
     }
 
+    public void ChangeFilter(String devicename){
+        ScanFilter scanFilter = new ScanFilter.Builder()
+                .setDeviceName(devicename)
+                .build();
+        filters = new ArrayList<>();
+        filters.add(scanFilter);
+    }
+
     public void scanLeDevice(final boolean enable) {
         if (enable) {
             mScanResultStatus = false;
@@ -103,11 +111,14 @@ public class BluetoothScanner {
                 mLEScanner.startScan(filters, settings, mScanCallback);
             }
         } else {
+            mHandler.removeCallbacksAndMessages(null);
+
             if (Build.VERSION.SDK_INT < 21) {
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);
             } else {
                 mLEScanner.stopScan(mScanCallback);
             }
+
         }
     }
 
@@ -125,11 +136,14 @@ public class BluetoothScanner {
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            scanLeDevice(false);
             mScanResultStatus = true;
             BluetoothDevice device = result.getDevice();
             Log.d(TAG, "name:" + device.getName() + " address " + device.getAddress());
-            if (mBluetoothListener!=null)
-            mBluetoothListener.ScanResult(device);
+            if (mBluetoothListener!=null){
+                mBluetoothListener.ScanResult(device);
+
+            }
         }
 
         @Override

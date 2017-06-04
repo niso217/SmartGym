@@ -171,6 +171,30 @@ public class MuscleRepo {
 
     }
 
+    public ArrayList<String> getAllMuscleID(){
+        Muscle muscle;
+        ArrayList<String> muscleArrayList = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + Muscle.TABLE +"."+Muscle.KEY_ID
+                + " FROM " + Muscle.TABLE;
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                muscleArrayList.add(cursor.getString(cursor.getColumnIndex(Muscle.KEY_ID)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return muscleArrayList;
+
+    }
+
     public Hashtable<String,String> getMainMuscle(){
         Hashtable<String,String> keyValue = new Hashtable<>();
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();

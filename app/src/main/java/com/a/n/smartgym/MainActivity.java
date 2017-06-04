@@ -19,11 +19,13 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -83,7 +85,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -98,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements
         BluetoothListener {
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
-    FragmentManager mFragmentManager;
-    FragmentTransaction mFragmentTransaction;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int BARCODE_READER_REQUEST_CODE = 1;
     private FirebaseAuth mAuth;
@@ -118,64 +120,50 @@ public class MainActivity extends AppCompatActivity implements
     public ProgressDialog mProgressDialog;
     private Handler mHandler;
     private GoogleApiClient mGoogleApiClient;
-    private SharedPreferences sharedPreferences;
     private String mCurrentMode;
     private String mCurrentTagId = "";
     private Tag mCurrentTag;
     boolean mPermissionInProgress;
+    private Toolbar mToolbar;
+    private Menu mMenu;
 
 
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                if (mCurrentTag != null)
-                    StartExerciseActivity();
-                //UpdateUi(mConnectionState,getString(R.string.connected));
-                //invalidateOptionsMenu();
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                // UpdateUi(mConnectionState,getString(R.string.disconnected));
-                //invalidateOptionsMenu();
-                //clearUI();
-                //mBluetoothLeService.setCharacteristicNotification(false);
-                setBLENotification(false);
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Show all the supported services and characteristics on the user interface.
-                //displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                // mBluetoothLeService.setCharacteristicNotification(true);
-                setBLENotification(true);
+            switch ((intent.getAction())) {
+                case BluetoothLeService.ACTION_GATT_CONNECTED: //BLE device connected
+                    setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_connected_white_36dp);
+                    //if (mCurrentTag != null)
+                        StartExerciseActivity(); //
+                    Log.d(TAG, "ACTION_GATT_CONNECTED");
 
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-
-            } else if (BluetoothLeService.TROUBLESHOOT.equals(action)) {
-
-                hideProgressDialog();
-
-                //showProgressDialog(getString(R.string.reconnecting));
-                Toast.makeText(getApplicationContext(), "Unable connect to BLE Device",
-                        Toast.LENGTH_SHORT).show();
-            } else if (
-                    BluetoothAdapter.ACTION_STATE_CHANGED.equals(action) ||
-                            NfcAdapter.ACTION_ADAPTER_STATE_CHANGED.equals(action) ||
-                            LocationManager.PROVIDERS_CHANGED_ACTION.equals(action)) {
-
-                mHeadlessFrag.setLocation();
+                    break;
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
+                    setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_white_36dp);
+                    //setBLENotification(false); //set BLE device Characteristic Notification off
+                    Log.d(TAG, "ACTION_GATT_DISCONNECTED");
+                    break;
+                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
+                    setBLENotification(true); //set BLE device Characteristic Notification on
+                    break;
+                case BluetoothLeService.TROUBLESHOOT:
+                    Log.d(TAG, "TROUBLESHOOT");
+                    setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_white_36dp);
+                    hideProgressDialog();
+                    Toast.makeText(getApplicationContext(), getString(R.string.ble_unable),
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                case BluetoothAdapter.ACTION_STATE_CHANGED:
+                    mHeadlessFrag.setLocation();
+                    break;
+                case NfcAdapter.ACTION_ADAPTER_STATE_CHANGED:
+                    mHeadlessFrag.setLocation();
+                    break;
+                case LocationManager.PROVIDERS_CHANGED_ACTION:
+                    mHeadlessFrag.setLocation();
+                    break;
             }
-//            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                Log.d(TAG, intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-//                ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("EX");
-//                if (fragment != null && fragment.isVisible()) {
-//                    fragment.getMessage(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-//                }
-//                //  UpdateUi(mValue,intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-//            }
         }
     };
 
@@ -187,11 +175,12 @@ public class MainActivity extends AppCompatActivity implements
             mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
             if (!mBluetoothLeService.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
-                Log.d(TAG, "finish");
                 finish();
             }
+            //StartBLEScan(true, true);
 
-            handleIntent(getIntent());
+            if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED))
+                handleIntent(getIntent());
         }
 
         @Override
@@ -202,65 +191,50 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         super.onCreate(savedInstanceState);
 
+        mAuth = FirebaseAuth.getInstance();
 
-        mHandler = new Handler();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SetUpActivityView();
+
         setCurrentMode();
 
         InitializeGoogleApiClient();
 
-        setContentView(R.layout.activity_main);
-
-        setCurrentMode();
-
         mBluetoothScanner = new BluetoothScanner(this);
 
-        mAuth = FirebaseAuth.getInstance();
 
         ExercisesDB.getInstance().keys = new MuscleRepo().getMainMuscle();
 
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-
-        fab.setOnClickListener(this);
-
-        mFragmentManager = getSupportFragmentManager();
-        mFragmentTransaction = mFragmentManager.beginTransaction();
+        InitializeNFC();
 
         if (savedInstanceState != null) {
             //Restore the fragment's instance
-            mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, "myFragmentName");
+            mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
             mCurrentFragment = new DayAverageFragment();
-            mFragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
-
+            mNavigationView.getMenu().performIdentifierAction(R.id.device_day_average, 0);
         }
-
-        InitializeUserDetails();
-
-        mNavigationView.setNavigationItemSelectedListener(this);
-
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.app_name,
-                R.string.app_name);
-
-
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        mDrawerToggle.syncState();
-
-        nfc();
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
 
 
+    }
+
+    private void SetUpActivityView() {
+        setContentView(R.layout.activity_main);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
+        mNavigationView.setNavigationItemSelectedListener(this);
+        fab = (FloatingActionButton) findViewById(R.id.fake_nfc);
+        fab.setOnClickListener(this);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.app_name,
+                R.string.app_name);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
+        InitializeUserDetails();
     }
 
     private void HeadLessFragment(boolean add) {
@@ -279,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setCurrentMode() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPreferences != null)
             mCurrentMode = sharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
     }
@@ -289,17 +264,8 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        Log.d(TAG, "onSaveInstanceState");
-//        super.onSaveInstanceState(outState);
-//        Fragment current = getSupportFragmentManager().getFragment(outState, "myFragmentName");
-//        if (current != null)
-//            getSupportFragmentManager().putFragment(outState, "myFragmentName", mCurrentFragment);
-//        //getSupportFragmentManager().beginTransaction().add(R.id.containerView,mCurrentFragment, "myFragmentName").commit();
-//    }
 
-    private void nfc() {
+    private void InitializeNFC() {
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         // Create a generic PendingIntent that will be deliver to this activity. The NFC stack
         // will fill in the intent with the details of the discovered tag before delivering to
@@ -324,8 +290,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
 
-
-        if (!mPermissionInProgress)
+        if (!mPermissionInProgress) //do not enter if Permission fragment dialog not finished
             navigateToCaptureFragment();
 
         setCurrentMode();
@@ -337,6 +302,9 @@ public class MainActivity extends AppCompatActivity implements
         if (mNfcAdapter != null)
             mNfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent, mFilters,
                     mTechLists);
+
+        //start BLE scan when device is emulator
+        //StartBLEScan(false, true);
     }
 
     @Override
@@ -344,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
 
         if (mBluetoothScanner.getBluetoothAdapter() != null && mBluetoothScanner.getBluetoothAdapter().isEnabled()) {
-            mBluetoothScanner.scanLeDevice(false);
+            StartBLEScan(false, false);
             mBluetoothScanner.setListener(null);
         }
         unregisterReceiver(mGattUpdateReceiver);
@@ -371,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(deviceAddress);
             Log.d(TAG, "Connect request result=" + result);
-            mBluetoothScanner.scanLeDevice(false);
+            StartBLEScan(false, false);
         } else
             Log.d(TAG, "mBluetoothLeService is null");
 
@@ -385,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements
             handleIntent(intent);
 
         } else {
-            ExercisesFragment myFragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag("myFragmentName");
+            ExercisesFragment myFragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(TAG);
             if (myFragment != null && myFragment.isVisible()) {
                 return;
             } else
@@ -396,12 +364,8 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void handleIntent(Intent intent) {
 
-//        if (mBluetoothLeService!=null && mBluetoothLeService.getConnectionState()==Constants.STATE_CONNECTED){
-//            Log.d(TAG, "the device is connected, trying to restart...");
-//            return;
-//        }
+    private void handleIntent(Intent intent) {
 
         String action = intent.getAction();
         Log.d(TAG, action);
@@ -435,6 +399,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private void InitializeUserDetails() {
+
         //Initializing the header.xml data
         View headerLayout = mNavigationView.getHeaderView(0);
 
@@ -459,37 +424,68 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        mMenu = menu;
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        mCurrentMode = settings.getString(getString(R.string.mode_key), "");
+        MenuItem item = null;
+        isModeChanged(mCurrentMode);
+        switch (mCurrentMode) {
+            case Constants.EMULATOR_NAME:
+                item = menu.findItem(R.id.emulator);
+                break;
+            case Constants.DEVICE_NAME:
+                item = menu.findItem(R.id.device);
+                break;
+        }
+        item.setChecked(true);
         return true;
+    }
+
+    private void setIcon(int resource, int drawable) {
+        if (mMenu != null)
+            mMenu.findItem(resource).setIcon(drawable);
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = settings.edit();
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                mCurrentFragment = new SettingsFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                break;
+            case R.id.bluetooth_searching:
+                StartBLEScan(true, true);
+                break;
+            case R.id.emulator:
+                item.setChecked(!item.isChecked());
+                editor.putString(getString(R.string.mode_key), Constants.EMULATOR_NAME);
+                editor.commit();
+                isModeChanged(Constants.EMULATOR_NAME);
 
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+                break;
+            case R.id.device:
+                item.setChecked(!item.isChecked());
+                editor.putString(getString(R.string.mode_key), Constants.DEVICE_NAME);
+                editor.commit();
+                isModeChanged(Constants.DEVICE_NAME);
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            mCurrentFragment = new SettingsFragment();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
 
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         mDrawerLayout.closeDrawers();
-        Bundle arguments = new Bundle();
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-
+        Log.d(TAG, "onNavigationItemSelected");
         switch (item.getItemId()) {
 //            case R.id.nav_item_inbox:
 //                mCurrentFragment = new TabFragment();
@@ -503,21 +499,26 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.device_day_average:
                 mCurrentFragment = new DayAverageFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("");
                 break;
             case R.id.day_device_average:
                 mCurrentFragment = new TrendAverageFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("");
                 break;
             case R.id.usage_average:
                 mCurrentFragment = new UsageAverageFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("");
+
                 break;
             case R.id.visits:
                 mCurrentFragment = new VisitsFragment();
-                fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commit();
-                break;
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("");
 
+                break;
             case R.id.nav_logout:
                 logout();
                 break;
@@ -553,16 +554,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-//    @Override
-//    public void onBackPressed() {
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
-//        if (drawer.isDrawerOpen(GravityCompat.START)) {
-//            drawer.closeDrawer(GravityCompat.START);
-//        } else {
-//            super.onBackPressed();
-//        }
-//        Log.d(TAG, "onBackPressed");
-//    }
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+        Log.d(TAG, "onBackPressed");
+    }
 
     public void logout() {
 
@@ -590,37 +590,81 @@ public class MainActivity extends AppCompatActivity implements
 
     private void StartExercise(Tag tag) {
 
-        mCurrentTag = tag;
-        try {
-            mCurrentTagId = new NdefReaderTask().execute(tag).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        if (mBluetoothDeviceAddress == null && mCurrentMode!=Constants.DEVICE_NAME){
+            showScanBLEDialog();
+            return;
         }
+
+        mCurrentTag = tag;
+        if (mCurrentTag != null) {
+            try {
+                mCurrentTagId = new NdefReaderTask().execute(tag).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+        }
+
 
         hideProgressDialog();
 
         if (mBluetoothLeService.getConnectionState() != Constants.STATE_CONNECTED) {
-
-            if (mCurrentMode.equals(Constants.DEVICE_NAME)) {
-
-                showProgressDialog(getString(R.string.connecting));
+            showProgressDialog(getString(R.string.connecting));
+            if (mCurrentMode.equals(Constants.DEVICE_NAME))
                 connectToDevice(mBluetoothDeviceAddress = Constants.GYM1_ADDRESS);
+            else
+                connectToDevice(mBluetoothDeviceAddress);
 
-            } else {
-                showProgressDialog(getString(R.string.scanning));
-                mBluetoothScanner.scanLeDevice(true);
-
-            }
         } else {
             StartExerciseActivity();
         }
 
     }
 
+    private void StartBLEScan(boolean showprogress, boolean on) {
+        if (showprogress)
+            showProgressDialog(getString(R.string.scanning));
+
+        if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() != Constants.STATE_CONNECTED) {
+            mBluetoothScanner.scanLeDevice(on);
+            if (on) {
+                setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_searching_white_36dp);
+            } else
+                setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_white_36dp);
+        }
+
+    }
+
 
     private void StartExerciseActivity() {
+
+        Bundle bundle = new Bundle();
+        bundle.putString("uuid", isVisitExist());
+        hideProgressDialog();
+
+        if (mCurrentTagId.isEmpty()) {
+            mCurrentFragment = new MuscleFragment();
+            mCurrentFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
+        } else {
+            MuscleRepo muscleRepo = new MuscleRepo();
+            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
+            bundle.putParcelable("muscle", ex);
+            //bundle.putParcelable("tag", mCurrentTag);
+            mCurrentFragment = new ExercisesFragment();
+            mCurrentFragment.setArguments(bundle);
+            getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment, TAG).commit();
+        }
+    }
+
+    /**
+     * check if user has a UUID for today session, otherwise return new one
+     *
+     * @return existing  / new UUID
+     */
+    private String isVisitExist() {
         VisitsRepo visitsRepo = new VisitsRepo();
         String uuid = visitsRepo.getCurrentUUID(mAuth.getCurrentUser().getUid());
         if (uuid.isEmpty()) {
@@ -631,42 +675,30 @@ public class MainActivity extends AppCompatActivity implements
             visits.setDate(new Date(Calendar.getInstance().getTime().getTime()));
             visitsRepo.insert(visits);
         }
-
-
-        Bundle bundle = new Bundle();
-        bundle.putString("uuid", uuid);
-        hideProgressDialog();
-
-        if (mCurrentTagId.isEmpty()) {
-            mCurrentFragment = new MuscleFragment();
-            mCurrentFragment.setArguments(bundle);
-            FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
-        } else {
-            MuscleRepo muscleRepo = new MuscleRepo();
-            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
-            bundle.putParcelable("muscle", ex);
-            bundle.putParcelable("tag", mCurrentTag);
-            mCurrentFragment = new ExercisesFragment();
-            mCurrentFragment.setArguments(bundle);
-            FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.containerView, mCurrentFragment, "myFragmentName").commit();
-        }
+        return uuid;
     }
 
     @Override
     public void ScanResult(BluetoothDevice device) {
         hideProgressDialog();
-        showProgressDialog(getString(R.string.connecting));
-        connectToDevice(mBluetoothDeviceAddress = device.getAddress());
+        //showProgressDialog(getString(R.string.connecting));
+        mBluetoothDeviceAddress = device.getAddress();
+        mToolbar.setTitle(device.getName());
+        StartBLEScan(false, false);
         Log.d(TAG, "ScanResult");
     }
 
     @Override
     public void ScanTroubleshoot(String msg) {
         hideProgressDialog();
+        StartBLEScan(false, false);
         Toast.makeText(this, msg,
                 Toast.LENGTH_SHORT).show();
+        mToolbar.setTitle("No BLE Device Was Found");
+        mBluetoothDeviceAddress = null;
+        setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_disabled_white_36dp);
+
+
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -697,6 +729,18 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void isModeChanged(String mode) {
         mBluetoothLeService.ChangeMode(mCurrentMode = mode);
+        mBluetoothScanner.ChangeFilter(mCurrentMode);
+        switch (mode) {
+            case Constants.DEVICE_NAME:
+                mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
+                mToolbar.setTitle(Constants.DEVICE_NAME);
+                break;
+            case Constants.EMULATOR_NAME:
+                mBluetoothDeviceAddress = null;
+                mToolbar.setTitle("");
+                break;
+
+        }
         Log.d(TAG, "Current Mode " + mCurrentMode);
 
     }
@@ -704,9 +748,12 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.fab:
-                Intent intent = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
-                startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
+            case R.id.fake_nfc:
+                ArrayList<String> muscle =  new MuscleRepo().getAllMuscleID();
+                Random r = new Random();
+                int i1 = r.nextInt(muscle.size()-1);
+                mCurrentTagId = muscle.get(i1);
+                StartExercise(null);
                 break;
         }
     }
@@ -724,7 +771,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void closeBLE() {
-        mBluetoothLeService.close();
+        mBluetoothLeService.Slowclose();
     }
 
     public void hideProgressDialog() {
@@ -737,9 +784,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void navigateToCaptureFragment() {
         if (isPermissionGranted()) {
+            //if all Permission Granted load the setting fragment (Bluetooth,GPS,NFC)
             mPermissionInProgress = false;
             HeadLessFragment(true);
-            //SettingsDialogFragment.newInstance().show(getSupportFragmentManager(), SettingsDialogFragment.class.getName());
         } else {
             HeadLessFragment(false);
             mPermissionInProgress = true;
@@ -769,6 +816,24 @@ public class MainActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
         mHeadlessFrag.onActivityResult(requestCode, resultCode, data);
 
+    }
+
+    private void showScanBLEDialog() {
+        new android.support.v7.app.AlertDialog.Builder(this)
+                .setTitle("No BLE device")
+                .setMessage("search for device")
+                .setPositiveButton("Search", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        StartBLEScan(true, true);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        return;
+                    }
+                }).create().show();
     }
 }
 

@@ -6,9 +6,18 @@
         <item name="colorPrimary">@color/orange</item>
         <item name="colorPrimaryDark">@android:color/holo_orange_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
     </style>
 
     <style name="PermissionsDialogFragmentStyle" parent="Base.Theme.AppCompat.Dialog">
         <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="Widget.ActionButton.Overflow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
+        <item name="android:src">@drawable/ic_settings_white_36dp</item>
     </style>
 </resources>

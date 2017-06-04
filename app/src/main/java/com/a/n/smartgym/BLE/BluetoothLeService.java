@@ -80,8 +80,6 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     public final static String TROUBLESHOOT =
             "com.example.bluetooth.le.TROUBLESHOOT";
-    public final static String ACTION_STATE_CHANGED =
-            "android.bluetooth.adapter.action.STATE_CHANGED";
 
 
     public boolean mIsCharacteristicNotificationOn;
@@ -206,7 +204,7 @@ public class BluetoothLeService extends Service {
         // such that resources are cleaned up properly.  In this particular example, close() is
         // invoked when the UI is disconnected from the Service.
         mHandler.removeCallbacks(null);
-        close();
+        Slowclose();
         return super.onUnbind(intent);
     }
 
@@ -252,8 +250,6 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
-        if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
-
         if (mReconnectionAttemptCounter < Constants.RECONNECT_ATTEMPTING) {
             Log.d(TAG,"Counter "+mReconnectionAttemptCounter);
             mHandler.postDelayed(new Runnable() {
@@ -267,8 +263,12 @@ public class BluetoothLeService extends Service {
                 }
             }, TIMEOUT);
         }
-        else
+        else{
+            mReconnectionAttemptCounter = 0;
+            //if (mHandler != null) mHandler.removeCallbacksAndMessages(null);
             broadcastUpdate(TROUBLESHOOT);
+
+        }
 
 
         mCurrentAddress = address;
@@ -323,6 +323,24 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.close();
         mBluetoothGatt = null;
         mConnectionState = STATE_DISCONNECTED;
+
+    }
+
+    public void Slowclose() {
+        mReconnectionAttemptCounter++;
+        new AsyncTask<Void, Void, Void>() {
+            @Override protected Void doInBackground(Void... params) {
+                try {
+                    disconnect();
+                    Thread.sleep(1000);
+                    close();
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute();
 
     }
 

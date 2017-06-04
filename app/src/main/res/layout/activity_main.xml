@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@color/orange"
         android:id="@+id/toolbar"
+        app:titleTextAppearance="@style/Toolbar.TitleText"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="@string/app_name" />
@@ -34,13 +35,12 @@
         android:id="@+id/containerView">
 
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
+            android:id="@+id/fake_nfc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
             android:layout_margin="16dp"
-            android:visibility="gone"
-            android:src="@android:drawable/button_onoff_indicator_off"
+            android:src="@drawable/nfc_white_36x36"
             app:layout_anchorGravity="bottom|right|end" />
     </FrameLayout>
 

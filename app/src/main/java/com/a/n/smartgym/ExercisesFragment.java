@@ -90,7 +90,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (mCalculatedWeight.equals("0")) {
+            if (mCurrentWeight.equals("0")) {
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 10) { //3 seconds pasted throw data to database
                     InsertToDataBase();
@@ -240,7 +240,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         if (getArguments() != null) {
             mUUID = UUID.randomUUID().toString();
             Muscle current = getArguments().getParcelable("muscle");
-            Tag tag = getArguments().getParcelable("tag");
+            //Tag tag = getArguments().getParcelable("tag");
             //getMessagesFromTag(tag);
 
 
@@ -389,6 +389,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void finishExersise() {
         InsertToDataBase();
+        stop();
         FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.containerView, new DayAverageFragment()).commitAllowingStateLoss();
     }

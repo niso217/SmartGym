@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+    <!--<item android:id="@+id/action_settings"-->
+        <!--android:title="@string/action_settings"-->
+        <!--android:icon="@drawable/ic_settings_white_36dp"-->
+        <!--app:showAsAction="ifRoom"/>-->
+
+    <group
+        android:id="@+id/action_settings"
+        android:checkableBehavior="single"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_settings_white_36dp"
+        app:showAsAction="ifRoom">
+
+        <item
+            android:id="@+id/emulator"
+            android:title="@string/emulator"
+            app:showAsAction="never"
+            android:visible="true"
+            />
+        <item
+            android:id="@+id/device"
+            android:title="@string/device"
+            app:showAsAction="never"
+            android:visible="true"
+            />
+    </group>
+
+    <item android:id="@+id/bluetooth_searching"
+        android:title="@string/bluetooth_search"
+        android:icon="@drawable/ic_bluetooth_disabled_white_36dp"
+        app:showAsAction="ifRoom"/>
+
+
+
+</menu>
