@@ -44,7 +44,6 @@
     <string name="hurt">https://www.freetrainers.com/redbody/eJzbY2iACbCJoYN4A3NTAIVrDDo=.png</string>
 
 
-
     <string-array name="main_muscle_value">
         <item>https://www.freetrainers.com/redbody/eJzbY2hgaIAPGGJhgUC8gbkpAIWrDDw=.png</item>
         <item>https://www.freetrainers.com/redbody/eJzbY2gAAsgkMcDQIN7A3BQAha8MPA==.png</item>
@@ -59,10 +58,7 @@
     </string-array>
 
 
-
-
-    <string-array name="empty_id">
-    </string-array>
+    <string-array name="empty_id"></string-array>
 
     <string name="emulator">Emulator</string>
     <string name="device">Device</string>
@@ -116,8 +112,6 @@
 
     <string name="request_read_write"> Read Write from external storage permission is necessary, Without this permission the app is unable to work properly</string>
     <string name="request_location"> Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
-
-
 
 
 </resources>

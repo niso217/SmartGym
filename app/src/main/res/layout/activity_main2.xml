@@ -1,0 +1,23 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:circular="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3d3d3d"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    tools:context=".Main2Activity">
+
+
+    <com.a.n.smartgym.Helpers.CircularProgressBar
+        android:id="@+id/circularprogressbar2"
+        style="@style/Widget.ProgressBar.CircularProgressBar"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_margin="0dp"
+        circular:cpb_subtitle="subtitle"
+        circular:cpb_title="Title" />
+
+
+</LinearLayout>
