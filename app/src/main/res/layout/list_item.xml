@@ -1,0 +1,46 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:circular="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#3d3d3d"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <com.a.n.smartgym.Helpers.CircularProgressBar
+            android:id="@+id/progress1"
+            style="@style/Widget.ProgressBar.CircularProgressBar"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_weight="0.4"
+            circular:cpb_strokeWidth="10"
+            circular:cpb_subtitle="Sets"
+            circular:cpb_title="0/3" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2" />
+
+        <com.a.n.smartgym.Helpers.CircularProgressBar
+            android:id="@+id/progress2"
+            style="@style/Widget.ProgressBar.CircularProgressBar"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_weight="0.4"
+            circular:cpb_strokeWidth="10"
+            circular:cpb_subtitle="sets"
+            circular:cpb_title="Title" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

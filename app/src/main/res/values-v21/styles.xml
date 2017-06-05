@@ -3,8 +3,8 @@
 <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/orange</item>
-        <item name="colorPrimaryDark">@android:color/holo_orange_dark</item>
+        <item name="colorPrimary">@color/circular_progress_default_progress</item>
+        <item name="colorPrimaryDark">@color/circular_progress_default_title</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
     </style>

@@ -25,11 +25,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
+import com.a.n.smartgym.Helpers.CircularProgressBar;
+import com.a.n.smartgym.Helpers.LayoutTouchListener;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Sets;
@@ -44,7 +48,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
-public class ExercisesFragment extends Fragment implements View.OnClickListener, SensorEventListener {
+public class ExercisesFragment extends Fragment implements View.OnClickListener,CircularProgressBar.ProgressAnimationListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
@@ -55,9 +59,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private Sets mCurrentSet;
     private boolean mInProgress;
     private boolean[] arr;
-    private ImageView mImage, mArrowImage;
-    private SeekBar mSeekBar;
-    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight, mCurrentWeightTV;
+    //    private ImageView mImage, mArrowImage;
+    //    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight, mCurrentWeightTV;
     long mAccelLast, mAccelCurrent;
     double mAccel;
     float[] mGravity;
@@ -68,6 +71,11 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private Handler mHandler = new Handler();
     private int mZeroValueCounter;
     private int mSameReapedCounter;
+    private CircularProgressBar mSets,mRepetition,mBodyWeight;
+    private LinearLayout linearLayout;
+    private TabHost host;
+    private int mNumberOfSetsCounter;
+    private int mNumberOfSecondssCounter;
 
 
     private final Runnable mTicker = new Runnable() {
@@ -75,12 +83,17 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             //user interface interactions and updates on screen
             if (Integer.parseInt(mCalculatedWeight) < 1) {
                 mZeroValueCounter++;
-                if (mZeroValueCounter > 5) { //3 seconds pasted throw data to database
+                if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
-                    mZeroValueCounter = 0;
+                    mBodyWeight.setProgress(++mNumberOfSecondssCounter);
+                    mBodyWeight.setTitle(mNumberOfSecondssCounter+"/60");
                 }
-            } else
+            } else{
+                mNumberOfSecondssCounter = 0;
+                mBodyWeight.setProgress(mNumberOfSecondssCounter);
+                mBodyWeight.setTitle("0/60");
                 mZeroValueCounter = 0;
+            }
 
             mHandler.postDelayed(mTicker, 1000);
 
@@ -130,7 +143,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         if (!stringArray[1].equals(mCurrentRepetition)) {
             mCurrentRepetition = stringArray[1];
             if (!mCurrentRepetition.equals("0")) {
-                StartNewSetInstance(Integer.parseInt(mCurrentRepetition), Integer.parseInt(mCalculatedWeight));
+                int progress = Integer.parseInt(mCurrentRepetition);
+                mRepetition.setProgress(progress);
+                mRepetition.setTitle(progress+ "/10");
+                StartNewSetInstance(progress, Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
             }
@@ -139,19 +155,20 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         mCurrentWeight = stringArray[0];
 
         mCurrentDirection = stringArray[3];
-        mWeight.setText(mCalculatedWeight);
-        mCounter.setText(mCurrentRepetition);
-        mCurrentWeightTV.setText(mCurrentWeight);
+
+//        mWeight.setText(mCalculatedWeight);
+//        mCounter.setText(mCurrentRepetition);
+//        mCurrentWeightTV.setText(mCurrentWeight);
 
 
         if (mCurrentDirection.equals("-1")) {
-            mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_downward_black_48dp"));
+            //mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_downward_black_48dp"));
 
         } else if (mCurrentDirection.equals("1")) {
-            mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
+            //mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
 
-        } else
-            mArrowImage.setImageDrawable(null);
+        }
+            //mArrowImage.setImageDrawable(null);
 
     }
 
@@ -198,22 +215,61 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootFragment = inflater.inflate(R.layout.exercises_fragment, null);
+        View rootFragment = inflater.inflate(R.layout.activity_main2, null);
 
-        mSeekBar = (SeekBar) rootFragment.findViewById(R.id.seekbar_ex);
-        mName = (TextView) rootFragment.findViewById(R.id.tv_ex_name_txt);
-        mPrimaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_primary_txt);
-        mSecondaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_secondary_txt);
-        mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
-        mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
-        mWeight = (TextView) rootFragment.findViewById(R.id.tv_ex_weight_txt);
-        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
-        mArrowImage = (ImageView) rootFragment.findViewById(R.id.img_arrow);
-        mCurrentWeightTV = (TextView) rootFragment.findViewById(R.id.tv_current_weight);
+//        mName = (TextView) rootFragment.findViewById(R.id.tv_ex_name_txt);
+//        mPrimaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_primary_txt);
+//        mSecondaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_secondary_txt);
+//        mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
+//        mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
+//        mWeight = (TextView) rootFragment.findViewById(R.id.tv_ex_weight_txt);
+//        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
+//        mArrowImage = (ImageView) rootFragment.findViewById(R.id.img_arrow);
+//        mCurrentWeightTV = (TextView) rootFragment.findViewById(R.id.tv_current_weight);
+        mSets = (CircularProgressBar) rootFragment.findViewById(R.id.pb_sets);
+        mRepetition = (CircularProgressBar) rootFragment.findViewById(R.id.pb_repetition);
+        mRepetition.setMax(10);
+        mRepetition.setTitle("0/10");
+        mRepetition.setTitleFontSize(60);
+        mRepetition.setSubTitleFontSize(40);
+
+        mSets.setMax(3);
+        mSets.setTitle("0/3");
+        mSets.setTitleFontSize(60);
+        mSets.setSubTitleFontSize(40);
+
+        mBodyWeight = (CircularProgressBar) rootFragment.findViewById(R.id.pb_bodyweight);
+        mBodyWeight.setSubTitleFontSize(40);
+        mBodyWeight.setTitleFontSize(60);
+        mBodyWeight.setMax(60);
 
         btnFinish = (Button) rootFragment.findViewById(R.id.btn_ex_finish);
         btnFinish.setOnClickListener(this);
         Controllers(true);
+
+        linearLayout = (LinearLayout) rootFragment.findViewById(R.id.ll);
+        linearLayout.setOnTouchListener(new LayoutTouchListener(getActivity()));
+        host = (TabHost)rootFragment.findViewById(R.id.tab_host);
+        host.setup();
+
+        //Tab 1
+        TabHost.TabSpec spec = host.newTabSpec("Tab One");
+        spec.setContent(R.id.tab1);
+        spec.setIndicator("Tab One");
+        host.addTab(spec);
+
+        //Tab 2
+        spec = host.newTabSpec("Tab Two");
+        spec.setContent(R.id.tab2);
+        spec.setIndicator("Tab Two");
+        host.addTab(spec);
+
+        //Tab 3
+        spec = host.newTabSpec("Tab Three");
+        spec.setContent(R.id.tab3);
+        spec.setIndicator("Tab Three");
+        host.addTab(spec);
+
 
         if (getArguments() != null) {
 
@@ -225,11 +281,11 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
             if (current != null) {
                 try {
-                    mName.setText(current.getName());
-                    mPrimaryMuscle.setText(current.getMain());
-                    mSecondaryMuscle.setText(current.getSecondary());
-                    mInstruction.setText(current.getDescription());
-                    Picasso.with(getContext()).load(current.getImage()).into(mImage);
+//                    mName.setText(current.getName());
+//                    mPrimaryMuscle.setText(current.getMain());
+//                    mSecondaryMuscle.setText(current.getSecondary());
+//                    mInstruction.setText(current.getDescription());
+                    //Picasso.with(getContext()).load(current.getImage()).into(mImage);
                 } catch (Exception e) {
                     Log.d(TAG, e.getMessage());
                 }
@@ -315,7 +371,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void Controllers(boolean b) {
         btnFinish.setEnabled(b);
-        mSeekBar.setEnabled(b);
     }
 
     private void setNewExercise(String uuid, String session, String scan) {
@@ -393,6 +448,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void InsertToDataBase() {
         if (mCurrentSet != null && mCurrentSet.getCount()>0) {
+            mSets.setProgress(++mNumberOfSetsCounter);
+            mSets.setTitle(mNumberOfSetsCounter+ "/3");
+            mRepetition.setTitle("0/10");
+            mRepetition.setProgress(0);
             SetsRepo setsRepo = new SetsRepo(getContext());
             setsRepo.insert(mCurrentSet);
             Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
@@ -400,46 +459,6 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             mCurrentSet = null;
 
         }
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        try {
-            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                mGravity = event.values.clone();
-                // Shake detection
-                float x = mGravity[0];
-                float y = mGravity[1];
-                float z = mGravity[2];
-
-                //Log.d("TYPE_ACCELEROMETER","x " + x );
-                // Log.d("TYPE_ACCELEROMETER","y " + y );
-                // Log.d("TYPE_ACCELEROMETER","z " + z );
-
-
-                float yAbs = Math.abs(mGravity[1]);
-
-                mAccelLast = mAccelCurrent;
-                mAccelCurrent = (long) Math.sqrt(x * x + y * y + z * z);
-                float delta = mAccelCurrent - mAccelLast;
-                mAccel = mAccel * 0.9f + delta;
-
-                if (yAbs > 3.0 && !mBeenHere) {
-                    mBeenHere = true;
-                    Log.d("TYPE_ACCELEROMETER", "===alert===");
-                    Log.d("TYPE_ACCELEROMETER", yAbs + "");
-                    finishExersise();
-
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -451,4 +470,27 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     }
 
 
+    @Override
+    public void onAnimationStart(View view) {
+        switch(view.getId())
+        {
+            case R.id.pb_repetition:
+                break;
+            case R.id.pb_sets:
+                break;
+            case R.id.pb_bodyweight:
+                break;
+
+        }
+    }
+
+    @Override
+    public void onAnimationFinish(View view) {
+
+    }
+
+    @Override
+    public void onAnimationProgress(int progress, View view) {
+
+    }
 }

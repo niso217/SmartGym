@@ -58,11 +58,12 @@ public class CircularProgressBar extends ProgressBar{
 
 	private boolean mHasShadow = true;
 	private int mShadowColor = Color.BLACK;
+	private View mView = this;
 
 	public interface ProgressAnimationListener{
-		public void onAnimationStart();
-		public void onAnimationFinish();
-		public void onAnimationProgress(int progress);
+		public void onAnimationStart(View view);
+		public void onAnimationFinish(View view);
+		public void onAnimationProgress(int progress,View view);
 	}
 
 	public CircularProgressBar(Context context) {
@@ -219,7 +220,7 @@ public class CircularProgressBar extends ProgressBar{
 			public void onAnimationEnd(final Animator animation) {
 				CircularProgressBar.this.setProgress(end);
 				if(listener!=null)
-					listener.onAnimationFinish();
+					listener.onAnimationFinish(mView);
 			}
 
 			@Override
@@ -229,7 +230,7 @@ public class CircularProgressBar extends ProgressBar{
 			@Override
 			public void onAnimationStart(final Animator animation) {
 				if(listener!=null)
-					listener.onAnimationStart();
+					listener.onAnimationStart(mView);
 			}
 		});
 
@@ -241,7 +242,7 @@ public class CircularProgressBar extends ProgressBar{
 					Log.d(TAG, progress + "");
 					CircularProgressBar.this.setProgress(progress);
 					if(listener!=null)
-						listener.onAnimationProgress(progress);					
+						listener.onAnimationProgress(progress,mView);
 				}
 			}
 		});
