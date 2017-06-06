@@ -81,17 +81,17 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (Integer.parseInt(mCalculatedWeight) < 1) {
+            if (Integer.parseInt(mCurrentWeight) < 3) {
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
-                    mBodyWeight.setProgress(++mNumberOfSecondssCounter);
-                    mBodyWeight.setTitle(mNumberOfSecondssCounter+"/60");
+                    //mBodyWeight.setProgress(++mNumberOfSecondssCounter);
+
                 }
             } else{
                 mNumberOfSecondssCounter = 0;
-                mBodyWeight.setProgress(mNumberOfSecondssCounter);
-                mBodyWeight.setTitle("0/60");
+                //mBodyWeight.setProgress(mNumberOfSecondssCounter);
+                //mBodyWeight.setTitle("0/60");
                 mZeroValueCounter = 0;
             }
 
@@ -189,6 +189,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {
+            mBodyWeight.removeAnimation();
+            mBodyWeight.setProgress(0);
+            mBodyWeight.setTitle("0/60");
             mCurrentSet = new Sets();
             mCurrentSet.setSetid(UUID.randomUUID().toString());
             mCurrentSet.setexerciseid(CurrentExercisesId);
@@ -457,6 +460,28 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
             Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");
             mCurrentSet = null;
+
+            mBodyWeight.animateProgressTo(0, 60, new CircularProgressBar.ProgressAnimationListener() {
+                @Override
+                public void onAnimationStart(View view) {
+                    Log.d("dsf",view.getId()+"");
+                }
+
+                @Override
+                public void onAnimationFinish(View view) {
+                    Log.d("dsf",view.getId()+"");
+
+                }
+
+                @Override
+                public void onAnimationProgress(int progress, View view) {
+                    Log.d("dsf",view.getId()+"");
+                    mBodyWeight.setTitle(progress+"/60");
+
+
+
+                }
+            });
 
         }
     }
