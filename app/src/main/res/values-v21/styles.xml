@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/circular_progress_default_title</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
+        <item name="android:statusBarColor">@color/material_blue_grey_800</item>
     </style>
 
     <style name="PermissionsDialogFragmentStyle" parent="Base.Theme.AppCompat.Dialog">

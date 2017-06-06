@@ -39,7 +39,7 @@ public class BluetoothScanner {
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private List<ScanFilter> filters;
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 30000;
     private static final String TAG = BluetoothScanner.class.getSimpleName().toString();
     private BluetoothListener mBluetoothListener;
     private boolean mScanResultStatus;
