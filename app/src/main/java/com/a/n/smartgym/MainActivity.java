@@ -460,8 +460,7 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences.Editor editor = settings.edit();
         switch (item.getItemId()) {
             case R.id.action_settings:
-                mCurrentFragment = new SettingsFragment();
-                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                getFragmentManager().beginTransaction().replace(R.id.containerView, new SettingsFragment()).commit();
                 break;
             case R.id.bluetooth_searching:
                 StartBLEScan(true, true);
@@ -521,6 +520,11 @@ public class MainActivity extends AppCompatActivity implements
                 mCurrentFragment = new VisitsFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
+            case R.id.settings:
+                //getSupportFragmentManager().beginTransaction().remove(mCurrentFragment).commit();
+                //getFragmentManager().beginTransaction().replace(R.id.containerView, new SettingsFragment()).commit();
+
+                mToolbar.setTitle("");
 
                 break;
             case R.id.nav_logout:
@@ -575,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements
         // Firebase sign out
         mAuth.signOut();
 
-        LoginManager.getInstance().logOut();
+        //LoginManager.getInstance().logOut();
 
         // Google revoke access
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(

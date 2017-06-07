@@ -9,61 +9,70 @@
     android:id="@+id/main"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/linear_parent"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:layout_weight="0.3"
-        android:orientation="vertical">
+        android:scrollIndicators="left|right">
+
 
         <LinearLayout
-            android:id="@+id/example"
+            android:id="@+id/linear_parent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="0dp"
-            android:gravity="center">
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tv_sets"
-                android:layout_width="wrap_content"
+                android:id="@+id/tv_date"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:layout_weight="0"
+                android:layout_marginBottom="10dp"
                 android:gravity="center"
-                android:text="Sets"
                 android:textColor="@color/white"
                 android:textSize="15sp" />
 
-            <TextView
-                android:id="@+id/tv_rep"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:layout_weight="0"
-                android:gravity="center"
-                android:text="Rep"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
+            <LinearLayout
+                android:id="@+id/example"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
 
-            <TextView
-                android:id="@+id/tv_weight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"
-                android:layout_weight="0"
-                android:gravity="center"
-                android:text="Weight"
-                android:textColor="@color/white"
-                android:textSize="15sp" />
+                <TextView
+                    android:id="@+id/tv_sets"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="Sets"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tv_rep"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="Repetition"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tv_weight"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    android:text="Weight"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
-
+    </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -122,7 +131,7 @@
                             android:layout_weight="0.2" />
 
                         <com.a.n.smartgym.Helpers.CircularProgressBar
-                            android:id="@+id/pb_bodyweight"
+                            android:id="@+id/pb_seconds"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
                             android:layout_height="120dp"
@@ -140,15 +149,15 @@
                         android:orientation="horizontal">
 
                         <com.a.n.smartgym.Helpers.CircularProgressBar
-                            android:id="@+id/set_weight2"
+                            android:id="@+id/pb_calc_weight"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
                             android:layout_height="120dp"
                             android:layout_gravity="center_vertical|center_horizontal"
                             android:layout_weight="0.4"
                             circular:cpb_strokeWidth="10"
-                            circular:cpb_subtitle="hjgjh"
-                            circular:cpb_title="2" />
+                            circular:cpb_subtitle="Weight"
+                            circular:cpb_title="" />
 
                         <Space
                             android:layout_width="50dp"
@@ -156,13 +165,13 @@
                             android:layout_weight="0.2" />
 
                         <com.a.n.smartgym.Helpers.CircularProgressBar
-                            android:id="@+id/set_progress2"
+                            android:id="@+id/pb_weight_ratio"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
                             android:layout_height="120dp"
                             android:layout_weight="0.4"
                             circular:cpb_strokeWidth="10"
-                            circular:cpb_subtitle="Sets"
+                            circular:cpb_subtitle="% Body Weight"
                             circular:cpb_title="2" />
                     </LinearLayout>
 

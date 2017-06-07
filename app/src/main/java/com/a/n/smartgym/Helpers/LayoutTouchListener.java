@@ -1,11 +1,14 @@
 package com.a.n.smartgym.Helpers;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.a.n.smartgym.ExercisesFragment;
+import com.a.n.smartgym.Listener.GestureListener;
 import com.a.n.smartgym.Main2Activity;
 
 /**
@@ -15,51 +18,37 @@ import com.a.n.smartgym.Main2Activity;
 public class LayoutTouchListener implements View.OnTouchListener {
 
     static final String logTag = "ActivitySwipeDetector";
-    private Activity activity;
+    private Context mContext;
     static final int MIN_DISTANCE = 100;// TODO change this runtime based on screen resolution. for 1920x1080 is to small the 100 distance
     private float downX, downY, upX, upY;
+    private GestureListener mGestureListener;
 
     // private MainActivity mMainActivity;
 
-    public LayoutTouchListener(Activity mainActivity) {
-        activity = mainActivity;
+    public LayoutTouchListener(GestureListener listener) {
+        mGestureListener = listener;
     }
 
     public void onRightToLeftSwipe() {
         Log.i(logTag, "RightToLeftSwipe!");
         //Toast.makeText(activity, "RightToLeftSwipe", Toast.LENGTH_SHORT).show();
-        try {
-            Main2Activity main = (Main2Activity) activity;
-            main.onRightToLeftSwipe();
-
-        }
-        catch (ClassCastException E){
-
-        }
+        mGestureListener.onRightToLeftSwipe();
     }
 
     public void onLeftToRightSwipe() {
         Log.i(logTag, "LeftToRightSwipe!");
         //Toast.makeText(activity, "LeftToRightSwipe", Toast.LENGTH_SHORT).show();
-        try {
-            Main2Activity main = (Main2Activity) activity;
-            main.onLeftToRightSwipe();
+        mGestureListener.onLeftToRightSwipe();
 
-        }
-        catch (ClassCastException E){
-
-        }
     }
 
     public void onTopToBottomSwipe() {
         Log.i(logTag, "onTopToBottomSwipe!");
-        Toast.makeText(activity, "onTopToBottomSwipe", Toast.LENGTH_SHORT).show();
         // activity.doSomething();
     }
 
     public void onBottomToTopSwipe() {
         Log.i(logTag, "onBottomToTopSwipe!");
-        Toast.makeText(activity, "onBottomToTopSwipe", Toast.LENGTH_SHORT).show();
         // activity.doSomething();
     }
 

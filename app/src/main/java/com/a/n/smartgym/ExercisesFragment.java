@@ -7,9 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -27,18 +24,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.TabHost;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
 import com.a.n.smartgym.Helpers.CircularProgressBar;
 import com.a.n.smartgym.Helpers.LayoutTouchListener;
+import com.a.n.smartgym.Listener.GestureListener;
 import com.a.n.smartgym.Objects.LastExercise;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Muscle;
@@ -46,46 +41,33 @@ import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.SetsRepo;
 import com.google.firebase.auth.FirebaseAuth;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
 import java.util.UUID;
 
-public class ExercisesFragment extends Fragment implements View.OnClickListener,CircularProgressBar.ProgressAnimationListener {
+public class ExercisesFragment extends Fragment implements
+        View.OnClickListener,
+        CircularProgressBar.ProgressAnimationListener,
+        GestureListener {
 
     private static final String TAG = ExercisesFragment.class.getSimpleName();
     private Button btnFinish;
     private FirebaseAuth mAuth;
     private String CurrentExercisesId;
     private String CurrentVisitId;
-    private int Counter;
     private Sets mCurrentSet;
-    private boolean mInProgress;
-    private boolean[] arr;
-    //    private ImageView mImage, mArrowImage;
-    //    private TextView mName, mPrimaryMuscle, mSecondaryMuscle, mInstruction, mCounter, mWeight, mCurrentWeightTV;
-    long mAccelLast, mAccelCurrent;
-    double mAccel;
-    float[] mGravity;
-    private SensorManager sensorManager;
-    private boolean mBeenHere;
     private Context activity;
     private String mCurrentWeight = "0", mCurrentRepetition = "0", mCalculatedWeight = "0", mCurrentDirection = "0";
     private Handler mHandler = new Handler();
     private int mZeroValueCounter;
-    private int mSameReapedCounter;
-    private CircularProgressBar mSets,mRepetition,mBodyWeight;
-    private LinearLayout linearLayout, mLinerLayoutContainer, mExamplelinearLayout,mMainLinearLayout;
-    private TextView mTextViewSet,mTextViewRep,mTextViewWeight;
+    private CircularProgressBar mSets, mRepetition, mSeconds, mWeightRatio, mCalcWeight;
+    private LinearLayout linearLayout, mLinerLayoutContainer, mExamplelinearLayout, mMainLinearLayout;
+    private TextView mTextViewSet, mTextViewRep, mTextViewWeight, mTextViewDate;
     private TabHost host;
     private int mNumberOfSetsCounter;
     private int mNumberOfSecondssCounter;
-    private EditText mEditText;
-    private ArrayList<LastExercise> mLastExercise;
-    private TableLayout mTableLayout;
+    private Typeface mTypeface;
 
 
     private final Runnable mTicker = new Runnable() {
@@ -95,13 +77,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
-                    //mBodyWeight.setProgress(++mNumberOfSecondssCounter);
 
                 }
-            } else{
+            } else {
                 mNumberOfSecondssCounter = 0;
-                //mBodyWeight.setProgress(mNumberOfSecondssCounter);
-                //mBodyWeight.setTitle("0/60");
                 mZeroValueCounter = 0;
             }
 
@@ -155,7 +134,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             if (!mCurrentRepetition.equals("0")) {
                 int progress = Integer.parseInt(mCurrentRepetition);
                 mRepetition.setProgress(progress);
-                mRepetition.setTitle(progress+ "/10");
+                mRepetition.setTitle(progress + "/10");
                 StartNewSetInstance(progress, Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
@@ -163,8 +142,14 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         }
 
         mCurrentWeight = stringArray[0];
-
         mCurrentDirection = stringArray[3];
+
+
+        int calc = CalcBodyRatio(70, Double.parseDouble(mCalculatedWeight));
+        mWeightRatio.setProgress(calc);
+        mWeightRatio.setTitle(calc + "%");
+        mCalcWeight.setProgress(Integer.parseInt(mCalculatedWeight));
+        mCalcWeight.setTitle(Integer.parseInt(mCalculatedWeight)+"");
 
 //        mWeight.setText(mCalculatedWeight);
 //        mCounter.setText(mCurrentRepetition);
@@ -178,8 +163,12 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             //mArrowImage.setImageDrawable(getDrawableForSdkVersion("ic_arrow_upward_black_48dp"));
 
         }
-            //mArrowImage.setImageDrawable(null);
+        //mArrowImage.setImageDrawable(null);
 
+    }
+
+    private int CalcBodyRatio(double weight, double plate) {
+        return new Double(plate / weight * 100).intValue();
     }
 
     @Override
@@ -199,9 +188,9 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {
-            mBodyWeight.removeAnimation();
-            mBodyWeight.setProgress(0);
-            mBodyWeight.setTitle("0/60");
+            mSeconds.removeAnimation();
+            mSeconds.setProgress(0);
+            mSeconds.setTitle("0/60");
             mCurrentSet = new Sets();
             mCurrentSet.setSetid(UUID.randomUUID().toString());
             mCurrentSet.setexerciseid(CurrentExercisesId);
@@ -230,20 +219,8 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootFragment = inflater.inflate(R.layout.activity_main2, null);
 
-        //mEditText = (EditText) rootFragment.findViewById(R.id.summary);
-        //Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(), "fonts/nir.ttf");
-        //mEditText.setTypeface(typeface);
+        mTypeface = Typeface.createFromAsset(getActivity().getAssets(), "fonts/nir.ttf");
 
-
-//        mName = (TextView) rootFragment.findViewById(R.id.tv_ex_name_txt);
-//        mPrimaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_primary_txt);
-//        mSecondaryMuscle = (TextView) rootFragment.findViewById(R.id.tv_ex_secondary_txt);
-//        mInstruction = (TextView) rootFragment.findViewById(R.id.tv_ex_instructions_txt);
-//        mCounter = (TextView) rootFragment.findViewById(R.id.tv_ex_counter_txt);
-//        mWeight = (TextView) rootFragment.findViewById(R.id.tv_ex_weight_txt);
-//        mImage = (ImageView) rootFragment.findViewById(R.id.img_ex);
-//        mArrowImage = (ImageView) rootFragment.findViewById(R.id.img_arrow);
-//        mCurrentWeightTV = (TextView) rootFragment.findViewById(R.id.tv_current_weight);
         mSets = (CircularProgressBar) rootFragment.findViewById(R.id.pb_sets);
         mRepetition = (CircularProgressBar) rootFragment.findViewById(R.id.pb_repetition);
         mRepetition.setMax(10);
@@ -256,28 +233,33 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         mSets.setTitleFontSize(60);
         mSets.setSubTitleFontSize(40);
 
-        mBodyWeight = (CircularProgressBar) rootFragment.findViewById(R.id.pb_bodyweight);
-        mBodyWeight.setSubTitleFontSize(40);
-        mBodyWeight.setTitleFontSize(60);
-        mBodyWeight.setMax(60);
+        mCalcWeight = (CircularProgressBar) rootFragment.findViewById(R.id.pb_calc_weight);
+        mCalcWeight.setMax(180);
+        mWeightRatio = (CircularProgressBar) rootFragment.findViewById(R.id.pb_weight_ratio);
+        mWeightRatio.setMax(100);
+
+
+        mSeconds = (CircularProgressBar) rootFragment.findViewById(R.id.pb_seconds);
+        mSeconds.setSubTitleFontSize(40);
+        mSeconds.setTitleFontSize(60);
+        mSeconds.setMax(60);
 
         btnFinish = (Button) rootFragment.findViewById(R.id.btn_ex_finish);
         btnFinish.setOnClickListener(this);
         Controllers(true);
 
         linearLayout = (LinearLayout) rootFragment.findViewById(R.id.ll);
-        linearLayout.setOnTouchListener(new LayoutTouchListener(getActivity()));
+        linearLayout.setOnTouchListener(new LayoutTouchListener(this));
         mLinerLayoutContainer = (LinearLayout) rootFragment.findViewById(R.id.linear_parent);
         mExamplelinearLayout = (LinearLayout) rootFragment.findViewById(R.id.example);
         mMainLinearLayout = (LinearLayout) rootFragment.findViewById(R.id.main);
         mTextViewSet = (TextView) rootFragment.findViewById(R.id.tv_sets);
         mTextViewWeight = (TextView) rootFragment.findViewById(R.id.tv_weight);
-        mTextViewRep= (TextView) rootFragment.findViewById(R.id.tv_rep);
+        mTextViewRep = (TextView) rootFragment.findViewById(R.id.tv_rep);
+        mTextViewDate = (TextView) rootFragment.findViewById(R.id.tv_date);
 
-        host = (TabHost)rootFragment.findViewById(R.id.tab_host);
+        host = (TabHost) rootFragment.findViewById(R.id.tab_host);
         host.setup();
-
-        //mTableLayout = (TableLayout) rootFragment.findViewById(R.id.tablelayout);
 
         //Tab 1
         TabHost.TabSpec spec = host.newTabSpec("Tab One");
@@ -323,7 +305,7 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
 
             if (!CurrentExercisesId.isEmpty() && current != null && !CurrentVisitId.isEmpty()) {
-               BuildLastExString(current.getName());
+                BuildLastExString(current.getName());
                 setNewExercise(CurrentExercisesId, CurrentVisitId, current.getName());
                 StartNewSetInstance(0, 0);
 
@@ -335,112 +317,62 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
         return rootFragment;
     }
 
-    private void BuildLastExString(String name){
-        StringBuilder sb = new StringBuilder();
-        ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(mAuth.getCurrentUser().getUid(),name);
-        if (lastExercise!=null && lastExercise.size()>0)
-        {
-//            sb.append(lastExercise.get(0).getDate());
-//            sb.append(System.getProperty("line.separator"));
-//            sb.append(System.getProperty("line.separator"));
-//            sb.append(String.format("%-5s%-5s%-5s","Sets","Rep","Kg"));
-//            sb.append(System.getProperty("line.separator"));
+    private void BuildLastExString(String name) {
+        ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(mAuth.getCurrentUser().getUid(), name);
+        if (lastExercise != null && lastExercise.size() > 0) {
+            mTextViewDate.setText(lastExercise.get(0).getDate());
+            mTextViewWeight.setTypeface(mTypeface);
+            mTextViewRep.setTypeface(mTypeface);
+            mTextViewSet.setTypeface(mTypeface);
+            mTextViewDate.setTypeface(mTypeface);
 
             for (int i = 0; i < lastExercise.size(); i++) {
                 LastExercise current = lastExercise.get(i);
 
-               // buildview(current);
-                //sb.append(current.getSets());
-               // sb.append(String.format("%-5s",current.getSets()));
-               // sb.append(String.format("%-5s",current.getWeight()));
-               // sb.append(String.format("%-5s",current.getWeight()));
+                buildview(current);
 
-               // sb.append(current.getCount());
-               // sb.append(current.getWeight());
-                //sb.append(System.getProperty("line.separator"));
-
-               // android:layout_weight="0.3"
-                //android:gravity="center"
-
-//                TableRow row= new TableRow(getContext());
-//                TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
-//                row.setLayoutParams(lp);
-//
-//                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-//                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//                lp.weight = 0.3f;
-//                lp.gravity = Gravity.CENTER;
-//
-//                TextView sets = new TextView(getContext());
-//                sets.setText(current.getSets()+"");
-//                sets.setTypeface(typeface);
-//                sets.setLayoutParams(lp);
-//                row.addView(sets);
-//
-//                TextView counts = new TextView(getContext());
-//                counts.setText(current.getCount()+"");
-//                counts.setTypeface(typeface);
-//                counts.setLayoutParams(lp);
-//                row.addView(counts);
-//
-//                TextView weight = new TextView(getContext());
-//                weight.setText(current.getWeight()+"");
-//                weight.setTypeface(typeface);
-//                weight.setLayoutParams(lp);
-//                row.addView(weight);
-//
-//                mTableLayout.addView(row,i+1);
             }
         }
-       //return sb;
+        else
+        {
+            mTextViewRep.setText("");
+            mTextViewSet.setText("");
+            mTextViewWeight.setText("");
+        }
     }
 
-    private void buildview(LastExercise ex){
-
-        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(), "fonts/nir.ttf");
+    private void buildview(LastExercise ex) {
 
         LinearLayout layout2 = new LinearLayout(getContext());
         layout2.setLayoutParams(mExamplelinearLayout.getLayoutParams());
         layout2.setOrientation(LinearLayout.HORIZONTAL);
+        layout2.setGravity(Gravity.CENTER);
 
+        for (int i = 0; i < 3; i++) {
+            TextView textView = new TextView(getContext());
+            textView.setLayoutParams(mTextViewSet.getLayoutParams());
+            textView.setTypeface(mTypeface);
+            textView.setGravity(mTextViewSet.getGravity());
+            textView.setTextColor(mTextViewSet.getTextColors());
+            textView.setTextSize(15);
+            textView.setWidth(mTextViewSet.getWidth());
+            switch (i) {
+                case 0:
+                    textView.setText(ex.getSets() + "");
+                    break;
+                case 1:
+                    textView.setText(ex.getCount() + "");
+                    break;
+                case 2:
+                    textView.setText(ex.getWeight() + "");
+                    break;
+            }
+            layout2.addView(textView);
 
-        TextView tv1 = new TextView(getContext());
-        tv1.setLayoutParams(mTextViewSet.getLayoutParams());
-        tv1.setTypeface(typeface);
+        }
 
-        tv1.setGravity(mTextViewSet.getGravity());
-        tv1.setTextColor(mTextViewSet.getTextColors());
-        tv1.setTextSize(15);
-        tv1.setText(ex.getSets()+"");
-
-        TextView tv2 = new TextView(getContext());
-        tv2.setLayoutParams(mTextViewSet.getLayoutParams());
-        tv2.setText(ex.getCount()+"");
-        tv2.setTypeface(typeface);
-        tv2.setGravity(mTextViewSet.getGravity());
-        tv2.setTextColor(mTextViewSet.getTextColors());
-        tv2.setTextSize(15);
-
-        TextView tv3 = new TextView(getContext());
-        tv3.setLayoutParams(mTextViewSet.getLayoutParams());
-        tv3.setText(ex.getWeight()+"");
-        tv3.setTypeface(typeface);
-        tv3.setGravity(mTextViewSet.getGravity());
-        tv3.setTextColor(mTextViewSet.getTextColors());
-        tv3.setTextSize(15);
-
-        mTextViewWeight.setTypeface(typeface);
-        mTextViewRep.setTypeface(typeface);
-        mTextViewSet.setTypeface(typeface);
-
-
-
-        layout2.addView(tv1);
-        layout2.addView(tv2);
-        layout2.addView(tv3);
 
         mLinerLayoutContainer.addView(layout2);
-
 
 
     }
@@ -580,15 +512,15 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
     private void finishExersise() {
         InsertToDataBase();
         updateExerciseEndTime();
-        mBodyWeight.removeAnimation();
+        mSeconds.removeAnimation();
         stop();
         closeFragment();
     }
 
     private void InsertToDataBase() {
-        if (mCurrentSet != null && mCurrentSet.getCount()>0) {
+        if (mCurrentSet != null && mCurrentSet.getCount() > 0) {
             mSets.setProgress(++mNumberOfSetsCounter);
-            mSets.setTitle(mNumberOfSetsCounter+ "/3");
+            mSets.setTitle(mNumberOfSetsCounter + "/3");
             mRepetition.setTitle("0/10");
             mRepetition.setProgress(0);
             SetsRepo setsRepo = new SetsRepo(getContext());
@@ -597,23 +529,22 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
             Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");
             mCurrentSet = null;
 
-            mBodyWeight.animateProgressTo(0, 60, new CircularProgressBar.ProgressAnimationListener() {
+            mSeconds.animateProgressTo(0, 60, new CircularProgressBar.ProgressAnimationListener() {
                 @Override
                 public void onAnimationStart(View view) {
-                    Log.d("dsf",view.getId()+"");
+                    Log.d("dsf", view.getId() + "");
                 }
 
                 @Override
                 public void onAnimationFinish(View view) {
-                    Log.d("dsf",view.getId()+"");
+                    Log.d("dsf", view.getId() + "");
 
                 }
 
                 @Override
                 public void onAnimationProgress(int progress, View view) {
-                    Log.d("dsf",view.getId()+"");
-                    mBodyWeight.setTitle(progress+"/60");
-
+                    Log.d("dsf", view.getId() + "");
+                    mSeconds.setTitle(progress + "/60");
 
 
                 }
@@ -633,13 +564,10 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onAnimationStart(View view) {
-        switch(view.getId())
-        {
+        switch (view.getId()) {
             case R.id.pb_repetition:
                 break;
             case R.id.pb_sets:
-                break;
-            case R.id.pb_bodyweight:
                 break;
 
         }
@@ -655,20 +583,21 @@ public class ExercisesFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    public void onLeftToRightSwipe() {
-        int current = host.getCurrentTab()+1;
-        host.setCurrentTab(current% 3);
-        Log.d("============= ",current+" onRightToLeftSwipe");
 
-
-    }
-
+    @Override
     public void onRightToLeftSwipe() {
-        int current = host.getCurrentTab()-1;
-        if (current<0) current += 3;
-        host.setCurrentTab(current%3);
-        Log.d("============= ",current+" onLeftToRightSwipe");
-
-
+        int current = host.getCurrentTab() - 1;
+        if (current < 0) current += 2;
+        host.setCurrentTab(current % 2);
+        Log.d("============= ", current + " onLeftToRightSwipe");
     }
+
+    @Override
+    public void onLeftToRightSwipe() {
+        int current = host.getCurrentTab() + 1;
+        host.setCurrentTab(current % 2);
+        Log.d("============= ", current + " onRightToLeftSwipe");
+    }
+
+
 }

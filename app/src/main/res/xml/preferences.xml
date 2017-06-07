@@ -9,4 +9,14 @@
         android:summary="Select Run Mode"
         android:title="Run Mode"
         android:key="@string/mode_key" />
+
+
+
+    <com.a.n.smartgym.Utils.NumberPickerPreference
+        android:key="key_number"
+        android:title="Give me a number"
+        android:defaultValue="55" />
+
+
+
 </PreferenceScreen>

@@ -130,7 +130,7 @@ public class ExerciseRepo {
                 + " AND " + Exercise.TABLE +"."+Exercise.KEY_MACHINE_NAME + "="+ "'"+name+"'"
                 + " AND " + Visits.TABLE +"."+Visits.KEY_DATE + "="+
                   "(SELECT MAX(" +Visits.TABLE +"."+Visits.KEY_DATE+") " + " FROM "+ Visits.TABLE
-                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"')"
+                + " WHERE " + User.TABLE +"."+User.KEY_USER_ID + "="+ "'"+user_id+"' AND " + Visits.TABLE +"."+Visits.KEY_DATE + "<"+ "DATE('now'))"
                 + " GROUP BY " +Visits.TABLE +"."+Visits.KEY_DATE+","+Sets.TABLE +"."+Sets.KEY_WEIGHT +","+Sets.TABLE +"."+Sets.KEY_COUNT
                 ;
 

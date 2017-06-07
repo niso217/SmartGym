@@ -27,7 +27,7 @@ public class Main2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
 
         linearLayout = (LinearLayout) findViewById(R.id.ll);
-        linearLayout.setOnTouchListener(new LayoutTouchListener(this));
+        //linearLayout.setOnTouchListener(new LayoutTouchListener(this));
         host = (TabHost) findViewById(R.id.tab_host);
         host.setup();
 
