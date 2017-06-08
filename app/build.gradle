@@ -89,6 +89,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:10.2.6'
     testCompile 'junit:junit:4.12'
     minSdkJellybeanCompile 'com.firebaseui:firebase-ui-auth:1.0.0'
+    compile 'me.philio:preferencecompatextended:1.2.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

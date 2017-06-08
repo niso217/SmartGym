@@ -88,14 +88,26 @@
     <string name="refresh">Refresh</string>
 
 
-    <!-- ArtikCloudDeviceActivity -->
-    <string name="welcome_txt">Welcome </string>
-    <string name="artikcloud_devices_title">ARTIK Cloud Devices</string>
-    <string name="create_artikcloud_device_hint">You do not have a compatible device on ARTIK Cloud. Please create one</string>
-    <string name="select_device">Please select a device on the list to use</string>
+    <string name="title_mode">Run Mode</string>
+    <string name="summary_mode">Select Run Mode</string>
 
-    <string name="mode_key">modeKey</string>
+    <string name="title_reps">Set Repetitions</string>
+    <string name="title_sets">Number Of Sets In An Exercise</string>
+    <string name="title_weight">Body Weight</string>
+    <string name="title_seconds">Seconds Between Sets</string>
+
+
+    <string name="key_mode">mode</string>
+    <string name="key_reps">reps</string>
+    <string name="key_sets">sets</string>
+    <string name="key_weight">weight</string>
+    <string name="key_seconds">seconds</string>
+
     <string name="default_mode">niso217</string>
+    <string name="default_reps">10</string>
+    <string name="default_sets">3</string>
+    <string name="default_seconds">60</string>
+    <string name="default_weight">70</string>
 
     <!-- LogInActivity-->
     <string name="permission_denied">Permission Denied</string>

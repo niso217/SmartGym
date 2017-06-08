@@ -2,8 +2,6 @@ package com.a.n.smartgym;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -14,18 +12,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -35,8 +29,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -62,25 +54,17 @@ import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Utils.Constants;
-import com.a.n.smartgym.barcode.BarcodeCaptureActivity;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
-import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStates;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
@@ -90,6 +74,9 @@ import java.util.Calendar;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+
+import static com.a.n.smartgym.Utils.Constants.STATE_CONNECTED;
+import static com.a.n.smartgym.Utils.Constants.STATE_DISCONNECTED;
 
 @TargetApi(21)
 public class MainActivity extends AppCompatActivity implements
@@ -212,8 +199,7 @@ public class MainActivity extends AppCompatActivity implements
             //Restore the fragment's instance
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
-            mCurrentFragment = new DayAverageFragment();
-            performIdentifierAction();
+            performIdentifierAction(R.id.device_day_average);
         }
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
@@ -221,8 +207,9 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void performIdentifierAction() {
-        mNavigationView.getMenu().performIdentifierAction(R.id.device_day_average, 0);
+    public void performIdentifierAction(int id) {
+        mNavigationView.getMenu().performIdentifierAction(id, 0);
+        StartBLEScan(false,false);
 
     }
 
@@ -260,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements
     private void setCurrentMode() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPreferences != null)
-            mCurrentMode = sharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
+            mCurrentMode = sharedPreferences.getString(getString(R.string.key_mode), getString(R.string.default_mode));
     }
 
     public void setBLENotification(boolean val) {
@@ -433,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu, menu);
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        mCurrentMode = settings.getString(getString(R.string.mode_key), "");
+        mCurrentMode = settings.getString(getString(R.string.key_mode), "");
         MenuItem item = null;
         isModeChanged(mCurrentMode);
         switch (mCurrentMode) {
@@ -445,6 +432,9 @@ public class MainActivity extends AppCompatActivity implements
                 break;
         }
         item.setChecked(true);
+
+        //menu.setGroupVisible(R.id.action_mode, false);
+
         return true;
     }
 
@@ -460,21 +450,22 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences.Editor editor = settings.edit();
         switch (item.getItemId()) {
             case R.id.action_settings:
-                getFragmentManager().beginTransaction().replace(R.id.containerView, new SettingsFragment()).commit();
+                mCurrentFragment = new SettingsFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 break;
             case R.id.bluetooth_searching:
                 StartBLEScan(true, true);
                 break;
             case R.id.emulator:
                 item.setChecked(!item.isChecked());
-                editor.putString(getString(R.string.mode_key), Constants.EMULATOR_NAME);
+                editor.putString(getString(R.string.key_mode), Constants.EMULATOR_NAME);
                 editor.commit();
                 isModeChanged(Constants.EMULATOR_NAME);
 
                 break;
             case R.id.device:
                 item.setChecked(!item.isChecked());
-                editor.putString(getString(R.string.mode_key), Constants.DEVICE_NAME);
+                editor.putString(getString(R.string.key_mode), Constants.DEVICE_NAME);
                 editor.commit();
                 isModeChanged(Constants.DEVICE_NAME);
 
@@ -520,9 +511,11 @@ public class MainActivity extends AppCompatActivity implements
                 mCurrentFragment = new VisitsFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
+                break;
+
             case R.id.settings:
-                //getSupportFragmentManager().beginTransaction().remove(mCurrentFragment).commit();
-                //getFragmentManager().beginTransaction().replace(R.id.containerView, new SettingsFragment()).commit();
+                mCurrentFragment = new SettingsFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
 
                 mToolbar.setTitle("");
 
@@ -740,7 +733,7 @@ public class MainActivity extends AppCompatActivity implements
             mBluetoothLeService.ChangeMode(mCurrentMode = mode);
 
         if (mBluetoothScanner != null)
-            mBluetoothScanner.ChangeFilter(mCurrentMode);
+            //mBluetoothScanner.ChangeFilter(mCurrentMode);
         switch (mode) {
             case Constants.DEVICE_NAME:
                 mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
@@ -770,12 +763,25 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    public void showProgressDialog(String msg) {
+    public void showProgressDialog(final String msg) {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(this);
             mProgressDialog.setMessage(msg);
             mProgressDialog.setIndeterminate(true);
-            mProgressDialog.setCancelable(false);
+            mProgressDialog.setCancelable(true);
+            mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+
+                    if (mBluetoothScanner != null)
+                        StartBLEScan(false, false);
+                    if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() == STATE_CONNECTED)
+                        closeBLE();
+
+                    performIdentifierAction(R.id.device_day_average);
+
+                }
+            });
         }
 
         mProgressDialog.show();

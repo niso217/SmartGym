@@ -32,14 +32,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.a.n.smartgym.R;
-import com.a.n.smartgym.SettingsFragment;
 import com.a.n.smartgym.Utils.Constants;
 
 import java.io.UnsupportedEncodingException;
@@ -188,7 +186,7 @@ public class BluetoothLeService extends Service {
     private void setCurrentMode() {
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (mSharedPreferences != null)
-            mCurrentMode = mSharedPreferences.getString(getString(R.string.mode_key), getString(R.string.default_mode));
+            mCurrentMode = mSharedPreferences.getString(getString(R.string.key_mode), getString(R.string.default_mode));
 
         Log.d(TAG, mCurrentMode);
     }

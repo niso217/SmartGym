@@ -67,11 +67,11 @@ public class BluetoothScanner {
         if (Build.VERSION.SDK_INT >= 21) {
 
             ScanFilter scanFilter = new ScanFilter.Builder()
-                    .setDeviceName(Constants.EMULATOR_NAME)
+//                    .setDeviceName(Constants.EMULATOR_NAME)
                     .build();
             mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
             settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+                    .setScanMode(ScanSettings.SCAN_MODE_OPPORTUNISTIC)
                     .build();
             filters = new ArrayList<>();
             filters.add(scanFilter);
@@ -111,6 +111,7 @@ public class BluetoothScanner {
                 mLEScanner.startScan(filters, settings, mScanCallback);
             }
         } else {
+
             mHandler.removeCallbacksAndMessages(null);
 
             if (Build.VERSION.SDK_INT < 21) {

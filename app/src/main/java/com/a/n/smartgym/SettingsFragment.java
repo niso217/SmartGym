@@ -4,36 +4,34 @@ package com.a.n.smartgym;
  * Created by nirb on 25/05/2017.
  */
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
+
+import me.philio.preferencecompatextended.PreferenceFragmentCompat;
 
 
 /**
  * shows the settings option for choosing the movie categories in ListPreference.
  */
-public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = SettingsFragment.class.getSimpleName();
     private Context activity;
 
     SharedPreferences sharedPreferences;
 
-
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(Bundle bundle, String s) {
+        //add xml
         addPreferencesFromResource(R.xml.preferences);
 
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        onSharedPreferenceChanged(sharedPreferences, getString(R.string.mode_key));
+        //onSharedPreferenceChanged(sharedPreferences, getString(R.string.key_mode));
+
     }
 
     @Override
@@ -53,23 +51,20 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Preference preference = findPreference(key);
-        if (preference instanceof ListPreference) {
-            ListPreference listPreference = (ListPreference) preference;
-            int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
-            if (prefIndex >= 0) {
-                preference.setSummary(listPreference.getEntries()[prefIndex]);
-                //post the event of movie categories changed
-                try{
+//        if (preference instanceof ListPreference) {
+//            ListPreference listPreference = (ListPreference) preference;
+//            int prefIndex = listPreference.findIndexOfValue(sharedPreferences.getString(key, ""));
+//            if (prefIndex >= 0) {
+//                preference.setSummary(listPreference.getEntries()[prefIndex]);
+//                //post the event of movie categories changed
+//
+//
+//            }
+//        } else {
+//
+//        }
+        //preference.setSummary(sharedPreferences.getString(key, ""));
 
-                    ((onSharedPreferenceChangedListener) activity).isModeChanged(sharedPreferences.getString(getActivity().getString(R.string.mode_key), getActivity().getString(R.string.default_mode)));
-                }catch (ClassCastException cce){
-
-                }
-            }
-        } else {
-            preference.setSummary(sharedPreferences.getString(key, ""));
-
-        }
 
 
 

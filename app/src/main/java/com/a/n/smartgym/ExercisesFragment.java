@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
@@ -15,6 +16,7 @@ import android.nfc.tech.Ndef;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -68,7 +70,8 @@ public class ExercisesFragment extends Fragment implements
     private int mNumberOfSetsCounter;
     private int mNumberOfSecondssCounter;
     private Typeface mTypeface;
-
+    private double mSettingsWeight;
+    private String mSettingsReps,mSettingsSets,mSettingsSeconds;
 
     private final Runnable mTicker = new Runnable() {
         public void run() {
@@ -118,6 +121,17 @@ public class ExercisesFragment extends Fragment implements
         mAuth = FirebaseAuth.getInstance();
         mHandler = new Handler();
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        if (sharedPreferences != null){
+            int reps = sharedPreferences.getInt(getString(R.string.key_reps), Integer.parseInt(getString(R.string.default_reps)));
+            int sets = sharedPreferences.getInt(getString(R.string.key_sets), Integer.parseInt(getString(R.string.default_sets)));
+            int seconds = sharedPreferences.getInt(getString(R.string.key_seconds), Integer.parseInt(getString(R.string.default_seconds)));
+            mSettingsWeight = sharedPreferences.getInt(getString(R.string.key_weight), Integer.parseInt(getString(R.string.default_weight)));
+            mSettingsSeconds = seconds+"";
+            mSettingsReps = reps+"";
+            mSettingsSets = sets+"";
+        }
+
         mTicker.run();
 
 
@@ -134,7 +148,7 @@ public class ExercisesFragment extends Fragment implements
             if (!mCurrentRepetition.equals("0")) {
                 int progress = Integer.parseInt(mCurrentRepetition);
                 mRepetition.setProgress(progress);
-                mRepetition.setTitle(progress + "/10");
+                mRepetition.setTitle(progress + "/" +mSettingsReps);
                 StartNewSetInstance(progress, Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
@@ -145,7 +159,7 @@ public class ExercisesFragment extends Fragment implements
         mCurrentDirection = stringArray[3];
 
 
-        int calc = CalcBodyRatio(70, Double.parseDouble(mCalculatedWeight));
+        int calc = CalcBodyRatio(mSettingsWeight, Double.parseDouble(mCalculatedWeight));
         mWeightRatio.setProgress(calc);
         mWeightRatio.setTitle(calc + "%");
         mCalcWeight.setProgress(Integer.parseInt(mCalculatedWeight));
@@ -190,7 +204,7 @@ public class ExercisesFragment extends Fragment implements
         if (mCurrentSet == null) {
             mSeconds.removeAnimation();
             mSeconds.setProgress(0);
-            mSeconds.setTitle("0/60");
+            mSeconds.setTitle("0/"+mSettingsSeconds);
             mCurrentSet = new Sets();
             mCurrentSet.setSetid(UUID.randomUUID().toString());
             mCurrentSet.setexerciseid(CurrentExercisesId);
@@ -224,12 +238,12 @@ public class ExercisesFragment extends Fragment implements
         mSets = (CircularProgressBar) rootFragment.findViewById(R.id.pb_sets);
         mRepetition = (CircularProgressBar) rootFragment.findViewById(R.id.pb_repetition);
         mRepetition.setMax(10);
-        mRepetition.setTitle("0/10");
+        mRepetition.setTitle("0/" + mSettingsReps);
         mRepetition.setTitleFontSize(60);
         mRepetition.setSubTitleFontSize(40);
 
         mSets.setMax(3);
-        mSets.setTitle("0/3");
+        mSets.setTitle("0/"+mSettingsSets);
         mSets.setTitleFontSize(60);
         mSets.setSubTitleFontSize(40);
 
@@ -388,7 +402,7 @@ public class ExercisesFragment extends Fragment implements
     private void closeFragment() {
 
         try {
-            ((MainActivity) activity).performIdentifierAction(); //finisdhed
+            ((MainActivity) activity).performIdentifierAction(R.id.device_day_average); //finisdhed
         } catch (ClassCastException cce) {
 
         }
@@ -520,8 +534,8 @@ public class ExercisesFragment extends Fragment implements
     private void InsertToDataBase() {
         if (mCurrentSet != null && mCurrentSet.getCount() > 0) {
             mSets.setProgress(++mNumberOfSetsCounter);
-            mSets.setTitle(mNumberOfSetsCounter + "/3");
-            mRepetition.setTitle("0/10");
+            mSets.setTitle(mNumberOfSetsCounter + "/"+mSettingsSets);
+            mRepetition.setTitle("0/"+mSettingsReps);
             mRepetition.setProgress(0);
             SetsRepo setsRepo = new SetsRepo(getContext());
             setsRepo.insert(mCurrentSet);
@@ -544,7 +558,7 @@ public class ExercisesFragment extends Fragment implements
                 @Override
                 public void onAnimationProgress(int progress, View view) {
                     Log.d("dsf", view.getId() + "");
-                    mSeconds.setTitle(progress + "/60");
+                    mSeconds.setTitle(progress + "/"+mSettingsSeconds);
 
 
                 }

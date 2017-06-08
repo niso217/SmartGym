@@ -5,9 +5,18 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/circular_progress_default_progress</item>
         <item name="colorPrimaryDark">@color/circular_progress_default_title</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
         <item name="android:statusBarColor">@color/material_blue_grey_800</item>
+        <item name="alertDialogTheme">@style/AppTheme.AlertDialog</item>
+        <item name="preferenceTheme">@style/PreferenceTheme</item>
+    </style>
+
+    <style name="AppTheme.AlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.TimePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="PermissionsDialogFragmentStyle" parent="Base.Theme.AppCompat.Dialog">
@@ -19,7 +28,7 @@
     </style>
 
     <style name="Widget.ActionButton.Overflow" parent="@android:style/Widget.Holo.ActionButton.Overflow">
-        <item name="android:src">@drawable/ic_settings_white_36dp</item>
+        <item name="android:src">@drawable/ic_adb_white_36dp</item>
     </style>
 
     <style name="Widget"/>
@@ -38,4 +47,6 @@
         <item name="cpb_hasShadow">false</item>
         <item name="cpb_strokeWidth">5</item>
     </style>
+
+
 </resources>
