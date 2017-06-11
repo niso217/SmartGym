@@ -76,7 +76,7 @@ public class ExercisesFragment extends Fragment implements
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (Integer.parseInt(mCalculatedWeight) < 3) {
+            if (Integer.parseInt(mCurrentWeight) < 3) {
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
@@ -333,6 +333,9 @@ public class ExercisesFragment extends Fragment implements
 
     private void BuildLastExString(String name) {
         ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(mAuth.getCurrentUser().getUid(), name);
+
+
+
         if (lastExercise != null && lastExercise.size() > 0) {
             mTextViewDate.setText(lastExercise.get(0).getDate());
             mTextViewWeight.setTypeface(mTypeface);

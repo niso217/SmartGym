@@ -137,11 +137,13 @@ public class BluetoothScanner {
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            scanLeDevice(false);
+            Log.d(TAG, "onBatchScanResults " + result.toString());
             mScanResultStatus = true;
             BluetoothDevice device = result.getDevice();
+            if (device.getName()==null || !device.getName().equals("niso217")) return;
             Log.d(TAG, "name:" + device.getName() + " address " + device.getAddress());
             if (mBluetoothListener!=null){
+                scanLeDevice(false);
                 mBluetoothListener.ScanResult(device);
 
             }

@@ -1,104 +1,60 @@
-<!--ref: https://google-developers.appspot.com/chart/interactive/docs/gallery/barchart-->
 <html>
 <head>
-    <style>
-container {
-  width: 80%;
-  margin: 15px auto;
-}
-</style>
-</head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
-
-<body>
-
-
-
-<div class="container">
-    <h2></h2>
-    <div>
-        <canvas id="myChart"></canvas>
-    </div>
-</div>
-</body>
-
-
-
-<script type="text/javascript">
-var ctx = document.getElementById("myChart");
-var data = {
-  labels: ["2 Jan", "9 Jan", "16 Jan", "23 Jan","9 May", "16 May", "23 May","30 May","2 Jan", "9 Jan", "16 Jan", "23 Jan","9 May", "16 May", "23 May","30 May"],
-    datasets: [{
-          label: 'Weight',
-          data: [50, 60, 65, 68,50, 60, 65, 68,50, 60, 65, 68,50, 60, 65, 68],
-		  backgroundColor: "rgba(255,153,0,0.6)",
-        }, {
-          label: 'Number Of Sets',
-          data: [40, 30, 40, 45,50, 60, 65, 68,50, 60, 65, 68,50, 60, 65, 68],
-		  backgroundColor: "rgba(153,255,51,0.6)",
-
-          // Changes this dataset to become a line
-          type: 'line'
-        }]
-}
-var myChart = new Chart(ctx, {
-  type: 'bar',
-  data: data,
-  options: {
-    "hover": {
-      "animationDuration": 0
-    },
-    "animation": {
-      "duration": 1,
-      "onComplete": function() {
-        var chartInstance = this.chart,
-          ctx = chartInstance.ctx;
-
-        ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-		ctx.fillStyle = "#000000";
-
-        this.data.datasets.forEach(function(dataset, i) {
-          var meta = chartInstance.controller.getDatasetMeta(i);
-          meta.data.forEach(function(bar, index) {
-            var data = dataset.data[index];
-            ctx.fillText(data, bar._model.x, bar._model.y - 5);
-          });
-        });
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+    <style type="text/css">
+      body {
+        margin: 0px;
+        padding: 0px;
+        background: #ff37474f;
       }
-    },
-    legend: {
-      "display": true
-    },
-    tooltips: {
-      "enabled": true
-    },
-    scales: {
-      yAxes: [{
-        display: true,
-        gridLines: {
-          display: true
-        },
-        ticks: {
-          max: Math.max(...data.datasets[0].data) + 10,
-          display: true,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
-        gridLines: {
-          display: true
-        },
-        ticks: {
-          beginAtZero: true
-        }
-      }]
-    }
-  }
-});
+      #chart {
+        width: 100%;
+        height: 100%;
+		background: #ff37474f;
+      }
+    </style>
+</head>
+<body>
+<canvas id="chart"></canvas>
 
+<script src="Chart.min.js"></script>
+<script>
+
+      // @link http://www.chartjs.org/docs/#line-chart-example-usage
+      var data = {
+        labels: ["January", "February", "March", "April", "May", "June", "July"],
+        datasets: [
+            {
+				type: "bar",
+                label: "My First dataset",
+                fillColor: "rgba(220,220,220,0.2)",
+                strokeColor: "rgba(220,220,220,1)",
+                pointColor: "rgba(220,220,220,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(220,220,220,1)",
+                data: [65, 59, 80, 81, 56, 55, 40]
+            },
+            {
+                label: "My Second dataset",
+                fillColor: "rgba(151,187,205,0.2)",
+                strokeColor: "rgba(151,187,205,1)",
+                pointColor: "rgba(151,187,205,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(151,187,205,1)",
+                data: [28, 48, 40, 19, 86, 27, 90]
+            }
+        ]
+      };
+
+      var ctx = document.getElementById('chart').getContext('2d');
+      var myLineChart = new Chart(ctx).Line(data, null);
+
+            var mydata = Android.getLabels();
+             mydata = JSON.parse(mydata);
+            window.alert("Hello! Data are: " + mydata + "; first = " + mydata[0]);
     </script>
 
-
+</body>
 </html>

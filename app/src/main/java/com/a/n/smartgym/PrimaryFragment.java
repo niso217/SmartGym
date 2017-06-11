@@ -72,6 +72,7 @@ public class PrimaryFragment extends Fragment {
 
         mDailyAvrage = new ExerciseRepo().getAllDaysAverages(mAuth.getCurrentUser().getUid());
 
+
         Iterator iterator = mDailyAvrage.iterator();
         while (iterator.hasNext()) {
             DailyAverage temp = (DailyAverage) iterator.next();

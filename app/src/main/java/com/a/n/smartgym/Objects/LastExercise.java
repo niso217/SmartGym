@@ -11,6 +11,7 @@ public class LastExercise {
     private int weight;
     private int count;
     private String date;
+    private String name;
     private int sets;
 
     public int getSets() {
@@ -43,5 +44,13 @@ public class LastExercise {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
