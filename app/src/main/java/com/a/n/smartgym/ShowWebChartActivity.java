@@ -22,9 +22,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.a.n.smartgym.Objects.LastExercise;
+import com.a.n.smartgym.Quary.DailyAverage;
+import com.a.n.smartgym.Quary.MachineUsage;
 import com.a.n.smartgym.repo.ExerciseRepo;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +45,10 @@ public class ShowWebChartActivity extends ActionBarActivity {
     List<Integer> count;
     List<Integer> weight;
     List<String> labels;
+    String title;
+
+    List<String> lbl;
+    List<Integer> present;
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -49,43 +57,82 @@ public class ShowWebChartActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_webchart);
 
-        ArrayList<LastExercise> lastExercise2 = new ExerciseRepo().getLastSummary("", "");
+
+
+        ArrayList<String> String = new ExerciseRepo().getAllExercises("");
+
+
+
+
+//        ArrayList<MachineUsage> usage = new ExerciseRepo().getUsage2("");
+//
+//        lbl = new ArrayList<>();
+//        present = new ArrayList<>();
+//
+//        Iterator<MachineUsage> iterator = usage.iterator();
+//        while (iterator.hasNext()) {
+//            MachineUsage current = iterator.next();
+//
+//            lbl.add(current.getMuscle());
+//            present.add(current.getCounter());
+//
+//        }
 
         labels = new ArrayList<>();
         weight = new ArrayList<>();
         count = new ArrayList<>();
 
-
-        Iterator<LastExercise> iterator = lastExercise2.iterator();
-        while (iterator.hasNext()) {
-            LastExercise current = iterator.next();
-            labels.add(current.getName());
-            weight.add(current.getWeight());
-            count.add(current.getCount());
-
-        }
-
-
-//        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-//                android.R.layout.simple_spinner_item, listCharts);
-        //dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-      //  spCharts.setAdapter(dataAdapter);
-//        spCharts.setOnItemSelectedListener(new OnItemSelectedListener(){
+//        ArrayList<LastExercise> lastExercise2 = new ExerciseRepo().getLastSummary("", "");
 //
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view,
-//                                       int position, long id) {
-//                String chartHtml = listHtml.get(parent.getSelectedItemPosition());
-//                webView.loadUrl("file:///android_asset/chartjs.html");
-//            }
+//        Iterator<LastExercise> iterator = lastExercise2.iterator();
+//        while (iterator.hasNext()) {
+//            LastExercise current = iterator.next();
 //
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//                // TODO Auto-generated method stub
+//            labels.add(shortcut(current.getName()));
+//            weight.add(current.getWeight());
+//            count.add(current.getCount());
 //
-//            }});
+//        }
 
-        webView = (WebView)findViewById(R.id.web);
+        spCharts = (Spinner) findViewById(R.id.spinner2);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, String);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+          spCharts.setAdapter(dataAdapter);
+        spCharts.setOnItemSelectedListener(new OnItemSelectedListener(){
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                //String chartHtml = listHtml.get(parent.getSelectedItemPosition());
+                //webView.loadUrl("file:///android_asset/summary.html");
+                title = parent.getSelectedItem().toString();
+                ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("",title);
+
+                labels = new ArrayList<>();
+                weight = new ArrayList<>();
+                count = new ArrayList<>();
+
+                Iterator<DailyAverage> iterator = avg.iterator();
+                while (iterator.hasNext()) {
+                    DailyAverage current = iterator.next();
+
+                    labels.add(current.getDate());
+                    weight.add(current.getAverage());
+                    count.add(current.getCount());
+
+                }
+                webView.loadUrl("file:///android_asset/daily.html");
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO Auto-generated method stub
+
+            }});
+
+        webView = (WebView) findViewById(R.id.web);
         webView.addJavascriptInterface(new WebAppInterface(), "Android");
         webView.setVerticalScrollBarEnabled(true);
         webView.setHorizontalScrollBarEnabled(true);
@@ -102,28 +149,55 @@ public class ShowWebChartActivity extends ActionBarActivity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         webView.setWebContentsDebuggingEnabled(true);
-        webView.loadUrl("file:///android_asset/chartjs.html");
+        webView.loadUrl("file:///android_asset/division.html");
 
+    }
+
+    private String shortcut(String word) {
+        String ans = "";
+        String[] arr = word.split("(?<=[\\S])[\\S]*\\s*");
+        for (String a : arr) {
+            ans += a.toUpperCase();
+        }
+        return ans;
     }
 
     public class WebAppInterface {
 
         @JavascriptInterface
-        public String  getLabels() {
-            //return labels.toArray(new String[labels.size()]);
-            String x [] = labels.toArray(new String[labels.size()]);
+        public String getLabels() {
+            String x[] = labels.toArray(new String[labels.size()]);
             return new JSONArray(Arrays.asList(x)).toString();
-            //return   "{'nir','nir','nir','3','ee'}";
         }
 
         @JavascriptInterface
-        public List<Integer> getWeights() {
-            return weight;
+        public String getWeights() {
+            Integer[] x = weight.toArray(new Integer[weight.size()]);
+            return new JSONArray(Arrays.asList(x)).toString();
         }
 
         @JavascriptInterface
-        public List<Integer> getCounts() {
-            return count;
+        public String getCounts() {
+            Integer[] x = count.toArray(new Integer[count.size()]);
+            return new JSONArray(Arrays.asList(x)).toString();
+        }
+
+        @JavascriptInterface
+        public String getLbl() {
+            String x[] = lbl.toArray(new String[lbl.size()]);
+            return new JSONArray(Arrays.asList(x)).toString();
+        }
+
+
+        @JavascriptInterface
+        public String getPresent() {
+            Integer[] x = present.toArray(new Integer[present.size()]);
+            return new JSONArray(Arrays.asList(x)).toString();
+        }
+
+        @JavascriptInterface
+        public String getTitle() {
+            return title;
         }
 
     }

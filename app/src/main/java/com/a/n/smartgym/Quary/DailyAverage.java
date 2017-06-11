@@ -11,13 +11,24 @@ public class DailyAverage implements Parcelable {
 
     private String machine_name;
     private String date;
-    private double average;
+    private int average;
+    private int count;
+
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 
     public DailyAverage() {
 
+
     }
 
-    public DailyAverage(String machine_name, double average) {
+    public DailyAverage(String machine_name, int average) {
         this.machine_name = machine_name;
         this.average = average;
     }
@@ -38,11 +49,11 @@ public class DailyAverage implements Parcelable {
         this.date = date;
     }
 
-    public double getAverage() {
+    public int getAverage() {
         return average;
     }
 
-    public void setAverage(double average) {
+    public void setAverage(int average) {
         this.average = average;
     }
 
@@ -72,6 +83,6 @@ public class DailyAverage implements Parcelable {
     // "De-parcel object
     private DailyAverage(Parcel in) {
         machine_name = in.readString();
-        average = in.readDouble();
+        average = in.readInt();
     }
 }

@@ -1,0 +1,93 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+    <style type="text/css">
+      body {
+        margin: 0px;
+        padding: 0px;
+        background: #ff37474f;
+      }
+      #myChart {
+        width: 100%;
+        height: 100%;
+		background: #ff37474f;
+      }
+    </style>
+</head>
+<body>
+<canvas id="myChart"></canvas>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+<script src="hammer.min.js"></script>
+<script src="chartjs-plugin-zoom.min.js"></script>
+
+<script type="text/javascript">
+var ctx = document.getElementById("myChart");
+<!--ctx.style.backgroundColor = 'rgba(55, 71, 79, 1)';-->
+var labels = JSON.parse(Android.getLabels());
+var weights = JSON.parse(Android.getWeights());
+var counts = JSON.parse(Android.getCounts());
+var title = Android.getTitle();
+var type = 'bar';
+if (weights.length > 2)
+type = 'line'
+
+    var barChartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Weight',
+            backgroundColor: "rgba(220,220,220,0.5)",
+            data: weights,
+            type: type
+        }, {
+            label: 'Sets',
+            backgroundColor: "rgba(151,187,205,0.5)",
+            data: counts,
+            type: type
+        }]
+    };
+
+    window.onload = function() {
+        var ctx = document.getElementById("myChart").getContext("2d");
+        window.myBar = new Chart(ctx, {
+            type: type,
+            data: barChartData,
+            options: {
+                elements: {
+                    rectangle: {
+                        borderWidth: 2,
+                        borderColor: 'rgb(0, 255, 0)',
+                        borderSkipped: 'bottom'
+                    }
+                },
+
+                pan: {
+						enabled: true,
+						mode: 'y'
+					},
+					zoom: {
+						enabled: true,
+						mode: 'y',
+						limits: {
+							max: 10,
+							min: 0.5
+						}
+					},
+
+
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: true,
+                    text: title
+                }
+            }
+        });
+
+    };
+
+    </script>
+
+</body>
+</html>

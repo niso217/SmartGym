@@ -144,7 +144,7 @@ public class DayAverageFragment extends Fragment {
                 Map.Entry childPair = mIterator.next();
                 String name = childPair.getKey().toString();
                 double val = Double.valueOf(childPair.getValue().toString());
-                temp.add(new DailyAverage(name, val));
+                //temp.add(new DailyAverage(name, val));
             }
             addPage(parentPair.getKey().toString(), temp);
 
@@ -178,12 +178,12 @@ public class DayAverageFragment extends Fragment {
             DailyAverage temp = (DailyAverage) iterator.next();
             LinkedHashMap<String, Double> in = dicCodeToIndex.get(temp.getDate());
             if (in != null) {
-                in.put(temp.getMachine_name(), temp.getAverage());
+                //in.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), in);
 
             } else {
                 LinkedHashMap<String, Double> inner = new LinkedHashMap<>();
-                inner.put(temp.getMachine_name(), temp.getAverage());
+                //inner.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), inner);
             }
 

@@ -78,12 +78,12 @@ public class PrimaryFragment extends Fragment {
             DailyAverage temp = (DailyAverage) iterator.next();
             Map<String, Double> in = dicCodeToIndex.get(temp.getDate());
             if (in != null) {
-                in.put(temp.getMachine_name(), temp.getAverage());
+                //in.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), in);
 
             } else {
                 Map<String, Double> inner = new HashMap<>();
-                inner.put(temp.getMachine_name(), temp.getAverage());
+                //inner.put(temp.getMachine_name(), temp.getAverage());
                 dicCodeToIndex.put(temp.getDate(), inner);
             }
 

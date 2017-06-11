@@ -74,12 +74,12 @@ public class TrendAverageFragment extends Fragment {
             DailyAverage temp = (DailyAverage) iterator.next();
             LinkedHashMap<String, Double> in = dicCodeToIndex.get(temp.getMachine_name());
             if (in != null) {
-                in.put(temp.getDate(), temp.getAverage());
+               // in.put(temp.getDate(), temp.getAverage());
                 dicCodeToIndex.put(temp.getMachine_name(), in);
 
             } else {
                 LinkedHashMap<String, Double> inner = new LinkedHashMap<>();
-                inner.put(temp.getDate(), temp.getAverage());
+               // inner.put(temp.getDate(), temp.getAverage());
                 dicCodeToIndex.put(temp.getMachine_name(), inner);
             }
 
@@ -94,7 +94,7 @@ public class TrendAverageFragment extends Fragment {
                 Map.Entry childPair = mIterator.next();
                 String name = childPair.getKey().toString();
                 double val = Double.valueOf(childPair.getValue().toString());
-                mDailyAverage.add(new DailyAverage(name,val));
+               // mDailyAverage.add(new DailyAverage(name,val));
             }
             if (mDailyAverage.size()>2)
             addPage(parentPair.getKey().toString());

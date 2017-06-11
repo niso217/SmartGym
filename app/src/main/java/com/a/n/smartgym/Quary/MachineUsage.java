@@ -10,7 +10,16 @@ public class MachineUsage {
 
     private String machine_name;
     private int counter;
+    private String muscle;
     private long present;
+
+    public String getMuscle() {
+        return muscle;
+    }
+
+    public void setMuscle(String muscle) {
+        this.muscle = muscle;
+    }
 
     public String getMachine_name() {
         return machine_name;
