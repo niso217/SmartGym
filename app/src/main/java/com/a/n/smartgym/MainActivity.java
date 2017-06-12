@@ -480,6 +480,7 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onNavigationItemSelected(MenuItem item) {
         mDrawerLayout.closeDrawers();
         Log.d(TAG, "onNavigationItemSelected");
+        Bundle bundle = new Bundle();
         switch (item.getItemId()) {
 //            case R.id.nav_item_inbox:
 //                mCurrentFragment = new TabFragment();
@@ -492,17 +493,23 @@ public class MainActivity extends AppCompatActivity implements
 
                 break;
             case R.id.device_day_average:
-                mCurrentFragment = new DayAverageFragment();
+                mCurrentFragment = new WebChartFragment();
+                bundle.putInt("type", Constants.SUMMARY);
+                mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
                 break;
             case R.id.day_device_average:
-                mCurrentFragment = new TrendAverageFragment();
+                mCurrentFragment = new WebChartFragment();
+                bundle.putInt("type", Constants.TREND);
+                mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
                 break;
             case R.id.usage_average:
-                mCurrentFragment = new UsageAverageFragment();
+                mCurrentFragment = new WebChartFragment();
+                bundle.putInt("type", Constants.USAGE);
+                mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
 

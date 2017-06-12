@@ -19,99 +19,47 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
 <script type="text/javascript">
-var ctx = document.getElementById("myChart");
-ctx.style.backgroundColor = 'rgba(55, 71, 79, 1)';
 var labels = JSON.parse(Android.getLabels());
 var weights = JSON.parse(Android.getWeights());
 var counts = JSON.parse(Android.getCounts());
+var title = Android.getTitle();
 
-var data = {
-  labels: labels,
-    datasets: [{
-          label: 'Weight',
-          data: weights,
-		  backgroundColor: "rgba(220,220,220,0.5)",
+var barChartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Weight',
+            backgroundColor: "rgba(220,220,220,0.5)",
+            data: weights,
         }, {
-          label: 'Number Of Sets',
-          data: counts,
-		  backgroundColor: "rgba(151,187,205,0.5)"
-
-          // Changes this dataset to become a line
+            label: 'Sets',
+            backgroundColor: "rgba(151,187,205,0.5)",
+            data: counts,
         }]
-}
-var myChart = new Chart(ctx, {
-  type: 'bar',
-  data: data,
-  options: {
+    };
 
-  elements: {
-                rectangle: {
-                    borderWidth: 2,
-                    borderColor: 'rgba(186, 218, 85, 1)',
-                    borderSkipped: 'bottom'
+    window.onload = function() {
+        var ctx = document.getElementById("myChart").getContext("2d");
+        window.myBar = new Chart(ctx, {
+            type: 'bar',
+            data: barChartData,
+            options: {
+                elements: {
+                    rectangle: {
+                        borderWidth: 2,
+                        borderColor: 'rgb(0, 255, 0)',
+                        borderSkipped: 'bottom'
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: true,
+                    text: title
                 }
-            },
-
-		responsive: true,
-        maintainAspectRatio: false,
-
-    "hover": {
-      "animationDuration": 0
-    },
-    "animation": {
-      "duration": 1,
-      "onComplete": function() {
-        var chartInstance = this.chart,
-          ctx = chartInstance.ctx;
-
-        ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-		ctx.fillStyle = "#ffffff";
-
-        this.data.datasets.forEach(function(dataset, i) {
-          var meta = chartInstance.controller.getDatasetMeta(i);
-          meta.data.forEach(function(bar, index) {
-            var data = dataset.data[index];
-            ctx.fillText(data, bar._model.x, bar._model.y - 5);
-          });
+            }
         });
-      }
-    },
-    legend: {
-    	fontColor: "white",
-      "display": true
-    },
-    tooltips: {
-      "enabled": true
-    },
-    scales: {
-      yAxes: [{
-        display: true,
-        gridLines: {
-          display: true
-        },
-        ticks: {
-		fontColor: "white",
-          max: Math.max(...data.datasets[0].data) + 9,
-          display: true,
-          beginAtZero: true
-        }
-      }],
-      xAxes: [{
 
-        gridLines: {
-          display: true
-        },
-        ticks: {
-		fontColor: "white",
-          beginAtZero: true
-        }
-      }]
-    }
-
-  }
-});
+    };
 
     </script>
 

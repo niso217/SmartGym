@@ -20,6 +20,9 @@ public class Constants {
     public static final int STATE_CONNECTED = 2;
     public static final int RECONNECT_ATTEMPTING = 3;
 
+    public static final int TREND = 0;
+    public static final int SUMMARY = 1;
+    public static final int USAGE = 2;
 
     public enum MuscleType {
         ABS,
@@ -33,6 +36,7 @@ public class Constants {
         CARDIO,
         HEART
     }
+
 
     public static final Map<String, String> KEY_PROTOCOLS;
 

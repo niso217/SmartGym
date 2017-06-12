@@ -17,11 +17,7 @@
 <body>
 <canvas id="myChart"></canvas>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
-<script src="hammer.min.js"></script>
-<script src="chartjs-plugin-zoom.min.js"></script>
-
 <script type="text/javascript">
 var ctx = document.getElementById("myChart");
 <!--ctx.style.backgroundColor = 'rgba(55, 71, 79, 1)';-->
@@ -61,21 +57,6 @@ type = 'line'
                         borderSkipped: 'bottom'
                     }
                 },
-
-                pan: {
-						enabled: true,
-						mode: 'y'
-					},
-					zoom: {
-						enabled: true,
-						mode: 'y',
-						limits: {
-							max: 10,
-							min: 0.5
-						}
-					},
-
-
                 responsive: true,
                 maintainAspectRatio: false,
                 title: {
