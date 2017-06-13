@@ -112,17 +112,18 @@ public class ExerciseRepo {
     }
 
 
-    public ArrayList<DailyAverage> getAllDaysAverages2(String user_id, String ex) {
+    public ArrayList<DailyAverage> getAllDaysAverages2(String user_id, String ex, String date) {
         DailyAverage dailyAverage;
         ArrayList<DailyAverage> DailyAverages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery = "\t\t\t\tselect Visits.date,Exercise.machinename,sum(Sets.count) as count,avg(Sets.weight) as average\n" +
-                "\t\t\t\tFROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2' and Exercise.machinename='"+ex+"'\n" +
-                "\t\t\t\tgroup by Exercise.machinename,Visits.date";
+        String selectQuery = "select Visits.date,Exercise.machinename,sum(Sets.count) as count,avg(Sets.weight) as average\n" +
+                "FROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
+                "INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
+                "INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
+                "WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2' and Exercise.machinename="+ "'" + ex + "'"+" \n" +
+                "and Visits.date BETWEEN datetime('now', "+ "'" + date + "'"+ ") AND datetime('now', 'localtime')\n" +
+                "group by Exercise.machinename,Visits.date";
 
 
         Log.d(TAG, selectQuery);

@@ -540,7 +540,7 @@ public class ExercisesFragment extends Fragment implements
             mSets.setTitle(mNumberOfSetsCounter + "/"+mSettingsSets);
             mRepetition.setTitle("0/"+mSettingsReps);
             mRepetition.setProgress(0);
-            SetsRepo setsRepo = new SetsRepo(getContext());
+            SetsRepo setsRepo = new SetsRepo();
             setsRepo.insert(mCurrentSet);
             Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
             Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");

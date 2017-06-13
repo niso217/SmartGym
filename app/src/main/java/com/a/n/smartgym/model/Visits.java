@@ -1,6 +1,7 @@
 package com.a.n.smartgym.model;
 
-import java.sql.Date;
+
+import java.util.Date;
 
 /**
  * Created by Tan on 1/26/2016.

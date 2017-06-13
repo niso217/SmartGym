@@ -20,12 +20,14 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -54,6 +56,7 @@ import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Utils.Constants;
+import com.a.n.smartgym.Utils.DataFaker;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.MuscleRepo;
@@ -176,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

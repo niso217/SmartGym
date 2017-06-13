@@ -2,12 +2,24 @@ package com.a.n.smartgym;
 
 import android.app.Application;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.a.n.smartgym.Helpers.DBHelper;
 import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Utils.DataFaker;
+import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.model.Sets;
+import com.a.n.smartgym.model.User;
+import com.a.n.smartgym.model.Visits;
+import com.a.n.smartgym.repo.ExerciseRepo;
 import com.a.n.smartgym.repo.MuscleRepo;
+import com.a.n.smartgym.repo.SetsRepo;
+import com.a.n.smartgym.repo.UserRepo;
+import com.a.n.smartgym.repo.VisitsRepo;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -58,6 +70,7 @@ public class App extends Application {
 
 
     private final Response.Listener<String> onPostsLoaded = new Response.Listener<String>() {
+        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onResponse(String response) {
             Log.i(TAG, response);
@@ -90,6 +103,17 @@ public class App extends Application {
             MuscleRepo muscleRepo = new MuscleRepo();
             muscleRepo.BulkMuscle(list);
             ExercisesDB.getInstance().keys = muscleRepo.getMainMuscle();
+
+//            SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+//            db.execSQL("DROP TABLE IF EXISTS " + Visits.TABLE);
+//            db.execSQL("DROP TABLE IF EXISTS " + Exercise.TABLE);
+//            db.execSQL("DROP TABLE IF EXISTS " + Sets.TABLE);
+//            db.execSQL(ExerciseRepo.createTable());
+//            db.execSQL(VisitsRepo.createTable());
+//            db.execSQL(SetsRepo.createTable());
+//            DataFaker fake = new DataFaker();
+//            fake.StartFake();
+//            DatabaseManager.getInstance().closeDatabase();
 
 
             Log.d(TAG, response.toString());

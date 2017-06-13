@@ -103,7 +103,7 @@ public class WebChartFragment extends Fragment {
                             //String chartHtml = listHtml.get(parent.getSelectedItemPosition());
                             //webView.loadUrl("file:///android_asset/summary.html");
                             title = parent.getSelectedItem().toString();
-                            ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", title);
+                            ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", title,"-30 days");
 
                             labels = new ArrayList<>();
                             weight = new ArrayList<>();
@@ -152,6 +152,7 @@ public class WebChartFragment extends Fragment {
                 case Constants.SUMMARY:
                     spCharts.setVisibility(View.GONE);
                     ArrayList<LastExercise> summary = new ExerciseRepo().getLastSummary("", "");
+                    if (summary.size()==0) break;
                     title = summary.get(0).getDate();
 
                     labels = new ArrayList<>();

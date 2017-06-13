@@ -26,12 +26,10 @@ import java.util.List;
 public class SetsRepo {
 
     private Sets set;
-    private Context mContext;
 
-    public SetsRepo(Context context){
+    public SetsRepo(){
 
         set= new Sets();
-        mContext = context;
     }
 
 
@@ -64,37 +62,6 @@ public class SetsRepo {
         DatabaseManager.getInstance().closeDatabase();
     }
 
-    public void buildSetValueList(String jsonStr) {
-        if (TextUtils.isEmpty(jsonStr)) {
-            return;
-        }
-        List<ContentValues> list = new ArrayList<ContentValues>();
-        JSONArray jsonArray = null;
-        try {
-            jsonArray = new JSONArray(jsonStr);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i< jsonArray.length(); i++) {
-            JSONObject jb = jsonArray.optJSONObject(i);
-            if (jb == null) {
-                continue;
-            }
-
-            ContentValues values = new ContentValues();
-            values.put(Sets.KEY_SET_ID, jb.optString(Sets.KEY_SET_ID));
-            values.put(Sets.KEY_EXERCISE_ID, jb.optString(Sets.KEY_EXERCISE_ID));
-            values.put(Sets.KEY_WEIGHT, jb.optInt(Sets.KEY_WEIGHT));
-            values.put(Sets.KEY_COUNT, jb.optInt(Sets.KEY_COUNT));
-            values.put(Sets.KEY_START, jb.optInt(Sets.KEY_START));
-            values.put(Sets.KEY_END, jb.optInt(Sets.KEY_END));
-
-            list.add(values);
-        }
-
-        insertContact(list);
-
-    }
 
     public void BulkSets(List<Sets> list) {
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
@@ -119,13 +86,6 @@ public class SetsRepo {
         }
     }
 
-    public void insertContact(List<ContentValues> valueList) {
-        if (valueList.size() > 0) {
-            ContentValues[] valueArray = new ContentValues[valueList.size()];
-            valueArray = valueList.toArray(valueArray);
-            mContext.getContentResolver().bulkInsert(UserDictionary.Words.CONTENT_URI, valueArray);
-        }
-    }
 
 
     public void delete( ) {

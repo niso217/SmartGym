@@ -95,6 +95,26 @@ public class VisitsRepo {
 
     }
 
+    public String getRandomDateUUID(String user_id,Date date){
+        String uuid = "";
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = " SELECT " + Visits.TABLE +"." + Visits.KEY_VISIT_ID
+                + " FROM " + Visits.TABLE
+                + " WHERE " + Visits.KEY_DATE + "=" + date+" and " + User.KEY_USER_ID+"='"+user_id+"'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst())
+        {
+            uuid = cursor.getString(cursor.getColumnIndex(Visits.KEY_VISIT_ID));
+        }
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return uuid;
+
+    }
+
     public List<Date> getAllVisitsDates(String user_id) {
         List<Date> dates = new ArrayList<>();
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
