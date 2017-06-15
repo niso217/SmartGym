@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +77,8 @@ public class WebChartFragment extends Fragment {
         ws.setDomStorageEnabled(true);
         ws.setAllowContentAccess(true);
         ws.setAllowFileAccessFromFileURLs(true);
+        ws.setUseWideViewPort(true);
+        ws.setLoadWithOverviewMode(true);
         ws.setAllowUniversalAccessFromFileURLs(true);
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
@@ -103,22 +106,7 @@ public class WebChartFragment extends Fragment {
                             //String chartHtml = listHtml.get(parent.getSelectedItemPosition());
                             //webView.loadUrl("file:///android_asset/summary.html");
                             title = parent.getSelectedItem().toString();
-                            ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", title,"-30 days");
-
-                            labels = new ArrayList<>();
-                            weight = new ArrayList<>();
-                            count = new ArrayList<>();
-
-                            Iterator<DailyAverage> iterator = avg.iterator();
-                            while (iterator.hasNext()) {
-                                DailyAverage current = iterator.next();
-
-                                labels.add(current.getDate());
-                                weight.add(current.getAverage());
-                                count.add(current.getCount());
-
-                            }
-                            webView.loadUrl("file:///android_asset/daily.html");
+                            setUpRange(7);
 
                         }
 
@@ -177,6 +165,26 @@ public class WebChartFragment extends Fragment {
 
     }
 
+    private void setUpRange(int range) {
+
+        ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", title,"-"+range+" days");
+
+        labels = new ArrayList<>();
+        weight = new ArrayList<>();
+        count = new ArrayList<>();
+
+        Iterator<DailyAverage> iterator = avg.iterator();
+        while (iterator.hasNext()) {
+            DailyAverage current = iterator.next();
+
+            labels.add(current.getDate());
+            weight.add(current.getAverage());
+            count.add(current.getCount());
+
+        }
+        webView.loadUrl("file:///android_asset/daily.html");
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -229,6 +237,17 @@ public class WebChartFragment extends Fragment {
         @JavascriptInterface
         public String getTitle() {
             return title;
+        }
+
+
+        @JavascriptInterface
+        public void setRange(final String range) {
+            webView.post(new Runnable() {
+                @Override
+                public void run() {
+                    setUpRange(Integer.parseInt(range));
+                }
+            });
         }
 
     }

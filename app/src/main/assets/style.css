@@ -1,0 +1,32 @@
+.chartWrapper {
+            position: relative;
+        }
+
+        .chartWrapper > canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            pointer-events:none;
+        }
+
+        .chartAreaWrapper {
+            width: relative;
+		overflow-x: scroll;
+        }
+
+.wrapper {
+    display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+    display: flex;
+	width: 100px;
+  justify-content: center;
+}
+
+.niso {
+width: relative;
+height: relative;
+}

@@ -55,7 +55,14 @@ var barChartData = {
                 title: {
                     display: true,
                     text: title
-                }
+                },
+                scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true
+            }
+        }]
+    }
             }
         });
 

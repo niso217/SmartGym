@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -39,9 +40,13 @@ import java.util.UUID;
 public class DataFaker {
 
 
-    static int weightinc = 40;
+    static int weightinc = 20;
+    static int current_weight;
     static ArrayList<String> muscle = new MuscleRepo().getAllMuscleID();
     static int counter;
+    static int max=6,min=3;
+    static int increase =1;
+
 
 
     public DataFaker() {
@@ -53,7 +58,7 @@ public class DataFaker {
 
 
         ArrayList<Date> date_arr = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < Calendar.getInstance().get(Calendar.DAY_OF_YEAR)/3  ; i++) {
             date_arr.add(RandomDateOfBirth());
         }
         Collections.sort(date_arr);
@@ -81,40 +86,27 @@ public class DataFaker {
             visitsRepo.insert(visits);
 
 
-            if (counter%5==0)
-            weightinc+= getRandom(0,5);
+            if (counter%14==0)
+            weightinc+= getRandom(min++,max++);
 
+            increase=0;
 
-            for (int i = 0; i < 6; i++) {
+            if (counter % 2 == 0) {
+                for (int i = 0; i < 6; i++) {
+                    addsets(uuid,date,i);
+                }
 
-                String Exerciseid = UUID.randomUUID().toString();
-
-                String ex_name = muscle.get(i);
-                MuscleRepo muscleRepo = new MuscleRepo();
-                Muscle ex = muscleRepo.getExerciseByID(ex_name);
-
-                ExerciseRepo exerciseRepo = new ExerciseRepo();
-                Exercise exercise = new Exercise();
-                exercise.setexerciseid(Exerciseid);
-                exercise.setVisitid(uuid);
-                exercise.setMachinename(ex.getName());
-                exercise.setStart(date.getTime());
-                exerciseRepo.insert(exercise);
-
-                for (int j = 0; j < 4; j++) {
-                    Sets mCurrentSet = new Sets();
-                    mCurrentSet.setSetid(UUID.randomUUID().toString());
-                    mCurrentSet.setexerciseid(Exerciseid);
-                    mCurrentSet.setCount(10);
-                    mCurrentSet.setWeight(weightinc);
-                    mCurrentSet.setStart(System.currentTimeMillis());
-                    mCurrentSet.setEnd(System.currentTimeMillis() + 1000 * 30);
-                    SetsRepo setsRepo = new SetsRepo();
-                    setsRepo.insert(mCurrentSet);
+            }
+            else{
+                for (int i = 6; i < 12; i++) {
+                    addsets(uuid,date,i);
                 }
             }
+
+
         }
     }
+
 
     public static int getRandom(int from, int to) {
         if (from < to)
@@ -122,21 +114,62 @@ public class DataFaker {
         return from - new Random().nextInt(Math.abs(to - from));
     }
 
+    public static void addsets(String uuid, Date date, int index){
+        String Exerciseid = UUID.randomUUID().toString();
+        increase+=2;
+        current_weight =weightinc +increase;
+        String ex_name = muscle.get(index);
+        MuscleRepo muscleRepo = new MuscleRepo();
+        Muscle ex = muscleRepo.getExerciseByID(ex_name);
+
+        ExerciseRepo exerciseRepo = new ExerciseRepo();
+        Exercise exercise = new Exercise();
+        exercise.setexerciseid(Exerciseid);
+        exercise.setVisitid(uuid);
+        exercise.setMachinename(ex.getName());
+        exercise.setStart(date.getTime());
+        exerciseRepo.insert(exercise);
+
+        for (int j = 0; j < 4; j++) {
+            Sets mCurrentSet = new Sets();
+            mCurrentSet.setSetid(UUID.randomUUID().toString());
+            mCurrentSet.setexerciseid(Exerciseid);
+            mCurrentSet.setCount(10);
+            mCurrentSet.setWeight(current_weight);
+            mCurrentSet.setStart(System.currentTimeMillis());
+            mCurrentSet.setEnd(System.currentTimeMillis() + 1000 * 30);
+            SetsRepo setsRepo = new SetsRepo();
+            setsRepo.insert(mCurrentSet);
+        }
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static Date RandomDateOfBirth() {
 
-        GregorianCalendar gc = new GregorianCalendar();
+        SimpleDateFormat dfDateTime = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
-        int year = randBetween(2017, 2017);
+        GregorianCalendar gc = new GregorianCalendar();
 
         gc.set(gc.YEAR, Calendar.getInstance().get(Calendar.YEAR));
 
-        int dayOfYear = randBetween(1, gc.getActualMaximum(gc.DAY_OF_YEAR));
+        int dayOfYear = randBetween(1, Calendar.getInstance().get(Calendar.DAY_OF_YEAR));
 
         gc.set(gc.DAY_OF_YEAR, dayOfYear);
 
-        String startDateString = gc.get(gc.YEAR) + "-" + (gc.get(gc.MONTH) + 1) + "-" + gc.get(gc.DAY_OF_MONTH);
+        int hour = randBetween(9, 22); //Hours will be displayed in between 9 to 22
+        int min = randBetween(0, 59);
+        int sec = randBetween(0, 59);
+
+        gc.set(gc.HOUR_OF_DAY, hour);
+
+        gc.set(gc.MINUTE, min);
+
+        gc.set(gc.SECOND, sec);
+
+        String startDateString = dfDateTime.format(gc.getTime());
+
+        //String startDateString = gc.get(gc.YEAR) + "-" + (gc.get(gc.MONTH) + 1) + "-" + gc.get(gc.DAY_OF_MONTH);
 
         return java.sql.Date.valueOf(startDateString);
     }
@@ -144,8 +177,10 @@ public class DataFaker {
 
 
     public static int randBetween(int start, int end) {
-        return start + (int) Math.round(Math.random() * (end - start));
+        return start + (int)Math.round(Math.random() * (end - start));
     }
+
+
 
     public static String RandomMuscle() {
         ArrayList<String> muscle = new MuscleRepo().getAllMuscleID();

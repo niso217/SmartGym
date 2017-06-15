@@ -46,6 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
+import com.a.n.smartgym.Graphs.CombinedChartActivity;
 import com.a.n.smartgym.Graphs.DayAverageFragment;
 import com.a.n.smartgym.Graphs.TrendAverageFragment;
 import com.a.n.smartgym.Graphs.UsageAverageFragment;
@@ -497,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 break;
             case R.id.device_day_average:
-                mCurrentFragment = new WebChartFragment();
+                mCurrentFragment = new CombinedChartActivity();
                 bundle.putInt("type", Constants.SUMMARY);
                 mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
