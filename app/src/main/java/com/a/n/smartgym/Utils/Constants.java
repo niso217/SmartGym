@@ -24,6 +24,10 @@ public class Constants {
     public static final int SUMMARY = 1;
     public static final int USAGE = 2;
 
+    public static final int YEAR = 365;
+    public static final int MONTH = 30;
+    public static final int WEEK = 7;
+
     public enum MuscleType {
         ABS,
         ARMS,

@@ -51,10 +51,20 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.Utils;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+
+import static com.a.n.smartgym.Utils.Constants.MONTH;
+import static com.a.n.smartgym.Utils.Constants.WEEK;
+import static com.a.n.smartgym.Utils.Constants.YEAR;
 
 
 /**
@@ -81,6 +91,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
     private XAxis mXAxis;
     private MarkerView mMarkerView;
     private LinearLayout mUpperMenu;
+    private int mCurrentRange = YEAR;
 
     @Nullable
     @Override
@@ -158,7 +169,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
                 mTitle = parent.getSelectedItem().toString();
-                setUpRange(365);
+                setUpRange(mCurrentRange);
                 //setUpSummary();
 
             }
@@ -212,34 +223,58 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         mChart.invalidate();
     }
 
-
-
     private void setUpRange(int range) {
 
+        ArrayList<DailyAverage> avg = null;
+        mLabels = new ArrayList<>();
+        mWeight = new ArrayList<>();
+        mCount = new ArrayList<>();
         //mChart.clear();
-        ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", mTitle,"-"+range+" days");
+        switch (range)
+        {
+            case YEAR:
+                avg = new ExerciseRepo().getAllMonthAverages("", mTitle,"-"+range+" days");
+
+                Iterator<DailyAverage> iterator = avg.iterator();
+                while (iterator.hasNext()) {
+                    DailyAverage current = iterator.next();
+
+                    mLabels.add(current.getYr_mon());
+                    mWeight.add(current.getAverage());
+                    mCount.add(current.getCount());
+
+                }
+                mMonths = toArray(mLabels,new SimpleDateFormat("yyyy-MM"),new SimpleDateFormat("MM/yy", Locale.ENGLISH));
+
+                break;
+            default:
+                avg = new ExerciseRepo().getAllDaysAverages2("", mTitle,"-"+range+" days");
+                Iterator<DailyAverage> iterator2 = avg.iterator();
+                while (iterator2.hasNext()) {
+                    DailyAverage current = iterator2.next();
+
+                    mLabels.add(current.getDate());
+                    mWeight.add(current.getAverage());
+                    mCount.add(current.getCount());
+
+                }
+                mMonths = toArray(mLabels,new SimpleDateFormat("yyyy-MM-dd"),new SimpleDateFormat("MM/dd", Locale.ENGLISH));
+
+                break;
+
+        }
+
+        //ArrayList<DailyAverage> avg = new ExerciseRepo().getAllDaysAverages2("", mTitle,"-"+range+" days");
 
         if (avg.size()<3) {
             mChart.clear();
             return;
         }
 
-        mLabels = new ArrayList<>();
-        mWeight = new ArrayList<>();
-        mCount = new ArrayList<>();
 
 
-        Iterator<DailyAverage> iterator = avg.iterator();
-        while (iterator.hasNext()) {
-            DailyAverage current = iterator.next();
 
-            mLabels.add(current.getDate());
-            mWeight.add(current.getAverage());
-            mCount.add(current.getCount());
 
-        }
-
-        mMonths = toArray(mLabels);
         mCombinedData.setData(generateLineData());
         // mCombinedData.setData(generateSetsCandleData());
         //mCombinedData.setData(generateBarData());
@@ -256,10 +291,22 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         mChart.invalidate();
     }
 
-    private String [] toArray(List<String> arrayList){
+    private String [] toArray(List<String> arrayList,SimpleDateFormat from, SimpleDateFormat to){
         String[] stockArr = new String[arrayList.size()];
-        return arrayList.toArray(stockArr);
+        arrayList.toArray(stockArr);
+        for (int i = 0; i < stockArr.length; i++) {
+            Date date = null;
+            try {
+                 date = from.parse(stockArr[i]);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            stockArr[i] = to.format(date);
+        }
+        return stockArr;
     }
+
 
     private String shortcut(String word) {
         String ans = "";
@@ -271,6 +318,10 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
     }
 
 
+    private String [] toArray(List<String> arrayList){
+        String[] stockArr = new String[arrayList.size()];
+        return arrayList.toArray(stockArr);
+    }
 
     private LineData generateLineData() {
         int alpha = (int)(0.5 * 255.0f);
@@ -382,106 +433,19 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         return d;
     }
 
-    protected ScatterData generateScatterData() {
-
-        ScatterData d = new ScatterData();
-
-        ArrayList<Entry> entries = new ArrayList<Entry>();
-
-        for (float index = 0; index < itemcount; index += 0.5f)
-            entries.add(new Entry(index + 0.25f, getRandom(10, 55)));
-
-        ScatterDataSet set = new ScatterDataSet(entries, "Scatter DataSet");
-        set.setColors(ColorTemplate.MATERIAL_COLORS);
-        set.setScatterShapeSize(7.5f);
-        set.setDrawValues(false);
-        set.setValueTextSize(10f);
-        d.addDataSet(set);
-
-        return d;
-    }
-
-    protected CandleData generateCandleData() {
-
-        CandleData d = new CandleData();
-
-        ArrayList<CandleEntry> entries = new ArrayList<CandleEntry>();
-
-        for (int index = 0; index < itemcount; index += 2)
-            entries.add(new CandleEntry(index + 1f, 90, 70, 85, 75f));
-
-        CandleDataSet set = new CandleDataSet(entries, "Candle DataSet");
-        set.setDecreasingColor(Color.rgb(142, 150, 175));
-        set.setShadowColor(Color.DKGRAY);
-        set.setBarSpace(0.3f);
-        set.setValueTextSize(10f);
-        set.setDrawValues(false);
-        d.addDataSet(set);
-
-        return d;
-    }
-
-    protected CandleData generateSetsCandleData() {
-
-        CandleData d = new CandleData();
-
-        ArrayList<CandleEntry> entries = new ArrayList<CandleEntry>();
-
-        for (int index = 0; index < mCount.size(); index ++)
-            entries.add(new CandleEntry(index, 90, 70, 85, 75f));
-
-        CandleDataSet set = new CandleDataSet(entries, "Candle DataSet");
-        set.setDecreasingColor(Color.rgb(142, 150, 175));
-        set.setShadowColor(Color.DKGRAY);
-        set.setBarSpace(0.3f);
-        set.setValueTextSize(10f);
-        set.setDrawValues(false);
-        d.addDataSet(set);
-
-        return d;
-    }
-
-
-
-    protected BubbleData generateBubbleData() {
-
-        BubbleData bd = new BubbleData();
-
-        ArrayList<BubbleEntry> entries = new ArrayList<BubbleEntry>();
-
-        for (int index = 0; index < itemcount; index++) {
-            float y = getRandom(10, 105);
-            float size = getRandom(100, 105);
-            entries.add(new BubbleEntry(index + 0.5f, y, size));
-        }
-
-        BubbleDataSet set = new BubbleDataSet(entries, "Bubble DataSet");
-        set.setColors(ColorTemplate.VORDIPLOM_COLORS);
-        set.setValueTextSize(10f);
-        set.setValueTextColor(Color.WHITE);
-        set.setHighlightCircleWidth(1.5f);
-        set.setDrawValues(true);
-        bd.addDataSet(set);
-
-        return bd;
-    }
-
-    protected float getRandom(float range, float startsfrom) {
-        return (float) (Math.random() * range) + startsfrom;
-    }
 
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.week:
-                setUpRange(7);
+                setUpRange(mCurrentRange = WEEK);
                 break;
             case R.id.month:
-                setUpRange(30);
+                setUpRange(mCurrentRange = MONTH);
                 break;
             case R.id.year:
-                setUpRange(365);
+                setUpRange(mCurrentRange = YEAR);
                 break;
         }
     }

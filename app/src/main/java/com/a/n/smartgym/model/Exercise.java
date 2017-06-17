@@ -15,6 +15,9 @@ public class Exercise {
     public static final String KEY_START = "start";
     public static final String KEY_END = "end";
     public static final String KEY_MACHINE_NAME = "machinename";
+    public static final String KEY_TIMES = "times";
+    public static final String KEY_DATE_MONTH_YEAR = "yr_mon";
+
 
     private String exerciseid;
     private String visitid;

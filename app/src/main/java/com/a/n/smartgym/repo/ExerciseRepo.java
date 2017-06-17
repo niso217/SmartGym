@@ -148,6 +148,48 @@ public class ExerciseRepo {
 
     }
 
+
+    public ArrayList<DailyAverage> getAllMonthAverages(String user_id, String ex, String date) {
+        DailyAverage dailyAverage;
+        ArrayList<DailyAverage> DailyAverages = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = "select strftime('%Y-%m',strftime('%Y-%m-%d', Exercise.start / 1000, 'unixepoch')) yr_mon, count(*) times,\n" +
+                "sum(Sets.count) as count,round(avg(Sets.weight),0) as average , Exercise.machinename\n" +
+                " \n" +
+                "FROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
+                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
+                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
+                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2' and Exercise.machinename="+ "'" + ex + "'"+" \n" +
+                "and Visits.date BETWEEN datetime('now', "+ "'" + date + "'"+ ") AND datetime('now', 'localtime')\n"+
+                "\t\t\t\t\n" +
+                "\t\t\t\tgroup by yr_mon;";
+
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                dailyAverage = new DailyAverage();
+                dailyAverage.setMachine_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
+                dailyAverage.setYr_mon(cursor.getString(cursor.getColumnIndex(Exercise.KEY_DATE_MONTH_YEAR)));
+                dailyAverage.setAverage(cursor.getInt(cursor.getColumnIndex("average")));
+                dailyAverage.setCount(cursor.getInt(cursor.getColumnIndex(Sets.KEY_COUNT)));
+                dailyAverage.setTimes(cursor.getInt(cursor.getColumnIndex(Exercise.KEY_TIMES)));
+
+                DailyAverages.add(dailyAverage);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return DailyAverages;
+
+    }
+
+
     public ArrayList<String> getAllExercises(String user_id) {
         ArrayList<String> exercises = new ArrayList<>();
 
@@ -262,6 +304,9 @@ public class ExerciseRepo {
         return LastExercises;
 
     }
+
+
+
 
     public ArrayList<MachineUsage> getUsage(String user_id) {
         MachineUsage machineUsage;

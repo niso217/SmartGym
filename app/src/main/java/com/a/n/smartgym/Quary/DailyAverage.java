@@ -13,7 +13,24 @@ public class DailyAverage implements Parcelable {
     private String date;
     private int average;
     private int count;
+    private int times;
+    private String yr_mon;
 
+    public String getYr_mon() {
+        return yr_mon;
+    }
+
+    public void setYr_mon(String yr_mon) {
+        this.yr_mon = yr_mon;
+    }
+
+    public int getTimes() {
+        return times;
+    }
+
+    public void setTimes(int times) {
+        this.times = times;
+    }
 
     public int getCount() {
         return count;
