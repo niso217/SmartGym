@@ -86,7 +86,7 @@ public class SubMuscleFragment extends Fragment {
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
 
         for (int i = 0; i < exname.size(); i++) {
-            imageItems.add(new ImageItem(exname.get(i).getImage(), exname.get(i).getName()));
+            //imageItems.add(new ImageItem(exname.get(i).getImage(), exname.get(i).getName()));
         }
 
         return imageItems;

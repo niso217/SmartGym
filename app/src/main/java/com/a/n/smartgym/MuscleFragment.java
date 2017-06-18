@@ -71,7 +71,7 @@ public class MuscleFragment extends Fragment {
             int s = getResources().getIdentifier(key, "string", getContext().getPackageName());
             if (s != 0) {
                 String result = getString(s);
-                imageItems.add(new ImageItem(result, key));
+               // imageItems.add(new ImageItem(result, key));
             }
 
 

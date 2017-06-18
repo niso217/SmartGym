@@ -13,6 +13,7 @@ import com.a.n.smartgym.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -21,12 +22,14 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
     private Context context;
     private int layoutResourceId;
     private ArrayList<ImageItem> data = new ArrayList<ImageItem>();
+    public List<Integer> selectedPositions;
 
     public GridViewAdapter(Context context, int layoutResourceId, ArrayList<ImageItem> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+        this.selectedPositions = new ArrayList<>();
     }
 
     @Override
@@ -49,6 +52,7 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
         ImageItem item = data.get(position);
         holder.imageTitle.setText(item.getTitle());
         Picasso.with(getContext()).load(item.getImage()).into(holder.image);
+
         return row;
     }
 
