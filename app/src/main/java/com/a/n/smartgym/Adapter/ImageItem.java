@@ -1,28 +1,25 @@
 package com.a.n.smartgym.Adapter;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 
-import com.a.n.smartgym.R;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.a.n.smartgym.R.id.textView;
-
-public class ImageItem  extends FrameLayout {
+public class ImageItem {
     private String image;
     private String title;
-    private ImageView imagee;
+    private int state;
 
-    public ImageItem(Context context) {
-        super(context);
-        LayoutInflater.from(context).inflate(R.layout.grid_item_layout, this);
-        imagee = (ImageView) getRootView().findViewById(R.id.image);
+    public int getState() {
+        return state;
     }
 
-    public void setImageItem(String image, String title) {
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public ImageItem(String image, String title) {
+        super();
         this.image = image;
         this.title = title;
     }
@@ -41,10 +38,5 @@ public class ImageItem  extends FrameLayout {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-
-    public void display(boolean isSelected) {
-        imagee.setBackgroundResource(isSelected ? R.drawable.border : null);
     }
 }

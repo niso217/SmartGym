@@ -75,7 +75,7 @@ public class LogInActivity extends AppCompatActivity implements FirebaseAuth.Aut
             // Rounds is signed in
             SaveUserToDataBase(user);
             Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-            startActivity(new Intent(this, WizardActivity.class));
+            startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {
             // Rounds is signed out

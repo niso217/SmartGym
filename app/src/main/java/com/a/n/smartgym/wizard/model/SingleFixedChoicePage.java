@@ -20,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import com.a.n.smartgym.wizard.ui.SingleChoiceFragment;
+import com.a.n.smartgym.wizard.ui.SingleImageChoiceFragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class SingleFixedChoicePage extends Page {
 
     @Override
     public Fragment createFragment() {
-        return SingleChoiceFragment.create(getKey());
+        return SingleImageChoiceFragment.create(getKey());
     }
 
     public String getOptionAt(int position) {

@@ -18,12 +18,20 @@ package com.a.n.smartgym;
 
 import android.content.Context;
 
+import com.a.n.smartgym.Adapter.ImageItem;
+import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
 import com.a.n.smartgym.wizard.model.BranchPage;
 import com.a.n.smartgym.wizard.model.InstructionPage;
 import com.a.n.smartgym.wizard.model.MultipleFixedChoicePage;
 import com.a.n.smartgym.wizard.model.PageList;
 import com.a.n.smartgym.wizard.model.SingleFixedChoicePage;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
 
 public class PresentWizardModel extends AbstractWizardModel {
     public PresentWizardModel(Context context) {
@@ -38,13 +46,12 @@ public class PresentWizardModel extends AbstractWizardModel {
                 // have their own questions and the choices of the user will be summarised in the review section at the end
                 new BranchPage(this, "Select one options")
                         .addBranch("Branch One",
-                                new SingleFixedChoicePage(this, "Question One")
-                                        .setChoices("A", "B", "C", "D")
+                                new MultipleFixedChoicePage(this, "Question One")
+                                        .setChoices(getData())
                                         .setRequired(true),
 
                                 new MultipleFixedChoicePage(this, "Question Two")
-                                        .setChoices("A", "B", "C", "D",
-                                                "E")
+                                        .setChoices(getData())
                         )
 
                         // Second branch of questions
@@ -54,8 +61,7 @@ public class PresentWizardModel extends AbstractWizardModel {
                                         .setRequired(true),
 
                                 new SingleFixedChoicePage(this, "Question Two")
-                                        .setChoices("A", "B", "C",
-                                                "D", "E", "F")
+                                        .setChoices(getData())
                                         .setRequired(true),
 
                                 new SingleFixedChoicePage(this, "Question Three")
@@ -71,5 +77,20 @@ public class PresentWizardModel extends AbstractWizardModel {
                                         .setRequired(true)
                         )
         );
+    }
+
+    private String[] getData() {
+
+        List<String> arr = new ArrayList<>();
+
+
+        Enumeration e = ExercisesDB.getInstance().keys.keys();
+        while (e.hasMoreElements()) {
+            String key = (String) e.nextElement();
+            arr.add(key);
+
+        }
+
+        return arr.toArray(new String[arr.size()]);
     }
 }

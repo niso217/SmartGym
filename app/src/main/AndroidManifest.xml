@@ -32,7 +32,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".WizardActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
@@ -43,6 +43,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".barcode.BarcodeCaptureActivity" />
+        <activity android:name=".WizardActivity"></activity>
 
         <service
             android:name=".BLE.BluetoothLeService"

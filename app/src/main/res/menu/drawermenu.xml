@@ -28,6 +28,9 @@
                 <item
                     android:id="@+id/settings"
                     android:title="Settings" />
+                <item
+                    android:id="@+id/program"
+                    android:title="Training" />
             </menu>
         </item>
 

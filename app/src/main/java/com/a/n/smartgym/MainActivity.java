@@ -532,6 +532,9 @@ public class MainActivity extends AppCompatActivity implements
                 mToolbar.setTitle("");
 
                 break;
+            case R.id.program:
+                startActivity(new Intent(this, WizardActivity.class));
+                break;
             case R.id.nav_logout:
                 logout();
                 break;

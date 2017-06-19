@@ -16,13 +16,10 @@
 
 package com.a.n.smartgym.wizard.ui;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +32,7 @@ import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.wizard.model.MultipleFixedChoicePage;
 import com.a.n.smartgym.wizard.model.Page;
+import com.a.n.smartgym.wizard.model.SingleFixedChoicePage;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -42,7 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MultipleChoiceFragment extends Fragment {
+public class SingleImageChoiceFragment extends Fragment {
     private static final String ARG_KEY = "key";
 
     private PageFragmentCallbacks mCallbacks;
@@ -53,16 +51,16 @@ public class MultipleChoiceFragment extends Fragment {
     private GridViewAdapter gridAdapter;
     private ArrayList<String> selections;
 
-    public static MultipleChoiceFragment create(String key) {
+    public static SingleImageChoiceFragment create(String key) {
         Bundle args = new Bundle();
         args.putString(ARG_KEY, key);
 
-        MultipleChoiceFragment fragment = new MultipleChoiceFragment();
+        SingleImageChoiceFragment fragment = new SingleImageChoiceFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    public MultipleChoiceFragment() {
+    public SingleImageChoiceFragment() {
     }
 
     @Override
@@ -73,22 +71,11 @@ public class MultipleChoiceFragment extends Fragment {
         mKey = args.getString(ARG_KEY);
         mPage = mCallbacks.onGetPage(mKey);
 
-        MultipleFixedChoicePage fixedChoicePage = (MultipleFixedChoicePage) mPage;
+        SingleFixedChoicePage fixedChoicePage = (SingleFixedChoicePage) mPage;
         mChoices = new ArrayList<String>();
         for (int i = 0; i < fixedChoicePage.getOptionCount(); i++) {
             mChoices.add(fixedChoicePage.getOptionAt(i));
         }
-
-        ArrayList<String> one = mCallbacks.onGetPage("Branch One:Question One").getData().getStringArrayList(
-                Page.SIMPLE_DATA_KEY);
-
-        ArrayList<String> two = mCallbacks.onGetPage("Branch One:Question Two").getData().getStringArrayList(
-                Page.SIMPLE_DATA_KEY);
-
-        selections = new ArrayList<>();
-
-
-
     }
 
     @Override
@@ -103,42 +90,22 @@ public class MultipleChoiceFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
-                int selectedIndex = gridAdapter.selectedPositions.indexOf(position);
-                if (selectedIndex > -1) {
-                    item.setState(0);
-                    gridAdapter.selectedPositions.remove(selectedIndex);
-                    selections.remove(((ImageItem) parent.getItemAtPosition(position)).getTitle());
-                } else {
-                    item.setState(1);
-                    gridAdapter.selectedPositions.add(position);
-                    selections.add(((ImageItem) parent.getItemAtPosition(position)).getTitle());
-                }
-                gridAdapter.notifyDataSetChanged();
-                mPage.getData().putStringArrayList(Page.SIMPLE_DATA_KEY, selections);
+                mPage.getData().putString(Page.SIMPLE_DATA_KEY,
+                        item.getTitle());
                 mPage.notifyDataChanged();
             }
         });
-
-        gridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE);
 
         // Pre-select currently selected items.
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                ArrayList<String> selectedItems = mPage.getData().getStringArrayList(
-                        Page.SIMPLE_DATA_KEY);
-                if (selectedItems == null || selectedItems.size() == 0) {
-                    return;
-                }
-
-                Set<String> selectedSet = new HashSet<String>(selectedItems);
+                String selection = mPage.getData().getString(Page.SIMPLE_DATA_KEY);
                 for (int i = 0; i < mChoices.size(); i++) {
-                    if (selectedSet.contains(mChoices.get(i))) {
-                        ImageItem item = (ImageItem) gridView.getItemAtPosition(i);
-                        item.setState(1);
-                        gridAdapter.selectedPositions.add(i);
-                        selections.add(item.getTitle());
+                    if (mChoices.get(i).equals(selection)) {
+                        gridView.setItemChecked(i, true);
                         gridAdapter.notifyDataSetChanged();
+                        break;
                     }
                 }
             }
