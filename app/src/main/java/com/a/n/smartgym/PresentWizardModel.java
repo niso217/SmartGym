@@ -17,23 +17,36 @@
 package com.a.n.smartgym;
 
 import android.content.Context;
+import android.os.Bundle;
 
 import com.a.n.smartgym.Adapter.ImageItem;
 import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
 import com.a.n.smartgym.wizard.model.BranchPage;
 import com.a.n.smartgym.wizard.model.InstructionPage;
+import com.a.n.smartgym.wizard.model.ModelCallbacks;
 import com.a.n.smartgym.wizard.model.MultipleFixedChoicePage;
+import com.a.n.smartgym.wizard.model.MultipleSubChoicePage;
+import com.a.n.smartgym.wizard.model.Page;
 import com.a.n.smartgym.wizard.model.PageList;
+import com.a.n.smartgym.wizard.model.ReviewItem;
 import com.a.n.smartgym.wizard.model.SingleFixedChoicePage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
-public class PresentWizardModel extends AbstractWizardModel {
+public class PresentWizardModel extends AbstractWizardModel{
+
+    private List<ReviewItem> mCurrentReviewItems;
+
+
     public PresentWizardModel(Context context) {
         super(context);
     }
@@ -48,42 +61,33 @@ public class PresentWizardModel extends AbstractWizardModel {
                         .addBranch("Branch One",
                                 new MultipleFixedChoicePage(this, "Question One")
                                         .setChoices(getData())
+
                                         .setRequired(true),
 
-                                new MultipleFixedChoicePage(this, "Question Two")
-                                        .setChoices(getData())
+                                new MultipleSubChoicePage(this, "Question Two")
+
                         )
 
-                        // Second branch of questions
-                        .addBranch("Branch Two",
-                                new SingleFixedChoicePage(this, "Question One")
-                                        .setChoices("A", "B")
-                                        .setRequired(true),
-
-                                new SingleFixedChoicePage(this, "Question Two")
-                                        .setChoices(getData())
-                                        .setRequired(true),
-
-                                new SingleFixedChoicePage(this, "Question Three")
-                                        .setChoices("A", "B", "C")
-                        )
-
-                        // Third branch of questions
-                        .addBranch("Branch Three",
-                                new InstructionPage(this, "Info"),
-
-                                new SingleFixedChoicePage(this, "Question One")
-                                        .setChoices("A", "B", "C")
-                                        .setRequired(true)
-                        )
         );
     }
+
+//    @Override
+//    public void onPageDataChanged(Page changedPage) {
+//        Bundle bundle = new Bundle();
+//        bundle.putStringArray("key",new String[] {"1","2","3"});
+//        ArrayList<ReviewItem> reviewItems = new ArrayList<ReviewItem>();
+//        for (Page page : this.getCurrentPageSequence()) {
+//            page.getReviewItems(reviewItems);
+//        }
+//        mCurrentReviewItems = reviewItems;
+////        Page mPage = this.findByKey(mCurrentReviewItems.get(1).getPageKey());
+////        ((MultipleFixedChoicePage) mPage).setChoices(new String[] {"1","2","3"});
+//
+//    }
 
     private String[] getData() {
 
         List<String> arr = new ArrayList<>();
-
-
         Enumeration e = ExercisesDB.getInstance().keys.keys();
         while (e.hasMoreElements()) {
             String key = (String) e.nextElement();
@@ -93,4 +97,24 @@ public class PresentWizardModel extends AbstractWizardModel {
 
         return arr.toArray(new String[arr.size()]);
     }
+
+
+    private ArrayList<ImageItem> getData2() {
+
+
+        MuscleRepo muscleRepo = new MuscleRepo();
+        List<Muscle> exname = muscleRepo.getSubMuscle("","");
+
+        final ArrayList<ImageItem> imageItems = new ArrayList<>();
+
+        for (int i = 0; i < exname.size(); i++) {
+            imageItems.add(new ImageItem(exname.get(i).getImage(), exname.get(i).getName()));
+        }
+
+        return imageItems;
+
+    }
+
+
+
 }

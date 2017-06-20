@@ -59,6 +59,7 @@ public class SingleFixedChoicePage extends Page {
     }
 
     public SingleFixedChoicePage setChoices(String... choices) {
+        mChoices.clear();
         mChoices.addAll(Arrays.asList(choices));
         return this;
     }

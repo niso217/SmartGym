@@ -16,13 +16,10 @@
 
 package com.a.n.smartgym.wizard.ui;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,17 +30,24 @@ import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.ImageItem;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.R;
-import com.a.n.smartgym.WizardActivity;
+import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.repo.MuscleRepo;
+import com.a.n.smartgym.wizard.model.AbstractWizardModel;
+import com.a.n.smartgym.wizard.model.ModelCallbacks;
 import com.a.n.smartgym.wizard.model.MultipleFixedChoicePage;
+import com.a.n.smartgym.wizard.model.MultipleSubChoicePage;
 import com.a.n.smartgym.wizard.model.Page;
+import com.a.n.smartgym.wizard.model.ReviewItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MultipleChoiceFragment extends Fragment {
+public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks {
     private static final String ARG_KEY = "key";
 
     private PageFragmentCallbacks mCallbacks;
@@ -54,19 +58,21 @@ public class MultipleChoiceFragment extends Fragment {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
     private ArrayList<String> selections;
-    private static final String TAG = MultipleChoiceFragment.class.getSimpleName();
+    private static final String TAG = SubMuscleChoiceFragment.class.getSimpleName();
+    private AbstractWizardModel mWizardModel;
+    private List<ReviewItem> mCurrentReviewItems;
 
 
-    public static MultipleChoiceFragment create(String key) {
+    public static SubMuscleChoiceFragment create(String key) {
         Bundle args = new Bundle();
         args.putString(ARG_KEY, key);
 
-        MultipleChoiceFragment fragment = new MultipleChoiceFragment();
+        SubMuscleChoiceFragment fragment = new SubMuscleChoiceFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    public MultipleChoiceFragment() {
+    public SubMuscleChoiceFragment() {
     }
 
     @Override
@@ -77,12 +83,15 @@ public class MultipleChoiceFragment extends Fragment {
         mKey = args.getString(ARG_KEY);
         mPage = mCallbacks.onGetPage(mKey);
 
+        ((MultipleSubChoicePage) mPage).setChoices(new String[] {"1","2","3"});
 
-        MultipleFixedChoicePage fixedChoicePage = (MultipleFixedChoicePage) mPage;
+        MultipleSubChoicePage fixedChoicePage = (MultipleSubChoicePage) mPage;
         mChoices = new ArrayList<String>();
         for (int i = 0; i < fixedChoicePage.getOptionCount(); i++) {
             mChoices.add(fixedChoicePage.getOptionAt(i));
         }
+
+
 
 
 
@@ -97,7 +106,7 @@ public class MultipleChoiceFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_muscle, container, false);
         gridView = (GridView) rootView.findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData());
+        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData2("'arms'"));
         gridView.setAdapter(gridAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -159,12 +168,17 @@ public class MultipleChoiceFragment extends Fragment {
         }
 
         mCallbacks = (PageFragmentCallbacks) activity;
+        mWizardModel = mCallbacks.onGetModel();
+        mWizardModel.registerListener(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
+        mWizardModel.unregisterListener(this);
+
+
     }
 
 
@@ -188,5 +202,55 @@ public class MultipleChoiceFragment extends Fragment {
         }
 
         return imageItems;
+    }
+
+    @Override
+    public void onPageDataChanged(Page changedPage) {
+        ArrayList<ReviewItem> reviewItems = new ArrayList<ReviewItem>();
+        for (Page page : mWizardModel.getCurrentPageSequence()) {
+            page.getReviewItems(reviewItems);
+        }
+
+        mCurrentReviewItems = reviewItems;
+
+        String[] parts = mCurrentReviewItems.get(1).getDisplayValue().replaceAll("\\s+","").split(",");
+        String word="";
+        for (int i = 0; i < parts.length; i++) {
+            word += "'"+parts[i]+"'";
+            if (i!=parts.length-1)
+                word += ",";
+        }
+
+
+        if (gridAdapter != null) {
+            gridAdapter.clear();
+            gridAdapter.addAll(getData2(word));
+            gridAdapter.notifyDataSetChanged();
+            gridView.invalidateViews();
+
+        }
+    }
+
+    @Override
+    public void onPageTreeChanged() {
+
+    }
+
+    private ArrayList<ImageItem> getData2(String main) {
+
+        if (main.equals("")) return new ArrayList<ImageItem>();
+
+
+        MuscleRepo muscleRepo = new MuscleRepo();
+        List<Muscle> exname = muscleRepo.getSubMuscle(main,"");
+
+        final ArrayList<ImageItem> imageItems = new ArrayList<>();
+
+        for (int i = 0; i < exname.size(); i++) {
+            imageItems.add(new ImageItem(exname.get(i).getImage(), exname.get(i).getName()));
+        }
+
+        return imageItems;
+
     }
 }

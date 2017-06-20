@@ -16,6 +16,10 @@
 
 package com.a.n.smartgym.wizard.ui;
 
+import com.a.n.smartgym.wizard.model.AbstractWizardModel;
+
 public interface PageFragmentCallbacks {
     com.a.n.smartgym.wizard.model.Page onGetPage(String key);
+    AbstractWizardModel onGetModel();
+
 }

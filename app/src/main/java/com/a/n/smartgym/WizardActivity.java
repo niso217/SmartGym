@@ -16,10 +16,12 @@ import android.widget.Button;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
 import com.a.n.smartgym.wizard.model.ModelCallbacks;
 import com.a.n.smartgym.wizard.model.Page;
+import com.a.n.smartgym.wizard.model.ReviewItem;
 import com.a.n.smartgym.wizard.ui.PageFragmentCallbacks;
 import com.a.n.smartgym.wizard.ui.ReviewFragment;
 import com.a.n.smartgym.wizard.ui.StepPagerStrip;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WizardActivity extends FragmentActivity implements
@@ -28,7 +30,7 @@ public class WizardActivity extends FragmentActivity implements
         ModelCallbacks {
     private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
-
+    private List<ReviewItem> mCurrentReviewItems;
     private boolean mEditingAfterReview;
 
     private AbstractWizardModel mWizardModel = new PresentWizardModel(this);
@@ -173,12 +175,26 @@ public class WizardActivity extends FragmentActivity implements
 
     @Override
     public void onPageDataChanged(Page page) {
+
+        ArrayList<ReviewItem> reviewItems = new ArrayList<ReviewItem>();
+        for (Page current : mWizardModel.getCurrentPageSequence()) {
+            current.getReviewItems(reviewItems);
+        }
+        mCurrentReviewItems = reviewItems;
+
         if (page.isRequired()) {
             if (recalculateCutOffPage()) {
                 mPagerAdapter.notifyDataSetChanged();
                 updateBottomBar();
             }
         }
+
+
+    }
+
+    public String getItem(int index){
+        return mCurrentReviewItems==null? "" :mCurrentReviewItems.get(index).getDisplayValue();
+
     }
 
     @Override

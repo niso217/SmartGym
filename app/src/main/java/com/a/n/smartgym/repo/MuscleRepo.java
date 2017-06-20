@@ -112,7 +112,7 @@ public class MuscleRepo {
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery =  " SELECT * "
                 + " FROM " + Muscle.TABLE
-                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE + "="+ "'"+main+"'";
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE + " IN("+main+")";
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
