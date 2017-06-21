@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +29,13 @@ import android.widget.GridView;
 
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.ImageItem;
+import com.a.n.smartgym.Helpers.SharedPreferenceHelper;
+import com.a.n.smartgym.Listener.WizardDataChanged;
+import com.a.n.smartgym.MainActivity;
 import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Objects.TrainingProgram;
 import com.a.n.smartgym.R;
+import com.a.n.smartgym.WizardActivity;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
@@ -47,7 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks {
+public class SubMuscleChoiceFragment extends Fragment implements WizardDataChanged {
     private static final String ARG_KEY = "key";
 
     private PageFragmentCallbacks mCallbacks;
@@ -59,8 +65,7 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
     private GridViewAdapter gridAdapter;
     private ArrayList<String> selections;
     private static final String TAG = SubMuscleChoiceFragment.class.getSimpleName();
-    private AbstractWizardModel mWizardModel;
-    private List<ReviewItem> mCurrentReviewItems;
+    private String mCurrentSelection="";
 
 
     public static SubMuscleChoiceFragment create(String key) {
@@ -83,7 +88,6 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
         mKey = args.getString(ARG_KEY);
         mPage = mCallbacks.onGetPage(mKey);
 
-        ((MultipleSubChoicePage) mPage).setChoices(new String[] {"1","2","3"});
 
         MultipleSubChoicePage fixedChoicePage = (MultipleSubChoicePage) mPage;
         mChoices = new ArrayList<String>();
@@ -92,11 +96,7 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
         }
 
 
-
-
-
         selections = new ArrayList<>();
-
 
 
     }
@@ -106,25 +106,30 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_muscle, container, false);
         gridView = (GridView) rootView.findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData2("'arms'"));
+        mCurrentSelection = SharedPreferenceHelper.getSharedPreferenceString(getContext(),"sunday","");
+        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData2(mCurrentSelection));
         gridView.setAdapter(gridAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id)
+            {
+                String val = ((ImageItem) parent.getItemAtPosition(position)).getTitle();
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
-                int selectedIndex = gridAdapter.selectedPositions.indexOf(position);
+                int selectedIndex = TrainingProgram.getInstance().getSubMusclesValue("sunday",val);
                 if (selectedIndex > -1) {
                     item.setState(0);
-                    gridAdapter.selectedPositions.remove(selectedIndex);
-                    selections.remove(((ImageItem) parent.getItemAtPosition(position)).getTitle());
+                    selections.remove(val);
                 } else {
                     item.setState(1);
-                    gridAdapter.selectedPositions.add(position);
-                    selections.add(((ImageItem) parent.getItemAtPosition(position)).getTitle());
+                    selections.add(val);
                 }
                 gridAdapter.notifyDataSetChanged();
                 mPage.getData().putStringArrayList(Page.SIMPLE_DATA_KEY, selections);
+                com.a.n.smartgym.Objects.Muscle muscle = new com.a.n.smartgym.Objects.Muscle();
+                muscle.setSub(selections);
+                TrainingProgram.getInstance().SetSubMuscle(selections);
                 mPage.notifyDataChanged();
             }
         });
@@ -135,15 +140,11 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                ArrayList<String> selectedItems = mPage.getData().getStringArrayList(
-                        Page.SIMPLE_DATA_KEY);
-                if (selectedItems == null || selectedItems.size() == 0) {
-                    return;
-                }
 
-                Set<String> selectedSet = new HashSet<String>(selectedItems);
+                ArrayList<String> selected = TrainingProgram.getInstance().getSubMuscles("sunday");
+
                 for (int i = 0; i < mChoices.size(); i++) {
-                    if (selectedSet.contains(mChoices.get(i))) {
+                    if (selected.contains(mChoices.get(i))) {
                         ImageItem item = (ImageItem) gridView.getItemAtPosition(i);
                         item.setState(1);
                         gridAdapter.selectedPositions.add(i);
@@ -168,73 +169,50 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
         }
 
         mCallbacks = (PageFragmentCallbacks) activity;
-        mWizardModel = mCallbacks.onGetModel();
-        mWizardModel.registerListener(this);
+        RegisterWizardDataListener();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
-        mWizardModel.unregisterListener(this);
-
+        UnRegisterWizardDataListener();
 
     }
 
-
-    private ArrayList<ImageItem> getData() {
-
-
-
-        final ArrayList<ImageItem> imageItems = new ArrayList<>();
-
-        Enumeration e = ExercisesDB.getInstance().keys.keys();
-        while (e.hasMoreElements()) {
-            String key = (String) e.nextElement();
-            int s = getResources().getIdentifier(key, "string", getContext().getPackageName());
-            if (s != 0) {
-                String result = getString(s);
-                ImageItem im = new ImageItem(result, key);
-                imageItems.add(im);
-            }
-
+    private void RegisterWizardDataListener(){
+        try {
+            ((WizardActivity) mContext).DataChangedListener(this); //finisdhed
+        } catch (ClassCastException cce) {
 
         }
-
-        return imageItems;
     }
+
+    private void UnRegisterWizardDataListener(){
+        try {
+            ((WizardActivity) mContext).DataChangedListener(null); //finisdhed
+        } catch (ClassCastException cce) {
+
+        }
+    }
+
+
 
     @Override
-    public void onPageDataChanged(Page changedPage) {
-        ArrayList<ReviewItem> reviewItems = new ArrayList<ReviewItem>();
-        for (Page page : mWizardModel.getCurrentPageSequence()) {
-            page.getReviewItems(reviewItems);
-        }
+    public void onPageDataChanged(String muscle) {
 
-        mCurrentReviewItems = reviewItems;
-
-        String[] parts = mCurrentReviewItems.get(1).getDisplayValue().replaceAll("\\s+","").split(",");
-        String word="";
-        for (int i = 0; i < parts.length; i++) {
-            word += "'"+parts[i]+"'";
-            if (i!=parts.length-1)
-                word += ",";
-        }
-
+        mCurrentSelection = muscle;
+        Log.d(TAG,muscle);
 
         if (gridAdapter != null) {
             gridAdapter.clear();
-            gridAdapter.addAll(getData2(word));
+            gridAdapter.addAll(getData2(muscle));
             gridAdapter.notifyDataSetChanged();
             gridView.invalidateViews();
 
         }
     }
 
-    @Override
-    public void onPageTreeChanged() {
-
-    }
 
     private ArrayList<ImageItem> getData2(String main) {
 
@@ -242,15 +220,30 @@ public class SubMuscleChoiceFragment extends Fragment implements ModelCallbacks 
 
 
         MuscleRepo muscleRepo = new MuscleRepo();
-        List<Muscle> exname = muscleRepo.getSubMuscle(main,"");
+        List<Muscle> exname = muscleRepo.getSubMuscle(main, "");
 
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
+        mChoices.clear();
 
         for (int i = 0; i < exname.size(); i++) {
             imageItems.add(new ImageItem(exname.get(i).getImage(), exname.get(i).getName()));
+            mChoices.add(exname.get(i).getName());
         }
+        for (int i = 0; i < selections.size(); i++) {
+            if (!mChoices.contains(selections.get(i))) {
+                selections.remove(i);
+            }
+            TrainingProgram.getInstance().SetSubMuscle(selections);
+            mPage.getData().putStringArrayList(Page.SIMPLE_DATA_KEY, selections);
+            gridAdapter.notifyDataSetChanged();
+
+        }
+        ((MultipleSubChoicePage) mPage).setChoices(mChoices.toArray(new String[mChoices.size()]));
 
         return imageItems;
 
     }
+
+
+
 }

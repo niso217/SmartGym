@@ -31,7 +31,10 @@ import android.widget.GridView;
 
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.ImageItem;
+import com.a.n.smartgym.Helpers.SharedPreferenceHelper;
 import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.Objects.Muscle;
+import com.a.n.smartgym.Objects.TrainingProgram;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.WizardActivity;
 import com.a.n.smartgym.wizard.model.MultipleFixedChoicePage;
@@ -103,19 +106,19 @@ public class MultipleChoiceFragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                String val = ((ImageItem) parent.getItemAtPosition(position)).getTitle();
                 ImageItem item = (ImageItem) parent.getItemAtPosition(position);
-                int selectedIndex = gridAdapter.selectedPositions.indexOf(position);
+                int selectedIndex = TrainingProgram.getInstance().getMainMusclesValue("sunday",val);
                 if (selectedIndex > -1) {
                     item.setState(0);
-                    gridAdapter.selectedPositions.remove(selectedIndex);
-                    selections.remove(((ImageItem) parent.getItemAtPosition(position)).getTitle());
+                    selections.remove(val);
                 } else {
                     item.setState(1);
-                    gridAdapter.selectedPositions.add(position);
-                    selections.add(((ImageItem) parent.getItemAtPosition(position)).getTitle());
+                    selections.add(val);
                 }
                 gridAdapter.notifyDataSetChanged();
                 mPage.getData().putStringArrayList(Page.SIMPLE_DATA_KEY, selections);
+                TrainingProgram.getInstance().SetMainMuscle(selections);
                 mPage.notifyDataChanged();
             }
         });
@@ -126,15 +129,10 @@ public class MultipleChoiceFragment extends Fragment {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                ArrayList<String> selectedItems = mPage.getData().getStringArrayList(
-                        Page.SIMPLE_DATA_KEY);
-                if (selectedItems == null || selectedItems.size() == 0) {
-                    return;
-                }
 
-                Set<String> selectedSet = new HashSet<String>(selectedItems);
+                ArrayList<String> selected = TrainingProgram.getInstance().getMainMuscles("sunday");
                 for (int i = 0; i < mChoices.size(); i++) {
-                    if (selectedSet.contains(mChoices.get(i))) {
+                    if (selected.contains(mChoices.get(i))) {
                         ImageItem item = (ImageItem) gridView.getItemAtPosition(i);
                         item.setState(1);
                         gridAdapter.selectedPositions.add(i);
@@ -144,6 +142,7 @@ public class MultipleChoiceFragment extends Fragment {
                 }
             }
         });
+
 
         return rootView;
     }

@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Objects.TrainingProgram;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
 import com.a.n.smartgym.wizard.model.ModelCallbacks;
@@ -169,6 +171,15 @@ public class ReviewFragment extends ListFragment implements ModelCallbacks {
             }
             ((TextView) rootView.findViewById(android.R.id.text1)).setText(reviewItem.getTitle());
             ((TextView) rootView.findViewById(android.R.id.text2)).setText(value);
+
+//            ArrayList<String> main =TrainingProgram.getInstance().getMainMuscles("sunday");
+//            ArrayList<String> sub =TrainingProgram.getInstance().getSubMuscles("sunday");
+//
+//            for (int i = 0; i < main.size(); i++) {
+//
+//            }
+
+            Log.d("NIR",TrainingProgram.getInstance().getTrainingString("sunday"));
             return rootView;
         }
 

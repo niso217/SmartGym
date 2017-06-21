@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.a.n.smartgym.Helpers.SharedPreferenceHelper;
+import com.a.n.smartgym.Listener.WizardDataChanged;
 import com.a.n.smartgym.wizard.model.AbstractWizardModel;
 import com.a.n.smartgym.wizard.model.ModelCallbacks;
 import com.a.n.smartgym.wizard.model.Page;
@@ -42,6 +44,14 @@ public class WizardActivity extends FragmentActivity implements
 
     private List<Page> mCurrentPageSequence;
     private StepPagerStrip mStepPagerStrip;
+
+    private WizardDataChanged mWizardDataChanged;
+
+    // private MainActivity mMainActivity;
+
+    public void DataChangedListener(WizardDataChanged listener) {
+        mWizardDataChanged = listener;
+    }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -176,13 +186,31 @@ public class WizardActivity extends FragmentActivity implements
     @Override
     public void onPageDataChanged(Page page) {
 
+
         ArrayList<ReviewItem> reviewItems = new ArrayList<ReviewItem>();
         for (Page current : mWizardModel.getCurrentPageSequence()) {
             current.getReviewItems(reviewItems);
         }
         mCurrentReviewItems = reviewItems;
 
-        if (page.isRequired()) {
+
+        String main_muscles = "";
+        if (mCurrentReviewItems.size()>1){
+            String[] parts = mCurrentReviewItems.get(1).getDisplayValue().replaceAll("\\s+", "").split(",");
+            for (int i = 0; i < parts.length; i++) {
+                main_muscles += "'" + parts[i] + "'";
+                if (i != parts.length - 1)
+                    main_muscles += ",";
+            }
+        }
+        SharedPreferenceHelper.setSharedPreferenceString(this,"sunday",main_muscles);
+
+        if (mWizardDataChanged!=null && !page.getKey().equals("Branch One:Question Two"))
+        mWizardDataChanged.onPageDataChanged(main_muscles);
+
+
+
+            if (page.isRequired()) {
             if (recalculateCutOffPage()) {
                 mPagerAdapter.notifyDataSetChanged();
                 updateBottomBar();
