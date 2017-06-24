@@ -41,6 +41,26 @@ public class PlanRepo {
         DatabaseManager.getInstance().closeDatabase();
     }
 
+    public String getDayUUID(String day){
+        String uuid = "";
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = " SELECT " + Plan.TABLE +"." + Plan.KEY_PLAN_ID
+                + " FROM " + Plan.TABLE
+                + " WHERE " + Plan.KEY_DATE+"='"+day+"'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst())
+        {
+            uuid = cursor.getString(cursor.getColumnIndex(Plan.KEY_PLAN_ID));
+        }
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return uuid;
+
+    }
+
 
     public void delete() {
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();

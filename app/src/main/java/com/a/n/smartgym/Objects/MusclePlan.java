@@ -12,9 +12,7 @@ import java.util.List;
  * Created by nirb on 21/06/2017.
  */
 
-public class Muscle{
-    private ArrayList<MuscleItem> main = new ArrayList<>();
-    private ArrayList<MuscleItem> sub = new ArrayList<>();
+public class MusclePlan {
 
     private List<Plan> planList = new ArrayList<>();
     private List<PlanMuscle> planMuscleList = new ArrayList<>();
@@ -45,21 +43,6 @@ public class Muscle{
         this.muscleExerciseList = muscleExerciseList;
     }
 
-    public ArrayList<MuscleItem> getMain() {
-        return main;
-    }
-
-    public void setMain(ArrayList<MuscleItem> main) {
-        this.main = new ArrayList<>(main);
-    }
-
-    public ArrayList<MuscleItem> getSub() {
-        return sub;
-    }
-
-    public void setSub(ArrayList<MuscleItem> sub) {
-        this.sub = new ArrayList<>(sub);
-    }
 
 
 }

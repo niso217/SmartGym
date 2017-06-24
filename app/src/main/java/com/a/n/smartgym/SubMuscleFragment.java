@@ -18,13 +18,15 @@ import android.widget.GridView;
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.MuscleItem;
 import com.a.n.smartgym.Listener.WizardDataChanged;
-import com.a.n.smartgym.Objects.TrainingProgram;
 import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.repo.MuscleExerciseRepo;
 import com.a.n.smartgym.repo.MuscleRepo;
+import com.a.n.smartgym.repo.PlanMuscleRepo;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.a.n.smartgym.Utils.Constants.PLAN_DAY_UUID;
 import static com.a.n.smartgym.Utils.Constants.WIZARD_DAY_UPDATE;
 import static com.a.n.smartgym.Utils.Constants.WIZARD_MAIN_UPDATE;
 
@@ -39,6 +41,8 @@ public class SubMuscleFragment extends Fragment {
     private List<Muscle> exname;
     private ArrayList<MuscleItem> gridSelections;
     private ArrayList<MuscleItem>  muscleItemArrayList;
+    private String DayUUID;
+
 
 
     @Override
@@ -56,7 +60,9 @@ public class SubMuscleFragment extends Fragment {
             switch ((intent.getAction())) {
                 case WIZARD_MAIN_UPDATE:
                     onDataChanged();
+                    break;
                 case WIZARD_DAY_UPDATE:
+                    DayUUID = intent.getStringExtra(PLAN_DAY_UUID);
                     onDataChanged();
                     break;
             }
@@ -92,20 +98,15 @@ public class SubMuscleFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 MuscleItem item = (MuscleItem) parent.getItemAtPosition(position);
 
-                boolean selectedIndex = TrainingProgram.getInstance().getSubMusclesIndex(item);
+                boolean selectedIndex = new MuscleExerciseRepo().isSubMuscleExist(DayUUID,item.getTitle(),item.getMain_muscle());
                 if (selectedIndex) {
                     item.setSelected(false);
-                    remove(item);
                 } else {
                     item.setSelected(true);
-                    gridSelections.add(item);
                 }
                 gridAdapter.notifyDataSetChanged();
-                TrainingProgram.getInstance().SetSubMuscle(gridSelections);
             }
         });
-
-
 
 
         return rootFragment;
@@ -124,14 +125,14 @@ public class SubMuscleFragment extends Fragment {
     private ArrayList<MuscleItem> getData() {
 
         final ArrayList<MuscleItem> muscleItems = new ArrayList<>();
-        String selected_main = TrainingProgram.getInstance().getMainMusclesString();
+        String selected_main = new PlanMuscleRepo().getMainMuscleByDayAsString(DayUUID);
         MuscleRepo muscleRepo = new MuscleRepo();
         List<Muscle> exname = muscleRepo.getSubMuscle(selected_main, "");
 
         if (exname==null) return muscleItems;
 
         for (int i = 0; i < exname.size(); i++) {
-            muscleItems.add(new MuscleItem(exname.get(i).getImage(), exname.get(i).getName()));
+            muscleItems.add(new MuscleItem(exname.get(i).getImage(), exname.get(i).getName(),exname.get(i).getMuscle()));
         }
 
         return muscleItems;
@@ -148,16 +149,14 @@ public class SubMuscleFragment extends Fragment {
         ChangeSelections();
 
     }
-
+    // Pre-select currently selected items.
     private void ChangeSelections(){
-        // Pre-select currently selected items.
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                gridSelections = TrainingProgram.getInstance().getSubMuscles();
-                ArrayList<String> selected = TrainingProgram.getInstance().getSubMusclesStringArray();
-                for (int i = 0; i < muscleItemArrayList.size(); i++) {
-                    if (selected.contains(muscleItemArrayList.get(i).getTitle())) {
+                List<String> selected = new MuscleExerciseRepo().getSubMuscleByDay(DayUUID);
+                for (int i = 0; i < gridAdapter.getSize(); i++) {
+                    if (selected.contains(gridAdapter.getData().get(i).getTitle())) {
                         MuscleItem item = (MuscleItem) gridView.getItemAtPosition(i);
                         item.setSelected(true);
                     }
@@ -166,6 +165,7 @@ public class SubMuscleFragment extends Fragment {
                         item.setSelected(false);
 
                     }
+
                 }
                 gridAdapter.notifyDataSetChanged();
 

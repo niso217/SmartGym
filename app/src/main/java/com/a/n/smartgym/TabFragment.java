@@ -1,5 +1,6 @@
 package com.a.n.smartgym;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.a.n.smartgym.Objects.TrainingProgram;
 
 /**
  * Created by Ratan on 7/27/2015.
@@ -24,6 +24,11 @@ public class TabFragment extends Fragment {
     private Button mNextButton;
     private Button mPrevButton;
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,6 +38,7 @@ public class TabFragment extends Fragment {
             View x =  inflater.inflate(R.layout.tab_layout,null);
             //tabLayout = (TabLayout) x.findViewById(R.id.tabs);
             viewPager = (ViewPager) x.findViewById(R.id.viewpager);
+        viewPager.setOffscreenPageLimit(3);
 
         mNextButton = (Button) x.findViewById(R.id.next_button);
         mPrevButton = (Button) x.findViewById(R.id.prev_button);
@@ -41,7 +47,7 @@ public class TabFragment extends Fragment {
 
             @Override
             public void onClick(View view) {
-                if (TrainingProgram.getInstance().getDay()==null) return;
+                //if (TrainingProgram.getInstance().getDay()==null) return;
                 viewPager.setCurrentItem(getItem(+1), true); //getItem(-1) for previous
             }
         });

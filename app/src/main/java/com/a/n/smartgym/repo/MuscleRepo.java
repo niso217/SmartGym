@@ -220,6 +220,30 @@ public class MuscleRepo {
 
     }
 
+    public List<String> getMainMuscleNames(){
+        List<String> main_muscle = new ArrayList<>();
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE
+                + ", "+Muscle.TABLE +"."+Muscle.KEY_IMAGE
+                + " FROM " + Muscle.TABLE
+                + " GROUP BY " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE;
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                main_muscle.add(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return main_muscle;
+
+    }
+
 
     public void delete( ) {
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();

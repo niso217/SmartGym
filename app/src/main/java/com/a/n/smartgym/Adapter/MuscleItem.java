@@ -8,8 +8,16 @@ import java.util.List;
 public class MuscleItem {
     private String image;
     private String title;
+    private String main_muscle;
     boolean selected;
-    private String value;
+
+    public String getMain_muscle() {
+        return main_muscle;
+    }
+
+    public void setMain_muscle(String main_muscle) {
+        this.main_muscle = main_muscle;
+    }
 
     public boolean isSelected() {
         return selected;
@@ -19,16 +27,9 @@ public class MuscleItem {
         this.selected = selected;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public MuscleItem(String image, String title) {
+    public MuscleItem(String image, String title,String main) {
         super();
+        this.main_muscle = main;
         this.image = image;
         this.title = title;
     }

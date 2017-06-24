@@ -44,6 +44,8 @@ public class Constants {
     public final static String FRIDAY = "friday";
     public final static String SATURDAY = "saturday";
 
+    public final static String PLAN_DAY_UUID = "plan_uuid";
+
 
     public enum MuscleType {
         ABS,

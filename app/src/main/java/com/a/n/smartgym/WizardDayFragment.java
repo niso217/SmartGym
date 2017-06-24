@@ -10,11 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
-import com.a.n.smartgym.Objects.TrainingProgram;
 import com.a.n.smartgym.Utils.Constants;
+import com.a.n.smartgym.model.Plan;
+import com.a.n.smartgym.repo.PlanRepo;
 
+import java.util.UUID;
+
+import static com.a.n.smartgym.Utils.Constants.PLAN_DAY_UUID;
 import static com.a.n.smartgym.Utils.Constants.WIZARD_DAY_UPDATE;
-import static com.a.n.smartgym.Utils.Constants.WIZARD_MAIN_UPDATE;
 
 /**
  * Created by Ratan on 7/29/2015.
@@ -42,32 +45,45 @@ public class WizardDayFragment extends Fragment implements RadioGroup.OnCheckedC
         switch(checkedId)
         {
             case R.id.sunday:
-                TrainingProgram.getInstance().setDay(Constants.SUNDAY);
+                isPlanDayExist(Constants.SUNDAY);
                 break;
             case R.id.monday:
-                TrainingProgram.getInstance().setDay(Constants.MONDAY);
+                isPlanDayExist(Constants.MONDAY);
                 break;
             case R.id.tuesday:
-                TrainingProgram.getInstance().setDay(Constants.TUESDAY);
+                isPlanDayExist(Constants.TUESDAY);
                 break;
             case R.id.wednesday:
-                TrainingProgram.getInstance().setDay(Constants.WEDNESDAY);
+                isPlanDayExist(Constants.WEDNESDAY);
                 break;
             case R.id.thursday:
-                TrainingProgram.getInstance().setDay(Constants.THURSDAY);
+                isPlanDayExist(Constants.THURSDAY);
                 break;
             case R.id.friday:
-                TrainingProgram.getInstance().setDay(Constants.FRIDAY);
+                isPlanDayExist(Constants.FRIDAY);
                 break;
             case R.id.saturday:
-                TrainingProgram.getInstance().setDay(Constants.SATURDAY);
+                isPlanDayExist(Constants.SATURDAY);
                 break;
         }
-        broadcastUpdate();
     }
 
-    private void broadcastUpdate() {
+    private void isPlanDayExist(String day) {
+        PlanRepo planRepo = new PlanRepo();
+        String uuid = planRepo.getDayUUID(day);
+        if (uuid.isEmpty()) {
+            Plan plan = new Plan();
+            uuid = UUID.randomUUID().toString();
+            plan.setPlanid(uuid);
+            plan.setDate(day);
+            planRepo.insert(plan);
+        }
+        broadcastUpdate(uuid);
+    }
+
+    private void broadcastUpdate(String uuid) {
         final Intent intent = new Intent(WIZARD_DAY_UPDATE);
+        intent.putExtra(PLAN_DAY_UUID,uuid);
         getActivity().sendBroadcast(intent);
     }
 }
