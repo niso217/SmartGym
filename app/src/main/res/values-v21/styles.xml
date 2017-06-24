@@ -107,6 +107,11 @@
         <item name="android:text">@string/herp_derpsum</item>
     </style>
 
+    <style name="MyRadioButton" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@color/circular_progress_default_subtitle</item>
+        <item name="colorControlActivated">@color/circular_progress_default_progress</item>
+    </style>
+
 
 
 

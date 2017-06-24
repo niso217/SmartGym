@@ -47,9 +47,6 @@ import android.widget.Toast;
 
 import com.a.n.smartgym.BLE.BluetoothLeService;
 import com.a.n.smartgym.Graphs.CombinedChartActivity;
-import com.a.n.smartgym.Graphs.DayAverageFragment;
-import com.a.n.smartgym.Graphs.TrendAverageFragment;
-import com.a.n.smartgym.Graphs.UsageAverageFragment;
 import com.a.n.smartgym.Graphs.VisitsFragment;
 import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
@@ -57,7 +54,6 @@ import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
 import com.a.n.smartgym.Objects.ExercisesDB;
 import com.a.n.smartgym.Utils.Constants;
-import com.a.n.smartgym.Utils.DataFaker;
 import com.a.n.smartgym.model.Muscle;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.repo.MuscleRepo;
@@ -80,7 +76,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static com.a.n.smartgym.Utils.Constants.STATE_CONNECTED;
-import static com.a.n.smartgym.Utils.Constants.STATE_DISCONNECTED;
 
 @TargetApi(21)
 public class MainActivity extends AppCompatActivity implements
@@ -526,14 +521,14 @@ public class MainActivity extends AppCompatActivity implements
                 break;
 
             case R.id.settings:
-                mCurrentFragment = new SettingsFragment();
+                mCurrentFragment = new TabFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
 
                 mToolbar.setTitle("");
 
                 break;
             case R.id.program:
-                startActivity(new Intent(this, WizardActivity.class));
+                //startActivity(new Intent(this, WizardActivity.class));
                 break;
             case R.id.nav_logout:
                 logout();

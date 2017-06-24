@@ -1,21 +1,17 @@
 package com.a.n.smartgym.repo;
 
-import android.bluetooth.BluetoothClass;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.a.n.smartgym.DatabaseManager;
-import com.a.n.smartgym.model.StudentCourse;
 import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.model.Visits;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 

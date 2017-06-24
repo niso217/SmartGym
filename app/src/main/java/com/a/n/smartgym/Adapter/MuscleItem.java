@@ -5,20 +5,29 @@ import android.graphics.Bitmap;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageItem {
+public class MuscleItem {
     private String image;
     private String title;
-    private int state;
+    boolean selected;
+    private String value;
 
-    public int getState() {
-        return state;
+    public boolean isSelected() {
+        return selected;
     }
 
-    public void setState(int state) {
-        this.state = state;
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
-    public ImageItem(String image, String title) {
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public MuscleItem(String image, String title) {
         super();
         this.image = image;
         this.title = title;

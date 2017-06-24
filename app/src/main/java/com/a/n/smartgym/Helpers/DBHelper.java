@@ -10,12 +10,18 @@ import android.util.Log;
 
 import com.a.n.smartgym.App;
 import com.a.n.smartgym.model.Muscle;
+import com.a.n.smartgym.model.MuscleExercise;
+import com.a.n.smartgym.model.Plan;
+import com.a.n.smartgym.model.PlanMuscle;
 import com.a.n.smartgym.model.Sets;
 import com.a.n.smartgym.model.Visits;
 import com.a.n.smartgym.model.Exercise;
 import com.a.n.smartgym.model.User;
 import com.a.n.smartgym.repo.ExerciseRepo;
+import com.a.n.smartgym.repo.MuscleExerciseRepo;
 import com.a.n.smartgym.repo.MuscleRepo;
+import com.a.n.smartgym.repo.PlanMuscleRepo;
+import com.a.n.smartgym.repo.PlanRepo;
 import com.a.n.smartgym.repo.SetsRepo;
 import com.a.n.smartgym.repo.VisitsRepo;
 import com.a.n.smartgym.repo.UserRepo;
@@ -42,6 +48,9 @@ public class DBHelper  extends SQLiteOpenHelper {
         db.execSQL(VisitsRepo.createTable());
         db.execSQL(SetsRepo.createTable());
         db.execSQL(MuscleRepo.createTable());
+        db.execSQL(PlanRepo.createTable());
+        db.execSQL(PlanMuscleRepo.createTable());
+        db.execSQL(MuscleExerciseRepo.createTable());
 
     }
 
@@ -55,6 +64,9 @@ public class DBHelper  extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + Exercise.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + Sets.TABLE);
         db.execSQL("DROP TABLE IF EXISTS " + Muscle.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + Plan.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + PlanMuscle.TABLE);
+        db.execSQL("DROP TABLE IF EXISTS " + MuscleExercise.TABLE);
 
         onCreate(db);
     }

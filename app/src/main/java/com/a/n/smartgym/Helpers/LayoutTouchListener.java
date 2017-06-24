@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import com.a.n.smartgym.ExercisesFragment;
 import com.a.n.smartgym.Listener.GestureListener;
-import com.a.n.smartgym.Main2Activity;
 
 /**
  * Created by nirb on 05/06/2017.

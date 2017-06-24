@@ -126,7 +126,6 @@
     <string name="request_location"> Since location access has not been granted, this app will not be able to discover beacons when in the background.</string>
 
 
-
     <string name="next">Next</string>
     <string name="prev">Previous</string>
     <string name="finish">Submit</string>

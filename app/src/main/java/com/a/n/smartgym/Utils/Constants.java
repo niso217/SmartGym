@@ -28,6 +28,23 @@ public class Constants {
     public static final int MONTH = 30;
     public static final int WEEK = 7;
 
+    public final static String WIZARD_DAY_UPDATE =
+            "com.a.n.smartgym.Utils.WIZARD_DAY_UPDATE";
+    public final static String WIZARD_MAIN_UPDATE =
+            "com.a.n.smartgym.Utils.WIZARD_MAIN_UPDATE";
+    public final static String WIZARD_SUB_UPDATE =
+            "com.a.n.smartgym.Utils.WIZARD_SUB_UPDATE";
+
+
+    public final static String SUNDAY = "sunday";
+    public final static String MONDAY = "monday";
+    public final static String TUESDAY = "tuesday";
+    public final static String WEDNESDAY = "wednesday";
+    public final static String THURSDAY = "thursday";
+    public final static String FRIDAY = "friday";
+    public final static String SATURDAY = "saturday";
+
+
     public enum MuscleType {
         ABS,
         ARMS,

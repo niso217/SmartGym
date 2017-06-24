@@ -3,7 +3,6 @@ package com.a.n.smartgym.Adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +17,26 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.facebook.FacebookSdk.getApplicationContext;
-
-public class GridViewAdapter extends ArrayAdapter<ImageItem> {
+public class GridViewAdapter extends ArrayAdapter<MuscleItem> {
 
     private Context context;
     private int layoutResourceId;
-    private ArrayList<ImageItem> data = new ArrayList<ImageItem>();
+    private ArrayList<MuscleItem> data = new ArrayList<MuscleItem>();
     public List<Integer> selectedPositions = new ArrayList<>();
 
-    public GridViewAdapter(Context context, int layoutResourceId, ArrayList<ImageItem> data) {
+    public GridViewAdapter(Context context, int layoutResourceId, ArrayList<MuscleItem> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+    }
+
+    public int getSize(){
+        return data.size();
+    }
+
+    public ArrayList<MuscleItem> getData(){
+        return data;
     }
 
     @Override
@@ -54,11 +59,11 @@ public class GridViewAdapter extends ArrayAdapter<ImageItem> {
 
 
 
-        ImageItem item = data.get(position);
+        MuscleItem item = data.get(position);
         holder.imageTitle.setText(item.getTitle());
         Picasso.with(getContext()).load(item.getImage()).into(holder.image);
 
-        if (item.getState() == 1) {
+        if (item.isSelected()) {
             holder.frame.setBackgroundResource(R.drawable.border);
         } else {
             holder.frame.setBackgroundColor(Color.TRANSPARENT);

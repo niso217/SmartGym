@@ -1,29 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_horizontal"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <TextView
+    <RadioGroup
+        android:id="@+id/RGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:textSize="30sp"
-        android:gravity="center"
-        android:id="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:textColor="@android:color/holo_green_dark"
-        android:text="Social\nFragment"/>
+        android:layout_marginTop="20dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:autoLink="web"
-        android:textSize="15sp"
-        android:layout_marginTop="10dp"
-        android:layout_centerHorizontal="true"
-        android:text="androidbelieve.com"
-        android:textColor="#000"
-        android:layout_below="@+id/textView"
-        android:textStyle="italic"/>
+        <RadioButton
+            android:id="@+id/sunday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Sunday"
+            android:theme="@style/MyRadioButton" />
 
-</RelativeLayout>
+        <RadioButton
+            android:id="@+id/monday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Monday"
+            android:theme="@style/MyRadioButton" />
+
+        <RadioButton
+            android:id="@+id/tuesday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Tuesday"
+            android:theme="@style/MyRadioButton" />
+
+        <RadioButton
+            android:id="@+id/wednesday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Wednesday"
+            android:theme="@style/MyRadioButton" />
+
+        <RadioButton
+            android:id="@+id/thursday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Thursday"
+            android:theme="@style/MyRadioButton" />
+
+        <RadioButton
+            android:id="@+id/friday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Friday"
+            android:theme="@style/MyRadioButton" />
+
+        <RadioButton
+            android:id="@+id/saturday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:checked="false"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Saturday"
+            android:theme="@style/MyRadioButton" />
+
+    </RadioGroup>
+
+
+</LinearLayout>
