@@ -23,6 +23,7 @@ public class MuscleExercise {
     private String numberofreps;
     private String weight;
 
+
     public String getMuscleexerciseid() {
         return muscleexerciseid;
     }

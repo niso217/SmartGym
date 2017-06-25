@@ -11,7 +11,9 @@ import com.a.n.smartgym.DBModel.Plan;
 import com.a.n.smartgym.DBModel.PlanMuscle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -75,6 +77,80 @@ public class MuscleExerciseRepo {
         cursor.close();
         DatabaseManager.getInstance().closeDatabase();
         return exercises;
+    }
+
+    public String getDayPlan(String day) {
+        Map<String,List<MuscleExercise>> exercises = new HashMap<>();
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = " SELECT " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_EXERCISE_ID
+                + ", " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_NUM_OF_SETS
+                + ", " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_NUM_OF_REPS
+                + ", " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_WEIGHT
+                + ", " + PlanMuscle.TABLE +"." + PlanMuscle.KEY_MUSCLE_ID
+                + " FROM " + Plan.TABLE
+                + " INNER JOIN " + PlanMuscle.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
+                + " INNER JOIN " + MuscleExercise.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
+                + " WHERE " + Plan.TABLE+"."+Plan.KEY_DATE + "=" + "'" + day +"'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                String key = cursor.getString(cursor.getColumnIndex(PlanMuscle.KEY_MUSCLE_ID));
+                MuscleExercise muscleExercise = new MuscleExercise();
+                muscleExercise.setExerciseid(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_EXERCISE_ID)));
+                muscleExercise.setNumberofsets(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_SETS)));
+                muscleExercise.setNumberofreps(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_REPS)));
+                muscleExercise.setWeight(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_WEIGHT)));
+                List<MuscleExercise> muscleExerciseList = exercises.get(key);
+                if (muscleExerciseList!=null){
+                    muscleExerciseList.add(muscleExercise);
+                    exercises.put(key,muscleExerciseList);
+                }
+                else
+                {
+                    muscleExerciseList = new ArrayList<>();
+                    muscleExerciseList.add(muscleExercise);
+                    exercises.put(key,muscleExerciseList);
+                }
+
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+        return MaptoString(exercises);
+    }
+
+    private String MaptoString(Map<String, List<MuscleExercise>>hm ){
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String key : hm.keySet()) {
+            stringBuilder.append(key+":");
+            stringBuilder.append(System.getProperty("line.separator"));
+            // gets the value
+            List<MuscleExercise> muscleExerciseList = hm.get(key);
+            // checks for null value
+            if (muscleExerciseList != null) {
+                // iterates over String elements of value
+                for (MuscleExercise muscleExercise : muscleExerciseList) {
+                    // checks for null
+                    if (muscleExercise != null) {
+                        // prints whether the key is equal to the String
+                        // representation of that List's element
+                        stringBuilder.append(muscleExercise.getExerciseid()+": ");
+                        stringBuilder.append(muscleExercise.getNumberofsets()+" X ");
+                        stringBuilder.append(muscleExercise.getNumberofreps()+" X ");
+                        stringBuilder.append(muscleExercise.getWeight());
+                        stringBuilder.append(System.getProperty("line.separator"));
+
+
+                    }
+                }
+            }
+        }
+        return stringBuilder.toString();
+
     }
 
     public boolean isSubMuscleExist(String day, String exercise) {
