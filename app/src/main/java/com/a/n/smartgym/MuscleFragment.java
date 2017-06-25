@@ -16,12 +16,9 @@ import android.widget.GridView;
 
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.MuscleItem;
-import com.a.n.smartgym.Listener.WizardDataChanged;
-import com.a.n.smartgym.Objects.ExercisesDB;
+import com.a.n.smartgym.repo.MuscleRepo;
 import com.a.n.smartgym.repo.PlanMuscleRepo;
-
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import static com.a.n.smartgym.Utils.Constants.PLAN_DAY_UUID;
@@ -36,17 +33,6 @@ public class MuscleFragment extends Fragment {
     private GridView gridView;
     private GridViewAdapter gridAdapter;
     private String DayUUID;
-    private ArrayList<MuscleItem> gridSelections;
-    ArrayList<MuscleItem>  muscleItemArrayList;
-
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-         muscleItemArrayList = getData();
-        gridSelections = new ArrayList<>();
-    }
 
 
     private final BroadcastReceiver mWizardUpdates = new BroadcastReceiver() {
@@ -81,7 +67,7 @@ public class MuscleFragment extends Fragment {
         View rootFragment = inflater.inflate(R.layout.fragment_muscle, null);
 
         gridView = (GridView) rootFragment.findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, muscleItemArrayList);
+        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData());
         gridView.setAdapter(gridAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -89,7 +75,7 @@ public class MuscleFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 MuscleItem item = (MuscleItem) parent.getItemAtPosition(position);
 
-                boolean selectedIndex = new PlanMuscleRepo().isMainMuscleExist(DayUUID,item.getTitle());
+                boolean selectedIndex = new PlanMuscleRepo().isMainMuscleExist(DayUUID, item.getTitle());
                 if (selectedIndex) {
                     item.setSelected(false);
                 } else {
@@ -100,27 +86,20 @@ public class MuscleFragment extends Fragment {
             }
         });
 
-        // Pre-select currently selected items.
-        onDataChanged();
-
         return rootFragment;
     }
 
     private ArrayList<MuscleItem> getData() {
         final ArrayList<MuscleItem> imageItems = new ArrayList<>();
 
-        Enumeration e = ExercisesDB.getInstance().keys.keys();
-        while (e.hasMoreElements()) {
-            String key = (String) e.nextElement();
-            int s = getResources().getIdentifier(key, "string", getContext().getPackageName());
+        List<String> main_muscles = new MuscleRepo().getMainMuscleNames();
+        for (String main : main_muscles) {
+            int s = getResources().getIdentifier(main, "string", getContext().getPackageName());
             if (s != 0) {
                 String result = getString(s);
-                imageItems.add(new MuscleItem(result, key,""));
+                imageItems.add(new MuscleItem(result, main, ""));
             }
-
-
         }
-
 
         return imageItems;
     }
@@ -136,8 +115,7 @@ public class MuscleFragment extends Fragment {
                     if (selected.contains(gridAdapter.getData().get(i).getTitle())) {
                         MuscleItem item = (MuscleItem) gridView.getItemAtPosition(i);
                         item.setSelected(true);
-                    }
-                    else{
+                    } else {
                         MuscleItem item = (MuscleItem) gridView.getItemAtPosition(i);
                         item.setSelected(false);
 
@@ -153,7 +131,7 @@ public class MuscleFragment extends Fragment {
 
     private void broadcastUpdate() {
         final Intent intent = new Intent(WIZARD_MAIN_UPDATE);
-        intent.putExtra(PLAN_DAY_UUID,DayUUID);
+        intent.putExtra(PLAN_DAY_UUID, DayUUID);
         getActivity().sendBroadcast(intent);
     }
 
@@ -162,8 +140,6 @@ public class MuscleFragment extends Fragment {
         intentFilter.addAction(WIZARD_DAY_UPDATE);
         return intentFilter;
     }
-
-
 
 
 }

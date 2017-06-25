@@ -37,22 +37,9 @@ public class SubMuscleFragment extends Fragment {
 
     private GridView gridView;
     private GridViewAdapter gridAdapter;
-    private String group, UUID;
-    private List<Muscle> exname;
-    private ArrayList<MuscleItem> gridSelections;
-    private ArrayList<MuscleItem>  muscleItemArrayList;
     private String DayUUID;
 
 
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        gridSelections = new ArrayList<>();
-        muscleItemArrayList = new ArrayList<>();
-
-
-    }
 
     private final BroadcastReceiver mWizardUpdates = new BroadcastReceiver() {
         @Override
@@ -90,7 +77,7 @@ public class SubMuscleFragment extends Fragment {
 
 
         gridView = (GridView) rootFragment.findViewById(R.id.gridView);
-        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, muscleItemArrayList);
+        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData());
         gridView.setAdapter(gridAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -112,16 +99,6 @@ public class SubMuscleFragment extends Fragment {
         return rootFragment;
     }
 
-    private void remove(MuscleItem item){
-        for (int i = 0; i < gridSelections.size(); i++) {
-            if (gridSelections.get(i).getTitle().equals(item.getTitle()))
-                gridSelections.remove(i);
-        }
-    }
-
-    /**
-     * Prepare some dummy data for gridview
-     */
     private ArrayList<MuscleItem> getData() {
 
         final ArrayList<MuscleItem> muscleItems = new ArrayList<>();
@@ -140,17 +117,9 @@ public class SubMuscleFragment extends Fragment {
     }
 
     public void onDataChanged() {
-        muscleItemArrayList = getData();
         gridAdapter.clear();
-        gridAdapter.addAll(muscleItemArrayList);
+        gridAdapter.addAll(getData());
 
-        //gridAdapter.notifyDataSetChanged();
-        //gridView.invalidateViews();
-        ChangeSelections();
-
-    }
-    // Pre-select currently selected items.
-    private void ChangeSelections(){
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -171,7 +140,9 @@ public class SubMuscleFragment extends Fragment {
 
             }
         });
+
     }
+
 
     private static IntentFilter makeWizardUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
