@@ -1,33 +1,26 @@
 package com.a.n.smartgym.Utils;
 
-import android.graphics.Movie;
 import android.icu.util.GregorianCalendar;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.util.Log;
 
-import com.a.n.smartgym.model.Exercise;
-import com.a.n.smartgym.model.Muscle;
-import com.a.n.smartgym.model.Sets;
-import com.a.n.smartgym.model.Visits;
-import com.a.n.smartgym.repo.ExerciseRepo;
-import com.a.n.smartgym.repo.MuscleRepo;
-import com.a.n.smartgym.repo.SetsRepo;
-import com.a.n.smartgym.repo.VisitsRepo;
+import com.a.n.smartgym.DBModel.Exercise;
+import com.a.n.smartgym.DBModel.Muscle;
+import com.a.n.smartgym.DBModel.Sets;
+import com.a.n.smartgym.DBModel.Visits;
+import com.a.n.smartgym.DBRepo.ExerciseRepo;
+import com.a.n.smartgym.DBRepo.MuscleRepo;
+import com.a.n.smartgym.DBRepo.SetsRepo;
+import com.a.n.smartgym.DBRepo.VisitsRepo;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.sql.Date;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;

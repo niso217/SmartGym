@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Object.MuscleItem;
 import com.a.n.smartgym.R;
 import com.squareup.picasso.Picasso;
 

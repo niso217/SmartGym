@@ -8,23 +8,23 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.a.n.smartgym.App;
-import com.a.n.smartgym.model.Muscle;
-import com.a.n.smartgym.model.MuscleExercise;
-import com.a.n.smartgym.model.Plan;
-import com.a.n.smartgym.model.PlanMuscle;
-import com.a.n.smartgym.model.Sets;
-import com.a.n.smartgym.model.Visits;
-import com.a.n.smartgym.model.Exercise;
-import com.a.n.smartgym.model.User;
-import com.a.n.smartgym.repo.ExerciseRepo;
-import com.a.n.smartgym.repo.MuscleExerciseRepo;
-import com.a.n.smartgym.repo.MuscleRepo;
-import com.a.n.smartgym.repo.PlanMuscleRepo;
-import com.a.n.smartgym.repo.PlanRepo;
-import com.a.n.smartgym.repo.SetsRepo;
-import com.a.n.smartgym.repo.VisitsRepo;
-import com.a.n.smartgym.repo.UserRepo;
+import com.a.n.smartgym.SmartGymApplication;
+import com.a.n.smartgym.DBModel.Muscle;
+import com.a.n.smartgym.DBModel.MuscleExercise;
+import com.a.n.smartgym.DBModel.Plan;
+import com.a.n.smartgym.DBModel.PlanMuscle;
+import com.a.n.smartgym.DBModel.Sets;
+import com.a.n.smartgym.DBModel.Visits;
+import com.a.n.smartgym.DBModel.Exercise;
+import com.a.n.smartgym.DBModel.User;
+import com.a.n.smartgym.DBRepo.ExerciseRepo;
+import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
+import com.a.n.smartgym.DBRepo.MuscleRepo;
+import com.a.n.smartgym.DBRepo.PlanMuscleRepo;
+import com.a.n.smartgym.DBRepo.PlanRepo;
+import com.a.n.smartgym.DBRepo.SetsRepo;
+import com.a.n.smartgym.DBRepo.VisitsRepo;
+import com.a.n.smartgym.DBRepo.UserRepo;
 
 
 public class DBHelper  extends SQLiteOpenHelper {
@@ -37,7 +37,7 @@ public class DBHelper  extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName().toString();
 
     public DBHelper( ) {
-        super(App.getContext(), DATABASE_NAME, null, DATABASE_VERSION);
+        super(SmartGymApplication.getContext(), DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override

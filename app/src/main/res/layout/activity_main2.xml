@@ -114,7 +114,7 @@
                         android:layout_gravity="center_horizontal"
                         android:orientation="horizontal">
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/pb_sets"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -130,7 +130,7 @@
                             android:layout_height="match_parent"
                             android:layout_weight="0.2" />
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/pb_seconds"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -148,7 +148,7 @@
                         android:layout_gravity="center_horizontal"
                         android:orientation="horizontal">
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/pb_calc_weight"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -164,7 +164,7 @@
                             android:layout_height="match_parent"
                             android:layout_weight="0.2" />
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/pb_weight_ratio"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -182,7 +182,7 @@
                         android:layout_gravity="center_horizontal"
                         android:orientation="horizontal">
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/set_weight3"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -198,7 +198,7 @@
                             android:layout_height="match_parent"
                             android:layout_weight="0.2" />
 
-                        <com.a.n.smartgym.Helpers.CircularProgressBar
+                        <com.a.n.smartgym.Views.CircularProgressBar
                             android:id="@+id/set_progress3"
                             style="@style/Widget.ProgressBar.CircularProgressBar"
                             android:layout_width="match_parent"
@@ -228,7 +228,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <com.a.n.smartgym.Helpers.CircularProgressBar
+            <com.a.n.smartgym.Views.CircularProgressBar
                 android:id="@+id/pb_repetition"
                 style="@style/Widget.ProgressBar.CircularProgressBar"
                 android:layout_width="150dp"

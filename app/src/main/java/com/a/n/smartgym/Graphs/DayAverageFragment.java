@@ -1,6 +1,5 @@
 package com.a.n.smartgym.Graphs;
 
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,12 +14,9 @@ import android.widget.ListView;
 
 import com.a.n.smartgym.Adapter.ChartDataAdapter;
 import com.a.n.smartgym.Adapter.ViewPagerAdapter;
-import com.a.n.smartgym.Objects.LastExercise;
-import com.a.n.smartgym.Quary.DailyAverage;
-import com.a.n.smartgym.Quary.MachineUsage;
+import com.a.n.smartgym.Object.DailyAverage;
 import com.a.n.smartgym.R;
-import com.a.n.smartgym.repo.ExerciseRepo;
-import com.github.mikephil.charting.components.Legend;
+import com.a.n.smartgym.DBRepo.ExerciseRepo;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -29,7 +25,6 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;

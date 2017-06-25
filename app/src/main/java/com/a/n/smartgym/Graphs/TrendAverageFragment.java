@@ -1,7 +1,5 @@
 package com.a.n.smartgym.Graphs;
 
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -13,16 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.a.n.smartgym.Adapter.ChartDataAdapter;
 import com.a.n.smartgym.Adapter.ViewPagerAdapter;
-import com.a.n.smartgym.Quary.DailyAverage;
+import com.a.n.smartgym.Object.DailyAverage;
 import com.a.n.smartgym.R;
-import com.a.n.smartgym.repo.ExerciseRepo;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
+import com.a.n.smartgym.DBRepo.ExerciseRepo;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -30,8 +22,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by DAT on 9/1/2015.
