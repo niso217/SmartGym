@@ -73,8 +73,8 @@ public class WizardDayFragment extends Fragment implements RadioGroup.OnCheckedC
                 mSelectedDay = Constants.SATURDAY;
                 break;
         }
-        String text = new MuscleExerciseRepo().getDayPlan(mSelectedDay);
-        mSnackbar = Snackbar.make(getView(), text, Snackbar.LENGTH_LONG).setDuration(30000)
+        String text = new MuscleExerciseRepo().MaptoString(new MuscleExerciseRepo().getDayPlan(mSelectedDay));
+        mSnackbar = Snackbar.make(getView(), "", Snackbar.LENGTH_LONG).setDuration(30000)
                 .setAction("Retry", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -87,7 +87,9 @@ public class WizardDayFragment extends Fragment implements RadioGroup.OnCheckedC
         View snackbarView = mSnackbar.getView();
         TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
         textView.setMaxLines(20);  //set the max lines for textview to show multiple lines
-
+        textView.setText(text,TextView.BufferType.SPANNABLE);
+        textView.setTextSize(13);
+        textView.setTextColor(getContext().getColor(R.color.circular_progress_default_progress));
         mSnackbar.show();
     }
 

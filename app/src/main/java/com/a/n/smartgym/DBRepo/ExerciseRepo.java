@@ -5,10 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.a.n.smartgym.Utils.DatabaseManager;
-import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.Object.DailyAverage;
 import com.a.n.smartgym.Object.MachineUsage;
+import com.a.n.smartgym.Utils.DatabaseManager;
+import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.DBModel.Exercise;
 import com.a.n.smartgym.DBModel.Muscle;
 import com.a.n.smartgym.DBModel.Sets;

@@ -1,23 +1,18 @@
-<LinearLayout android:id="@+id/layout"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/textViewTabItemName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:text="Name" />
+        android:gravity="center_horizontal"
+        android:text="Name"
+        android:textAllCaps="true"
+        android:textColor="@color/circular_progress_default_title" />
 
-    <ImageButton
-        android:id="@+id/imageButtonRemove"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="12dp"
-        android:background="@null"
-        />
 </LinearLayout>

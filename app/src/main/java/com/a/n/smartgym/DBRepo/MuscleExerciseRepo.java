@@ -3,6 +3,13 @@ package com.a.n.smartgym.DBRepo;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 
 import com.a.n.smartgym.Utils.DatabaseManager;
@@ -79,8 +86,8 @@ public class MuscleExerciseRepo {
         return exercises;
     }
 
-    public String getDayPlan(String day) {
-        Map<String,List<MuscleExercise>> exercises = new HashMap<>();
+    public Map<String,ArrayList<MuscleExercise>> getDayPlan(String day) {
+        Map<String,ArrayList<MuscleExercise>> exercises = new HashMap<>();
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery = " SELECT " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_EXERCISE_ID
                 + ", " + MuscleExercise.TABLE +"." + MuscleExercise.KEY_NUM_OF_SETS
@@ -104,7 +111,7 @@ public class MuscleExerciseRepo {
                 muscleExercise.setNumberofsets(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_SETS)));
                 muscleExercise.setNumberofreps(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_REPS)));
                 muscleExercise.setWeight(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_WEIGHT)));
-                List<MuscleExercise> muscleExerciseList = exercises.get(key);
+                ArrayList<MuscleExercise> muscleExerciseList = exercises.get(key);
                 if (muscleExerciseList!=null){
                     muscleExerciseList.add(muscleExercise);
                     exercises.put(key,muscleExerciseList);
@@ -120,13 +127,15 @@ public class MuscleExerciseRepo {
         }
         cursor.close();
         DatabaseManager.getInstance().closeDatabase();
-        return MaptoString(exercises);
+        return exercises;
     }
 
-    private String MaptoString(Map<String, List<MuscleExercise>>hm ){
+    public String MaptoString(Map<String, ArrayList<MuscleExercise>>hm ){
         StringBuilder stringBuilder = new StringBuilder();
         for (String key : hm.keySet()) {
-            stringBuilder.append(key+":");
+            Spannable sb = new SpannableString(key+": ");
+            sb.setSpan(new BackgroundColorSpan(Color.CYAN), 0, key.length(), 0);
+            stringBuilder.append(sb);
             stringBuilder.append(System.getProperty("line.separator"));
             // gets the value
             List<MuscleExercise> muscleExerciseList = hm.get(key);

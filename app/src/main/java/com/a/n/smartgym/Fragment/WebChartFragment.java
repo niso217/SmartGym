@@ -23,8 +23,8 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.Object.DailyAverage;
+import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.Object.MachineUsage;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Utils.Constants;

@@ -46,6 +46,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.a.n.smartgym.Fragment.ExercisesFragment;
+import com.a.n.smartgym.Fragment.MyDayFragment;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
 import com.a.n.smartgym.Fragment.SettingsDialogFragment;
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements
             //Restore the fragment's instance
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
-            performIdentifierAction(R.id.device_day_average);
+            performIdentifierAction(R.id.my_day);
         }
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
@@ -487,6 +488,11 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "onNavigationItemSelected");
         Bundle bundle = new Bundle();
         switch (item.getItemId()) {
+            case R.id.my_day:
+                mCurrentFragment = new MyDayFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("My Day");
+                break;
             case R.id.device_day_average:
                 mCurrentFragment = new CombinedChartActivity();
                 bundle.putInt("type", Constants.SUMMARY);

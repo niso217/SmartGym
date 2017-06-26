@@ -230,7 +230,7 @@ public class ExercisesFragment extends Fragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootFragment = inflater.inflate(R.layout.activity_main2, null);
+        View rootFragment = inflater.inflate(R.layout.fragment_exercise, null);
 
         mTypeface = Typeface.createFromAsset(getActivity().getAssets(), "fonts/nir.ttf");
 

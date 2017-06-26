@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3d3d3d"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <com.a.n.smartgym.Views.CircularProgressBar
+            android:id="@+id/pb_repetition"
+            style="@style/Widget.ProgressBar.CircularProgressBar"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_margin="0dp"
+            app:cpb_strokeWidth="25"
+            app:cpb_subtitle="Day Progress"
+            app:cpb_title="0%" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.4"
+        android:background="#3d3d3d"
+        android:orientation="vertical">
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_alignParentBottom="true"
+            android:gravity="center">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:textAlignment="center">
+
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/my_tab_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="#3d3d3d"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    app:tabGravity="fill"
+                    app:tabIndicatorColor="@color/system_green"
+                    app:tabMode="fixed"
+                    app:tabSelectedTextColor="@color/system_green"
+                    app:tabTextColor="@color/white">
+
+                </android.support.design.widget.TabLayout>
+
+            </LinearLayout>
+        </android.support.design.widget.AppBarLayout>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/my_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/appbar_layout"></android.support.v4.view.ViewPager>
+
+    </LinearLayout>
+</LinearLayout>

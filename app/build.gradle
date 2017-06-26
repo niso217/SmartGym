@@ -88,6 +88,6 @@ dependencies {
     compile 'me.philio:preferencecompatextended:1.2.2'
     testCompile 'junit:junit:4.12'
     minSdkJellybeanCompile 'com.firebaseui:firebase-ui-auth:1.0.0'
-}
+    compile 'com.daimajia.numberprogressbar:library:1.4@aar'}
 
 apply plugin: 'com.google.gms.google-services'

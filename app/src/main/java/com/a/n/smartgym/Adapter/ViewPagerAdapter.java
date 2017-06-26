@@ -8,9 +8,11 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -65,41 +67,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
         View view = LayoutInflater.from(context).inflate(R.layout.custom_tab_item, null);
         TextView tabItemName = (TextView) view.findViewById(R.id.textViewTabItemName);
 
-        ImageButton remove = (ImageButton) view.findViewById(R.id.imageButtonRemove);
-        remove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("Remove", "Remove");
-                removeFrag(position);
-            }
-        });
-
         tabItemName.setText(mFragmentTitleList.get(position));
-        tabItemName.setTextColor(context.getResources().getColor(android.R.color.background_light));
-
-        switch (mFragmentTitleList.get(position)) {
-            case "Gaiduk":
-                //tabItemAvatar.setImageResource(R.drawable.gaiduk);
-                break;
-            case "Nguyen":
-                //tabItemAvatar.setImageResource(R.drawable.avatar);
-                break;
-            case "Balakin":
-                //tabItemAvatar.setImageResource(R.drawable.balakin);
-                break;
-            case "Golovin":
-                //tabItemAvatar.setImageResource(R.drawable.golovin);
-                break;
-            case "Ovcharov":
-               // tabItemAvatar.setImageResource(R.drawable.ovcharov);
-                break;
-            case "Solovienko":
-               // tabItemAvatar.setImageResource(R.drawable.solovei);
-                break;
-            default:
-                //tabItemAvatar.setImageResource(R.drawable.n);
-                break;
-        }
 
         return view;
     }

@@ -14,6 +14,9 @@
             android:title="Statistics">
             <menu>
                 <item
+                    android:id="@+id/my_day"
+                    android:title="My Day" />
+                <item
                     android:id="@+id/device_day_average"
                     android:title="Day / Average" />
                 <item
