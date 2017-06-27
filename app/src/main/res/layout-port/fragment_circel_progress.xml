@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/background"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="My Day"
+        android:textColor="@color/circular_progress_default_progress"
+        android:textSize="18sp" />
+
+    <FrameLayout
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="25dp">
+
+        <devlight.io.library.ArcProgressStackView
+            android:id="@+id/apsv_presentation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:apsv_animated="true"
+            app:apsv_dragged="false"
+            app:apsv_draw_width="40dp"
+            app:apsv_leveled="true"
+            app:apsv_model_bg_enabled="true"
+            app:apsv_model_offset="-3dp"
+            app:apsv_rounded="false"
+            app:apsv_shadowed="false" />
+
+
+    </FrameLayout>
+
+</LinearLayout>

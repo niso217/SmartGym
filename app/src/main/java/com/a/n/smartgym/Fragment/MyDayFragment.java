@@ -1,16 +1,21 @@
 package com.a.n.smartgym.Fragment;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.a.n.smartgym.Adapter.ChartDataAdapter;
 import com.a.n.smartgym.Adapter.ViewPagerAdapter;
@@ -19,6 +24,7 @@ import com.a.n.smartgym.DBRepo.ExerciseRepo;
 import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
 import com.a.n.smartgym.Graphs.DayAverageFragmentTab;
 import com.a.n.smartgym.Object.DailyAverage;
+import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -36,6 +42,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+
+import devlight.io.library.ArcProgressStackView;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -46,9 +55,13 @@ public class MyDayFragment extends Fragment {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
-    private List<String> titles = new ArrayList<>();
-    private ListView mListView;
     private int selectedTabPosition;
+    private int[] colors;
+    private int[] bgColors;
+    MyDayProgressFragment myDayProgressFragment;
+    List<Long> mCurrentValues;
+
+
 
 
 
@@ -60,15 +73,21 @@ public class MyDayFragment extends Fragment {
         GetIdPortrait(view);
         setEvents();
 
-        addFragmentToTab();
         return view;
     }
+
+
 
     private void GetIdPortrait(View view) {
         viewPager = (ViewPager) view.findViewById(R.id.my_viewpager);
         tabLayout = (TabLayout) view.findViewById(R.id.my_tab_layout);
         adapter = new ViewPagerAdapter(getFragmentManager(), getActivity(), viewPager, tabLayout);
         viewPager.setAdapter(adapter);
+        myDayProgressFragment = (MyDayProgressFragment)getChildFragmentManager().findFragmentById(R.id.my_day_progress);
+        mCurrentValues = new ArrayList<>();
+        adjustColors();
+        addFragmentToTab();
+
     }
 
     private void setEvents() {
@@ -80,6 +99,21 @@ public class MyDayFragment extends Fragment {
                 viewPager.setCurrentItem(tab.getPosition());
                 selectedTabPosition = viewPager.getCurrentItem();
                 Log.d("Selected", "Selected " + tab.getPosition());
+                tabLayout.setEnabled(false);
+
+                myDayProgressFragment.setValueAnimator(mCurrentValues.get(tab.getPosition()));
+                myDayProgressFragment.SetCurrentIndex(tab.getPosition());
+                myDayProgressFragment.startAnimation();
+
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        tabLayout.setEnabled(true);
+
+                    }
+                },5000);
+
             }
 
             @Override
@@ -104,14 +138,17 @@ public class MyDayFragment extends Fragment {
     }
 
     private void addFragmentToTab(){
+        final ArrayList<ArcProgressStackView.Model> models = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         String dayOfTheWeek = sdf.format(d);
-
+        int index = 0;
         Map<String,ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(dayOfTheWeek.toLowerCase());
         ArrayList<MuscleExercise> muscleExerciseList = new ArrayList<>();
-        for (String key : exercises.keySet()) {
+        myDayProgressFragment.setModelCount(exercises.keySet().size());
 
+        for (String key : exercises.keySet()) {
+            models.add(new ArcProgressStackView.Model(key.toUpperCase(), 1, bgColors[index] , colors[index]));
             // gets the value
              muscleExerciseList = exercises.get(key);
             // checks for null value
@@ -120,7 +157,20 @@ public class MyDayFragment extends Fragment {
                 addPage(key.toUpperCase(), muscleExerciseList);
 
             }
+            index++;
         }
+
+        myDayProgressFragment.AddModel(models);
+        for (int i = 0; i < index; i++) {
+
+            long random = getRandom(0,100);
+            myDayProgressFragment.SetProgress(i,random);
+            mCurrentValues.add(random);
+
+        }
+        myDayProgressFragment.setUpAnimation();
+        myDayProgressFragment.startAnimation();
+
     }
 
     public void setupTabLayout() {
@@ -128,5 +178,26 @@ public class MyDayFragment extends Fragment {
         for (int i = 0; i < tabLayout.getTabCount(); i++) {
             tabLayout.getTabAt(i).setCustomView(adapter.getTabView(i));
         }
+
+
     }
+
+    public void adjustColors() {
+        final String[] stringColors = getResources().getStringArray(R.array.progress);
+        final String[] stringBgColors = getResources().getStringArray(R.array.bg);
+
+        colors = new int[stringColors.length];
+        bgColors = new int[stringBgColors.length];
+        for (int i = 0; i < colors.length; i++) {
+            colors[i] = Color.parseColor(stringColors[i]);
+            bgColors[i] = Color.parseColor(stringBgColors[i]);
+        }
+    }
+
+    public static int getRandom(int from, int to) {
+        if (from < to)
+            return from + new Random().nextInt(Math.abs(to - from));
+        return from - new Random().nextInt(Math.abs(to - from));
+    }
+
 }

@@ -7,30 +7,21 @@
     android:background="#3d3d3d"
     >
 
-    <LinearLayout
+    <fragment
+        android:id="@+id/my_day_progress"
+        android:name="com.a.n.smartgym.Fragment.MyDayProgressFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.5"
+        android:layout_weight="0.45"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
-        <com.a.n.smartgym.Views.CircularProgressBar
-            android:id="@+id/pb_repetition"
-            style="@style/Widget.ProgressBar.CircularProgressBar"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:layout_margin="0dp"
-            app:cpb_strokeWidth="25"
-            app:cpb_subtitle="Day Progress"
-            app:cpb_title="0%" />
-
-    </LinearLayout>
+    </fragment>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.4"
+        android:layout_weight="0.55"
         android:background="#3d3d3d"
         android:orientation="vertical">
 

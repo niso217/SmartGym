@@ -12,7 +12,7 @@
                 android:color="@color/circular_progress_default_background"
                 />
 
-            <solid android:color="#3d3d3d" />
+            <solid android:color="@color/background" />
 
         </shape>
     </item>
