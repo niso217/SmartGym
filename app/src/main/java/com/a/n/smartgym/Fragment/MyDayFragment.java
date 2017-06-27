@@ -59,15 +59,15 @@ public class MyDayFragment extends Fragment {
     private int[] colors;
     private int[] bgColors;
     MyDayProgressFragment myDayProgressFragment;
-    List<Long> mCurrentValues;
-
-
+    List<Integer> mCurrentValues;
+    private static final String TAG = MyDayFragment.class.getSimpleName();
 
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 
         View view = inflater.inflate(R.layout.fragment_myday, container, false);
         GetIdPortrait(view);
@@ -77,13 +77,13 @@ public class MyDayFragment extends Fragment {
     }
 
 
-
     private void GetIdPortrait(View view) {
         viewPager = (ViewPager) view.findViewById(R.id.my_viewpager);
         tabLayout = (TabLayout) view.findViewById(R.id.my_tab_layout);
         adapter = new ViewPagerAdapter(getFragmentManager(), getActivity(), viewPager, tabLayout);
         viewPager.setAdapter(adapter);
-        myDayProgressFragment = (MyDayProgressFragment)getChildFragmentManager().findFragmentById(R.id.my_day_progress);
+        viewPager.setOffscreenPageLimit(3);
+        myDayProgressFragment = (MyDayProgressFragment) getChildFragmentManager().findFragmentById(R.id.my_day_progress);
         mCurrentValues = new ArrayList<>();
         adjustColors();
         addFragmentToTab();
@@ -112,7 +112,7 @@ public class MyDayFragment extends Fragment {
                         tabLayout.setEnabled(true);
 
                     }
-                },5000);
+                }, 5000);
 
             }
 
@@ -137,23 +137,29 @@ public class MyDayFragment extends Fragment {
         setupTabLayout();
     }
 
-    private void addFragmentToTab(){
+    private void addFragmentToTab() {
+
         final ArrayList<ArcProgressStackView.Model> models = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
         Date d = new Date();
         String dayOfTheWeek = sdf.format(d);
         int index = 0;
-        Map<String,ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(dayOfTheWeek.toLowerCase());
+        long MainMuscleDonePercentage = 0;
+        Map<String, ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(dayOfTheWeek.toLowerCase());
+
         ArrayList<MuscleExercise> muscleExerciseList = new ArrayList<>();
         myDayProgressFragment.setModelCount(exercises.keySet().size());
 
         for (String key : exercises.keySet()) {
-            models.add(new ArcProgressStackView.Model(key.toUpperCase(), 1, bgColors[index] , colors[index]));
+            models.add(new ArcProgressStackView.Model(key.toUpperCase(), 1, bgColors[index], colors[index]));
             // gets the value
-             muscleExerciseList = exercises.get(key);
+            muscleExerciseList = exercises.get(key);
+
             // checks for null value
             if (muscleExerciseList != null) {
                 // iterates over String elements of value
+                mCurrentValues.add(AggregateSets(muscleExerciseList));
+
                 addPage(key.toUpperCase(), muscleExerciseList);
 
             }
@@ -161,16 +167,29 @@ public class MyDayFragment extends Fragment {
         }
 
         myDayProgressFragment.AddModel(models);
-        for (int i = 0; i < index; i++) {
 
-            long random = getRandom(0,100);
-            myDayProgressFragment.SetProgress(i,random);
-            mCurrentValues.add(random);
+        for (int i = 0; i < mCurrentValues.size(); i++)
+            myDayProgressFragment.SetProgress(i, mCurrentValues.get(i));
 
-        }
         myDayProgressFragment.setUpAnimation();
         myDayProgressFragment.startAnimation();
 
+    }
+
+    private int AggregateSets(ArrayList<MuscleExercise> muscleExerciseList) {
+        int sumTodo = 0;
+        int sumDone = 0;
+
+        for (MuscleExercise muscleExercise : muscleExerciseList) {
+            ArrayList<LastExercise> lastExercise = new ExerciseRepo().getTodayExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), muscleExercise.getExerciseid());
+            for (int i = 0; i < lastExercise.size(); i++) {
+                sumDone += lastExercise.get(i).getCount() * lastExercise.get(i).getSets();
+            }
+            sumTodo += Integer.parseInt(muscleExercise.getNumberofreps()) * Integer.parseInt(muscleExercise.getNumberofsets());
+        }
+        Log.d(TAG,"100" + " * " + sumDone +" / " + sumTodo);
+
+        return 100 * sumDone / sumTodo;
     }
 
     public void setupTabLayout() {

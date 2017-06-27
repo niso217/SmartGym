@@ -305,6 +305,47 @@ public class ExerciseRepo {
 
     }
 
+    public ArrayList<LastExercise> getTodayExercise(String user_id, String name) {
+        LastExercise lastExercise;
+        ArrayList<LastExercise> LastExercises = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = " SELECT " + Visits.TABLE + "." + Visits.KEY_DATE
+                + ", " + Sets.TABLE + "." + Sets.KEY_WEIGHT
+                + ", " + Sets.TABLE + "." + Sets.KEY_COUNT
+                + ",COUNT(*) " + Sets.TABLE
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " AND " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME + "=" + "'" + name + "'"
+                + " AND " + Visits.TABLE + "." + Visits.KEY_DATE + "=DATE('now')"
+                + " GROUP BY " + Visits.TABLE + "." + Visits.KEY_DATE + "," + Sets.TABLE + "." + Sets.KEY_WEIGHT + "," + Sets.TABLE + "." + Sets.KEY_COUNT;
+
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                lastExercise = new LastExercise();
+                lastExercise.setDate(cursor.getString(cursor.getColumnIndex(Visits.KEY_DATE)));
+                lastExercise.setWeight(cursor.getInt(cursor.getColumnIndex(Sets.KEY_WEIGHT)));
+                lastExercise.setCount(cursor.getInt(cursor.getColumnIndex(Sets.KEY_COUNT)));
+                lastExercise.setSets(cursor.getInt(cursor.getColumnIndex(Sets.TABLE)));
+
+                LastExercises.add(lastExercise);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return LastExercises;
+
+    }
+
 
 
 
