@@ -27,20 +27,29 @@
         android:orientation="horizontal">
 
         <Button
-            style="?android:attr/buttonBarButtonStyle"
-            android:background="@drawable/selectable_item_background"
+            android:background="@drawable/button"
             android:id="@+id/prev_button"
             android:layout_width="0dp"
             android:layout_weight="1"
+            android:shadowColor="#BADA55"
+            android:textColor="@color/circular_progress_default_progress"
+        android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
             android:layout_height="wrap_content"
             android:text="@string/prev" />
 
         <Button
-            style="?android:attr/buttonBarButtonStyle"
-            android:background="@drawable/selectable_item_background"
+            android:background="@drawable/button"
             android:id="@+id/next_button"
             android:layout_width="0dp"
             android:layout_weight="1"
+            android:shadowColor="#BADA55"
+            android:textColor="@color/circular_progress_default_progress"
+
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
             android:layout_height="wrap_content"
             android:text="@string/next" />
 

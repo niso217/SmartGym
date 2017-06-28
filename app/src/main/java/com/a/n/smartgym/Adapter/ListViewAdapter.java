@@ -1,4 +1,4 @@
-package com.a.n.smartgym.multicolumnlistview;
+package com.a.n.smartgym.Adapter;
 
 import java.util.ArrayList;
 import android.app.Activity;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.a.n.smartgym.Object.DayPlanTable;
 import com.a.n.smartgym.R;
 
 /**
@@ -15,11 +16,11 @@ import com.a.n.smartgym.R;
  * @author anfer
  * 
  */
-public class listviewAdapter extends BaseAdapter {
-	public ArrayList<Model> productList;
+public class ListViewAdapter extends BaseAdapter {
+	public ArrayList<DayPlanTable> productList;
 	Activity activity;
 
-	public listviewAdapter(Activity activity, ArrayList<Model> productList) {
+	public ListViewAdapter(Activity activity, ArrayList<DayPlanTable> productList) {
 		super();
 		this.activity = activity;
 		this.productList = productList;
@@ -66,7 +67,7 @@ public class listviewAdapter extends BaseAdapter {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		Model item = productList.get(position);
+		DayPlanTable item = productList.get(position);
 		holder.mExercise_name.setText(item.getExercise_name().toString());
 		holder.mNumber_sets.setText(item.getNumber_sets().toString());
 		holder.mNumber_reps.setText(item.getNumber_reps().toString());

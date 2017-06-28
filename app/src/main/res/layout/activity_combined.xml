@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:orientation="vertical">
 
     <LinearLayout
@@ -14,37 +15,63 @@
             android:id="@+id/spinner2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal" />
+            android:gravity="center_horizontal"
+            android:textAlignment="center" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/border"
             android:gravity="center_horizontal">
 
             <Button
                 android:id="@+id/week"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="7d" />
+                android:layout_margin="5dp"
+                android:layout_weight="0.3"
+                android:background="@drawable/button_curve"
+                android:shadowColor="#BADA55"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="25"
+                android:text="7d"
+                android:textColor="@color/circular_progress_default_progress" />
 
             <Button
                 android:id="@+id/month"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="4w" />
+                android:layout_margin="5dp"
+                android:layout_weight="0.3"
+                android:background="@drawable/button_curve"
+                android:shadowColor="#BADA55"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="25"
+                android:text="4w"
+                android:textColor="@color/circular_progress_default_progress" />
 
             <Button
                 android:id="@+id/year"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="12m" />
+                android:layout_margin="5dp"
+                android:layout_weight="0.3"
+                android:background="@drawable/button_curve"
+                android:shadowColor="#BADA55"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="25"
+                android:text="12m"
+                android:textColor="@color/circular_progress_default_progress" />
+
         </LinearLayout>
 
     </LinearLayout>
 
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart1"
+        android:background="@color/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
     

@@ -1,4 +1,4 @@
-package com.a.n.smartgym.Graphs;
+package com.a.n.smartgym.Fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

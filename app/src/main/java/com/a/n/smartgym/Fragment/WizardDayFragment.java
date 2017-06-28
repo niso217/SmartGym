@@ -10,15 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
-import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Utils.Constants;
 import com.a.n.smartgym.DBModel.Plan;
 import com.a.n.smartgym.DBRepo.PlanRepo;
-import com.a.n.smartgym.Views.NumberPickerDialog;
-import com.a.n.smartgym.multicolumnlistview.MainActivity2;
 
 import java.util.UUID;
 
@@ -78,7 +74,7 @@ public class WizardDayFragment extends Fragment implements RadioGroup.OnCheckedC
     }
 
     private void ShowDialog(String day){
-        MainActivity2 dialog = new MainActivity2();
+        DayPlanDialogFragment dialog = new DayPlanDialogFragment();
         dialog.show(getActivity().getSupportFragmentManager(),day);
         isPlanDayExist(mSelectedDay);
 

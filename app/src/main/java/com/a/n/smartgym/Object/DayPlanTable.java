@@ -1,11 +1,11 @@
-package com.a.n.smartgym.multicolumnlistview;
+package com.a.n.smartgym.Object;
 
 /**
  * 
  * @author anfer
  * 
  */
-public class Model {
+public class DayPlanTable {
 
 	private String exercise_name;
 	private String category;
@@ -13,7 +13,7 @@ public class Model {
 	private String number_reps;
 	private String weight;
 
-	public Model(String exercise_name, String category, String number_sets, String number_reps, String weight) {
+	public DayPlanTable(String exercise_name, String category, String number_sets, String number_reps, String weight) {
 		this.exercise_name = exercise_name;
 		this.category = category;
 		this.number_sets = number_sets;

@@ -1,38 +1,26 @@
-package com.a.n.smartgym.multicolumnlistview;
+package com.a.n.smartgym.Fragment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import android.app.Dialog;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
-import android.support.v7.app.ActionBarActivity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.NumberPicker;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import com.a.n.smartgym.Adapter.ListViewAdapter;
 import com.a.n.smartgym.DBModel.MuscleExercise;
 import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
+import com.a.n.smartgym.Object.DayPlanTable;
 import com.a.n.smartgym.R;
 
-public class MainActivity2 extends DialogFragment {
+public class DayPlanDialogFragment extends DialogFragment {
 
-	private ArrayList<Model> productList;
+	private ArrayList<DayPlanTable> productList;
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -44,7 +32,7 @@ public class MainActivity2 extends DialogFragment {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		dialog.getWindow().setLayout(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-		dialog.setContentView(R.layout.activity_main3);
+		dialog.setContentView(R.layout.fragment_dayplan);
 
         dialog.getWindow().setBackgroundDrawable(
                 new ColorDrawable(Color.TRANSPARENT));
@@ -53,14 +41,16 @@ public class MainActivity2 extends DialogFragment {
 
 		//dialog.show();
 
-		productList = new ArrayList<Model>();
+		productList = new ArrayList<DayPlanTable>();
 		ListView lview = (ListView) dialog.findViewById(R.id.listview);
-		listviewAdapter adapter = new listviewAdapter(getActivity(), productList);
+		ListViewAdapter adapter = new ListViewAdapter(getActivity(), productList);
 		lview.setAdapter(adapter);
 
 		populateList(getTag());
 
 		adapter.notifyDataSetChanged();
+
+		if (productList.size()==1) dismiss();
 
 		return dialog;
 	}
@@ -68,12 +58,12 @@ public class MainActivity2 extends DialogFragment {
 
 	private void populateList(String day) {
 
-		Model item;
+		DayPlanTable item;
 
 		Map<String, ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(day);
 
 		productList.add(
-				new Model(
+				new DayPlanTable(
 						"NAME",
 						"",
 						"SETS",
@@ -92,7 +82,7 @@ public class MainActivity2 extends DialogFragment {
 					// checks for null
 					if (muscleExercise != null) {
 						productList.add(
-								new Model(
+								new DayPlanTable(
 										muscleExercise.getExerciseid(),
 										key,
 										muscleExercise.getNumberofsets(),

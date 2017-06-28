@@ -2,20 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".Activity.MainActivity">
 
 
-    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <com.prolificinteractive.materialcalendarview.MaterialCalendarView xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/calendar_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:mcv_showOtherDates="all"
+        android:background="@color/background"
+        app:mcv_allowClickDaysOutsideCurrentMonth="false"
         app:mcv_selectionColor="@color/system_green"
+        app:mcv_dateTextAppearance="@style/TextAppearance.MyCustomDay"
+        app:mcv_arrowColor="@android:color/white"
+        app:mcv_headerTextAppearance="@style/TextAppearance.MyCustomDay"
+        app:mcv_weekDayTextAppearance="@style/TextAppearance.MyCustomDay"
+        app:mcv_showOtherDates="defaults"
         />
 
 

@@ -4,92 +4,110 @@
     android:layout_height="match_parent"
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal"
+    android:background="@color/background"
     android:orientation="vertical">
+
 
     <RadioGroup
         android:id="@+id/RGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="20dp"
+        android:gravity="center"
+        android:orientation="vertical">
 
         <RadioButton
             android:id="@+id/sunday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="10dp"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
             android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Sunday"
-            android:theme="@style/MyRadioButton" />
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="SUNDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/monday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Monday"
-            android:theme="@style/MyRadioButton" />
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="MONDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/tuesday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Tuesday"
-            android:theme="@style/MyRadioButton" />
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="TUESDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/wednesday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
             android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Wednesday"
-            android:theme="@style/MyRadioButton" />
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="WEDNESDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/thursday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Thursday"
-            android:theme="@style/MyRadioButton" />
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="THURSDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/friday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Friday"
-            android:theme="@style/MyRadioButton" />
+            android:layout_margin="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="FRIDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
 
         <RadioButton
             android:id="@+id/saturday"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Saturday"
-            android:theme="@style/MyRadioButton" />
-
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="SATURDAY"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
     </RadioGroup>
 
 

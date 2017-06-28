@@ -129,6 +129,11 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
+    <style name="TextAppearance.MyCustomDay" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@drawable/my_custom_day_color</item>
+    </style>
+
 
 
 

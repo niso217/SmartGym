@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,12 +103,12 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
 
         mChart = (CombinedChart) view.findViewById(R.id.chart1);
         mChart.getDescription().setEnabled(false);
-        mChart.setBackgroundColor(Color.WHITE);
         mChart.setDrawGridBackground(false);
         mChart.setDrawBarShadow(false);
         mChart.setHighlightFullBarEnabled(false);
         mMarkerView.setChartView(mChart); // For bounds control
         mChart.setMarker(mMarkerView);
+        mChart.setGridBackgroundColor(ContextCompat.getColor(getContext(), R.color.background));
 
         // draw bars behind lines
 //        mChart.setDrawOrder(new CombinedChart.DrawOrder[]{
@@ -124,10 +125,13 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         YAxis rightAxis = mChart.getAxisRight();
         rightAxis.setDrawGridLines(false);
         rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        rightAxis.setTextColor(Color.WHITE);
 
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setDrawGridLines(false);
         leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        leftAxis.setTextColor(Color.WHITE);
+
 
         mXAxis = mChart.getXAxis();
         mXAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -136,6 +140,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         mXAxis.setAxisMinimum(0f);
         mXAxis.setLabelRotationAngle(60);
         mXAxis.setAvoidFirstLastClipping(true);
+        mXAxis.setTextColor(Color.WHITE);
         mCombinedData = new CombinedData();
         mCombinedData.setValueTypeface(mTfLight);
 

@@ -56,7 +56,7 @@ import com.a.n.smartgym.Fragment.WizardMuscleFragment;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Services.BluetoothLeService;
 import com.a.n.smartgym.Graphs.CombinedChartActivity;
-import com.a.n.smartgym.Graphs.VisitsFragment;
+import com.a.n.smartgym.Fragment.VisitsFragment;
 import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
 import com.a.n.smartgym.Listener.BluetoothListener;
