@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relativeLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:background="#3d3d3d"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.7"
+        android:background="@drawable/cell_shape"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="name"
+        android:textColor="@color/circular_progress_default_progress"></TextView>
+
+    <TextView
+        android:id="@+id/sets"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:background="@drawable/cell_shape"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="sets"
+        android:textColor="@color/circular_progress_default_progress"></TextView>
+
+    <TextView
+        android:id="@+id/reps"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:background="@drawable/cell_shape"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="reps"
+        android:textColor="@color/circular_progress_default_progress" />
+
+    <TextView
+        android:id="@+id/weight"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:background="@drawable/cell_shape"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="weight"
+        android:textColor="@color/circular_progress_default_progress"></TextView>
+
+</LinearLayout>

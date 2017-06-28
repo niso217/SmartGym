@@ -42,7 +42,6 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <activity android:name=".barcode.BarcodeCaptureActivity" />
 
         <service
             android:name=".Services.BluetoothLeService"
