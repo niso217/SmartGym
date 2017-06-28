@@ -3,6 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center_vertical|center_horizontal"
+    android:background="@drawable/corner_radius"
     android:orientation="vertical">
 
     <LinearLayout
@@ -16,6 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:textColor="@color/circular_progress_default_progress"
             android:gravity="center_horizontal"
             android:text="Sets" />
 
@@ -23,6 +25,7 @@
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/circular_progress_default_progress"
             android:layout_weight="1"
             android:gravity="center_horizontal"
             android:text="Reps" />
@@ -31,6 +34,7 @@
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/circular_progress_default_progress"
             android:layout_weight="1"
             android:gravity="center_horizontal"
             android:text="Weight" />
@@ -40,6 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_margin="5dp"
         android:gravity="center_horizontal">
 
         <NumberPicker
@@ -56,6 +61,7 @@
             android:layout_weight="0"
             android:gravity="center_vertical"
             android:text="X"
+            android:textColor="@color/circular_progress_default_progress"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -73,6 +79,7 @@
             android:layout_weight="0"
             android:gravity="center_vertical"
             android:text="X"
+            android:textColor="@color/circular_progress_default_progress"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -87,21 +94,37 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_close"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancel" />
+            android:background="@drawable/buttonshape"
+            android:text="Cancel"
+            android:shadowColor="#BADA55"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
+            android:textColor="@color/circular_progress_default_progress" />
+
+        <Space
+            android:layout_width="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/btn_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Submit" />
+            android:background="@drawable/buttonshape"
+            android:text="Submit"
+            android:shadowColor="#BADA55"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="25"
+            android:textColor="@color/circular_progress_default_progress" />
 
     </LinearLayout>
 

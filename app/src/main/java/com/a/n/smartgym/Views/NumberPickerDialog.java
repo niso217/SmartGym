@@ -8,6 +8,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -40,8 +42,8 @@ public class NumberPickerDialog extends DialogFragment{
         dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         dialog.setContentView(R.layout.custom_number_picker);
-//        dialog.getWindow().setBackgroundDrawable(
-//                new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setBackgroundDrawable(
+                new ColorDrawable(Color.TRANSPARENT));
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
         numberPickerSets = (NumberPicker) dialog.findViewById(R.id.np_sets);

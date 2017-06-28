@@ -13,11 +13,14 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -36,9 +39,10 @@ public class MainActivity2 extends DialogFragment {
 
 		final Dialog dialog = new Dialog(getActivity());
 
-		dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+//		dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 		dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		dialog.getWindow().setLayout(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		dialog.setContentView(R.layout.activity_main3);
 
@@ -67,6 +71,15 @@ public class MainActivity2 extends DialogFragment {
 		Model item;
 
 		Map<String, ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(day);
+
+		productList.add(
+				new Model(
+						"NAME",
+						"",
+						"SETS",
+						"REPS",
+						"WEIGHT"
+				));
 
 		for (String key : exercises.keySet()) {
 

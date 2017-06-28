@@ -2,66 +2,61 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/corner_radius"
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/relativeLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="@color/circular_progress_default_progress"
-        android:gravity="center_horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.7"
-            android:gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="NAME"
-            android:textColor="#ffffff"></TextView>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.15"
-            android:gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="S"
-            android:textColor="#ffffff"></TextView>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.1"
-            android:gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="R"
-            android:textColor="#ffffff">
-
-        </TextView>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.1"
-            android:gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="W"
-            android:textColor="#ffffff">
-
-        </TextView>
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/listview"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@null"></ListView>
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="vertical">
+
+
+        <ListView
+            android:id="@+id/listview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@null"></ListView>
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="center_horizontal"-->
+            <!--android:layout_margin="5dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:orientation="horizontal">-->
+
+            <!--<Button-->
+                <!--android:id="@+id/btn_close"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@drawable/buttonshape"-->
+                <!--android:shadowColor="#BADA55"-->
+                <!--android:shadowDx="0"-->
+                <!--android:shadowDy="0"-->
+                <!--android:shadowRadius="25"-->
+                <!--android:text="Cancel"-->
+                <!--android:textColor="@color/circular_progress_default_progress" />-->
+
+            <!--<Space-->
+                <!--android:layout_width="10dp"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_weight="1" />-->
+
+            <!--<Button-->
+                <!--android:id="@+id/btn_submit"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@drawable/buttonshape"-->
+                <!--android:shadowColor="#BADA55"-->
+                <!--android:shadowDx="0"-->
+                <!--android:shadowDy="0"-->
+                <!--android:shadowRadius="25"-->
+                <!--android:text="Submit"-->
+                <!--android:textColor="@color/circular_progress_default_progress" />-->
+
+        <!--</LinearLayout>-->
+
+    </LinearLayout>
 
 </LinearLayout>
