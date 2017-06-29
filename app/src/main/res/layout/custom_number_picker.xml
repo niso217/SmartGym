@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical|center_horizontal"
     android:background="@drawable/corner_radius"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <LinearLayout
@@ -47,11 +48,17 @@
         android:layout_margin="5dp"
         android:gravity="center_horizontal">
 
-        <NumberPicker
+        <com.shawnlin.numberpicker.NumberPicker
             android:id="@+id/np_sets"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0" />
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            app:np_dividerColor="@color/system_green"
+            app:np_selectedTextColor="@color/system_green"
+            app:np_textColor="@color/system_green"
+            app:np_textSize="20dp"
+            />
 
         <TextView
             android:id="@+id/textView"
@@ -65,11 +72,17 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <NumberPicker
+        <com.shawnlin.numberpicker.NumberPicker
             android:id="@+id/np_reps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0" />
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            app:np_dividerColor="@color/system_green"
+            app:np_selectedTextColor="@color/system_green"
+            app:np_textColor="@color/system_green"
+            app:np_textSize="20dp"
+            />
 
         <TextView
             android:id="@+id/textView2"
@@ -83,10 +96,18 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <NumberPicker
+        <com.shawnlin.numberpicker.NumberPicker
             android:id="@+id/np_weight"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            app:np_dividerColor="@color/system_green"
+            app:np_selectedTextColor="@color/system_green"
+            app:np_textColor="@color/system_green"
+            app:np_textSize="20dp"
+            />
+
 
 
     </LinearLayout>

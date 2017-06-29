@@ -90,5 +90,6 @@ dependencies {
     minSdkJellybeanCompile 'com.firebaseui:firebase-ui-auth:1.0.0'
     compile 'com.daimajia.numberprogressbar:library:1.4@aar'
     compile 'devlight.io:arcprogressstackview:1.0.4'
+    compile 'com.shawnlin:number-picker:2.4.4'
 }
 apply plugin: 'com.google.gms.google-services'

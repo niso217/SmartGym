@@ -17,7 +17,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.NumberPicker;
+import com.shawnlin.numberpicker.NumberPicker;
 
 import com.a.n.smartgym.Listener.onSubmitListener;
 import com.a.n.smartgym.R;
@@ -25,6 +25,7 @@ import com.a.n.smartgym.R;
 public class NumberPickerDialog extends DialogFragment{
     Button mSubmit, mClose;
     NumberPicker numberPickerSets,numberPickerReps,numberPickerWeight;
+
     public onSubmitListener mListener;
 
 

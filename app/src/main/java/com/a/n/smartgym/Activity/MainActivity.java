@@ -47,6 +47,7 @@ import android.widget.Toast;
 
 import com.a.n.smartgym.Fragment.ExercisesFragment;
 import com.a.n.smartgym.Fragment.MyDayFragment;
+import com.a.n.smartgym.Fragment.NewExerciseFragment;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
 import com.a.n.smartgym.Fragment.SettingsDialogFragment;
@@ -205,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements
             //Restore the fragment's instance
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
-            performIdentifierAction(R.id.my_day);
+            performIdentifierAction(R.id.exercise);
         }
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
@@ -493,6 +494,11 @@ public class MainActivity extends AppCompatActivity implements
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("My Day");
                 break;
+            case R.id.exercise:
+                mCurrentFragment = new NewExerciseFragment();
+                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+                mToolbar.setTitle("Exercise");
+                break;
             case R.id.device_day_average:
                 mCurrentFragment = new CombinedChartActivity();
                 bundle.putInt("type", Constants.SUMMARY);
@@ -513,14 +519,12 @@ public class MainActivity extends AppCompatActivity implements
                 mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
-
                 break;
             case R.id.visits:
                 mCurrentFragment = new VisitsFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
                 break;
-
             case R.id.program:
                 mCurrentFragment = new WizardFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
