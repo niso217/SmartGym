@@ -47,7 +47,7 @@ import android.widget.Toast;
 
 import com.a.n.smartgym.Fragment.ExercisesFragment;
 import com.a.n.smartgym.Fragment.MyDayFragment;
-import com.a.n.smartgym.Fragment.NewExerciseFragment;
+import com.a.n.smartgym.Fragment.ExerciseFragmentNew;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
 import com.a.n.smartgym.Fragment.SettingsDialogFragment;
@@ -495,7 +495,7 @@ public class MainActivity extends AppCompatActivity implements
                 mToolbar.setTitle("My Day");
                 break;
             case R.id.exercise:
-                mCurrentFragment = new NewExerciseFragment();
+                mCurrentFragment = new ExerciseFragmentNew();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("Exercise");
                 break;

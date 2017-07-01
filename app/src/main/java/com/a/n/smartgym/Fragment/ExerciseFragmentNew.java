@@ -2,7 +2,6 @@ package com.a.n.smartgym.Fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -13,26 +12,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.a.n.smartgym.Adapter.ViewPagerAdapter;
-import com.a.n.smartgym.DBModel.MuscleExercise;
-import com.a.n.smartgym.DBRepo.ExerciseRepo;
-import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
-import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
-import com.google.firebase.auth.FirebaseAuth;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-
-import devlight.io.library.ArcProgressStackView;
 
 /**
  * Created by DAT on 9/1/2015.
  */
-public class NewExerciseFragment extends Fragment {
+public class ExerciseFragmentNew extends Fragment {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
@@ -41,7 +30,7 @@ public class NewExerciseFragment extends Fragment {
     private int[] bgColors;
     ExerciseProgressFragment mExerciseProgressFragment;
     List<Integer> mCurrentValues;
-    private static final String TAG = NewExerciseFragment.class.getSimpleName();
+    private static final String TAG = ExerciseFragmentNew.class.getSimpleName();
     private ExerciseFragmentTab mExerciseFragmentTab;
     private ExerciseFragmentTab mExerciseFragmentTab2;
 

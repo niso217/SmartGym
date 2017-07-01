@@ -36,7 +36,7 @@ public class ExerciseFragmentTab extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_dynamictab, container, false);
+        View view = inflater.inflate(R.layout.fragment_exercise_tab, container, false);
         Bundle bundle = getArguments();
 
 
