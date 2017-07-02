@@ -3,7 +3,6 @@ package com.a.n.smartgym.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +10,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.a.n.smartgym.DBModel.MuscleExercise;
-import com.a.n.smartgym.DBRepo.ExerciseRepo;
-import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Views.ExerciseLinearLayout;
+import com.a.n.smartgym.Views.MyDayLinearLayout;
 import com.daimajia.numberprogressbar.NumberProgressBar;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 
@@ -26,8 +23,8 @@ import java.util.ArrayList;
 public class ExerciseFragmentTab extends Fragment {
 
     private static final String TAG = ExerciseFragmentTab.class.getSimpleName();
-    private LinearLayout mExamplelinearLayout, mLinerLayoutContainer;
-    private TextView mTextViewName;
+    private LinearLayout mLinerLayoutContainer;
+    private TextView tv_num,tv_reps,tv_weight;
     private NumberProgressBar mNumberProgressBar;
     ArrayList<MuscleExercise> muscleExerciseList;
 
@@ -37,36 +34,31 @@ public class ExerciseFragmentTab extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exercise_tab, container, false);
-        Bundle bundle = getArguments();
-
-
         getIDs(view);
-        setEvents();
-
-        buildview();
         return view;
     }
 
 
     private void getIDs(View view) {
-        mExamplelinearLayout = (LinearLayout) view.findViewById(R.id.example);
-        mTextViewName = (TextView) view.findViewById(R.id.exercise_name);
+        tv_num = (TextView) view.findViewById(R.id.tv_num);
+        tv_reps = (TextView) view.findViewById(R.id.tv_reps);
+        tv_weight = (TextView) view.findViewById(R.id.tv_weight);
         mLinerLayoutContainer = (LinearLayout) view.findViewById(R.id.linear_parent);
-        mNumberProgressBar = (NumberProgressBar) view.findViewById(R.id.number_progress_bar);
-    }
-
-    private void setEvents() {
-
     }
 
 
-    public void buildview() {
 
 
-            ExerciseLinearLayout exercisesFragment = new ExerciseLinearLayout(getContext(),R.layout.custom_exercise_tab);
-            exercisesFragment.setLayoutParams(
-                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            mLinerLayoutContainer.addView(exercisesFragment);
+    public void buildview(String num, String reps, String weight) {
+
+        ExerciseLinearLayout exercisesFragment = new ExerciseLinearLayout(getContext());
+        exercisesFragment.setLayoutParams(
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        exercisesFragment.setTv_num(num);
+        exercisesFragment.setTv_reps(reps);
+        exercisesFragment.setTv_weight(weight);
+
+        mLinerLayoutContainer.addView(exercisesFragment);
 
 
 

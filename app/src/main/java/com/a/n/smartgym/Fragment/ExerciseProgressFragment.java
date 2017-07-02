@@ -5,11 +5,16 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.TextView;
 
 import com.a.n.smartgym.R;
 
@@ -23,12 +28,15 @@ import static devlight.io.library.ArcProgressStackView.Model;
  * Created by GIGAMOLE on 9/21/16.
  */
 
-public class ExerciseProgressFragment extends Fragment {
+public class ExerciseProgressFragment extends Fragment  {
 
     private int mCounter;
-    private int mModelCount = 4;
+    private int mModelCount = 3;
     private ValueAnimator valueAnimator;
     private int mCurrentIndex = -1;
+    private TextView tv_sets,tv_reps,tv_rest;
+    private static final String TAG = ExerciseProgressFragment.class.getSimpleName();
+
 
     private ArcProgressStackView mArcProgressStackView;
 
@@ -40,10 +48,14 @@ public class ExerciseProgressFragment extends Fragment {
 
         mArcProgressStackView = (ArcProgressStackView) view.findViewById(R.id.apsv_presentation);
         mArcProgressStackView.setShadowColor(Color.argb(200, 0, 0, 0));
-        mArcProgressStackView.setAnimationDuration(1000);
-        mArcProgressStackView.setSweepAngle(270);
+        mArcProgressStackView.setAnimationDuration(60000);
+        mArcProgressStackView.setSweepAngle(300);
 
-        final String[] stringColors = getResources().getStringArray(R.array.devlight);
+        tv_sets = (TextView) view.findViewById(R.id.tv_sets);
+        tv_reps = (TextView) view.findViewById(R.id.tv_reps);
+        tv_rest = (TextView) view.findViewById(R.id.tv_rest);
+
+        final String[] stringColors = getResources().getStringArray(R.array.progress);
         final String[] stringBgColors = getResources().getStringArray(R.array.bg);
 
         final int[] colors = new int[mModelCount];
@@ -55,50 +67,35 @@ public class ExerciseProgressFragment extends Fragment {
 
 
         final ArrayList<ArcProgressStackView.Model> models = new ArrayList<>();
-        models.add(new Model("STRATEGY", 1, bgColors[0], colors[0]));
-        models.add(new Model("DESIGN", 1, bgColors[1], colors[1]));
-        models.add(new Model("DEVELOPMENT", 1, bgColors[2], colors[2]));
-        models.add(new Model("QA", 1, bgColors[3], colors[3]));
+        models.add(new Model("SETS", 1, bgColors[0], colors[0]));
+        models.add(new Model("REPS", 1, bgColors[1], colors[1]));
+        models.add(new Model("REST", 1, bgColors[2], colors[2]));
         mArcProgressStackView.setModels(models);
 
         setUpAnimation();
 
 
-
         return view;
     }
 
+
+
     public void setUpAnimation() {
         valueAnimator = ValueAnimator.ofFloat(1.0F, 105.0F);
-        valueAnimator.setDuration(500);
-        valueAnimator.setStartDelay(0);
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
         valueAnimator.setRepeatCount(mModelCount - 1);
+
+    }
+
+    private void addAnimationListener(){
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(final Animator animation) {
                 animation.removeListener(this);
-                animation.addListener(this);
-                mCounter = 0;
-
-//                for (final Model model : mArcProgressStackView.getModels()) model.setProgress(1);
-//                mArcProgressStackView.animateProgress();
-            }
-
-            @Override
-            public void onAnimationRepeat(final Animator animation) {
-                mCounter++;
-            }
-        });
-
-        addUpdateListener();
-
-
-        mArcProgressStackView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
+                Log.d(TAG,"Animation Finished");
 
             }
+
         });
     }
 
@@ -106,41 +103,45 @@ public class ExerciseProgressFragment extends Fragment {
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(final ValueAnimator animation) {
-                if (mCurrentIndex > -1) {
                     mArcProgressStackView.getModels().get(mCurrentIndex)
                             .setProgress((Float) animation.getAnimatedValue());
                     mArcProgressStackView.postInvalidate();
-                } else {
-                    for (final Model model : mArcProgressStackView.getModels())
-                        mArcProgressStackView.animateProgress();
-                }
-
+                    Log.d(TAG,mArcProgressStackView.getModels().get(mCurrentIndex).getProgress()+"");
             }
         });
     }
 
-    public void setModelCount(int size) {
-        mModelCount = size;
+    public void Animate(int index , float from , float to, long duration)
+    {
+        //valueAnimator.setDuration(duration);
+        blink(tv_rest);
+        SetProgress(index,from);
+        setValueAnimator(from,to);
+        SetCurrentIndex(index);
+        startAnimation();
     }
 
-    public void setValueAnimator(float limit) {
-        valueAnimator = ValueAnimator.ofFloat(1.0F, limit);
+
+
+    public void setValueAnimator(float from, float to) {
+        valueAnimator = ValueAnimator.ofFloat(from, to);
+        valueAnimator.setDuration(10000);
         addUpdateListener();
+        addAnimationListener();
 
     }
+
 
     public float getProgress(int index) {
         return mArcProgressStackView.getModels().get(index).getProgress();
     }
 
-    public void SetProgress(int index, long progress) {
+    public void SetProgress(int index, float progress) {
         mArcProgressStackView.getModels().get(index).setProgress(progress);
     }
 
-    public void AddModel(ArrayList<Model> model) {
-        mArcProgressStackView.setModels(model);
 
-    }
+
 
 
     public void SetCurrentIndex(int index) {
@@ -152,6 +153,16 @@ public class ExerciseProgressFragment extends Fragment {
         if (valueAnimator.isRunning()) return;
         if (mArcProgressStackView.getProgressAnimator().isRunning()) return;
         valueAnimator.start();
+    }
+
+    private void blink(final TextView txt){
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(200); //You can manage the blinking time with this parameter
+        anim.setStartOffset(20);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        txt.startAnimation(anim);
+
     }
 
 

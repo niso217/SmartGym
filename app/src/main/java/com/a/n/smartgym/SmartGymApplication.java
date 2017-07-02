@@ -100,7 +100,7 @@ public class SmartGymApplication extends Application {
 
             MuscleRepo muscleRepo = new MuscleRepo();
             muscleRepo.BulkMuscle(list);
-//
+////
 //            SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
 //            db.execSQL("DROP TABLE IF EXISTS " + Visits.TABLE);
 //            db.execSQL("DROP TABLE IF EXISTS " + Exercise.TABLE);

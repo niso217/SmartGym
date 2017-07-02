@@ -114,6 +114,25 @@ public class PlanMuscleRepo {
             return result;
     }
 
+    public boolean isExerciseExist(String day, String exercise) {
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String planmuscleid = "";
+        String selectQuery = " SELECT " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID
+                + " FROM " + Plan.TABLE
+                + " INNER JOIN " + PlanMuscle.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
+                + " INNER JOIN " + MuscleExercise.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
+                + " WHERE " + MuscleExercise.KEY_EXERCISE_ID + "=" + "'" + exercise + "'"
+                + " AND " + Plan.TABLE + "." + Plan.KEY_DATE + "=" + "'" + day + "'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        boolean ans = cursor.getCount() > 0;
+
+        return ans;
+
+    }
+
     public boolean isMainMuscleExist(String day, String muscle) {
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
@@ -163,11 +182,7 @@ public class PlanMuscleRepo {
         }
         else
         {
-            PlanMuscle planMuscle = new PlanMuscle();
-            planMuscle.setPlanmuscleid(UUID.randomUUID().toString());
-            planMuscle.setPlanid(day);
-            planMuscle.setMuscleid(muscle);
-            insert(planMuscle);
+            addExerciseToPlan(day, muscle);
 
         }
         cursor.close();
@@ -175,6 +190,15 @@ public class PlanMuscleRepo {
 
         return ans;
     }
+
+    public void addExerciseToPlan(String day, String muscle) {
+        PlanMuscle planMuscle = new PlanMuscle();
+        planMuscle.setPlanmuscleid(UUID.randomUUID().toString());
+        planMuscle.setPlanid(day);
+        planMuscle.setMuscleid(muscle);
+        insert(planMuscle);
+    }
+
 
 //    public List<MuscleItem> getMainMuscleByDay(String day) {
 //        List<MuscleItem> main_muscles = new ArrayList<>();

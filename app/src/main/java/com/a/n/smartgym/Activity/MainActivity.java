@@ -35,6 +35,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -45,15 +46,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
+import com.a.n.smartgym.DBRepo.PlanMuscleRepo;
+import com.a.n.smartgym.DBRepo.PlanRepo;
 import com.a.n.smartgym.Fragment.ExercisesFragment;
 import com.a.n.smartgym.Fragment.MyDayFragment;
 import com.a.n.smartgym.Fragment.ExerciseFragmentNew;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
+import com.a.n.smartgym.Fragment.WizardExerciseFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
 import com.a.n.smartgym.Fragment.SettingsDialogFragment;
 import com.a.n.smartgym.Fragment.SettingsFragment;
 import com.a.n.smartgym.Fragment.WebChartFragment;
 import com.a.n.smartgym.Fragment.WizardMuscleFragment;
+import com.a.n.smartgym.Listener.onSubmitListener;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Services.BluetoothLeService;
 import com.a.n.smartgym.Graphs.CombinedChartActivity;
@@ -67,6 +73,7 @@ import com.a.n.smartgym.DBModel.Muscle;
 import com.a.n.smartgym.DBModel.Visits;
 import com.a.n.smartgym.DBRepo.MuscleRepo;
 import com.a.n.smartgym.DBRepo.VisitsRepo;
+import com.a.n.smartgym.Views.NumberPickerDialog;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -78,6 +85,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
@@ -121,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements
     boolean mPermissionInProgress;
     private Toolbar mToolbar;
     private Menu mMenu;
+    private String mDayOfTheWeek;
 
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
@@ -200,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements
         mBluetoothScanner = new BluetoothScanner(this);
 
 
+        mDayOfTheWeek = setTodayDay();
+
         InitializeNFC();
 
         if (savedInstanceState != null) {
@@ -214,9 +225,15 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    private String setTodayDay(){
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+        java.util.Date d = new java.util.Date();
+        return  sdf.format(d);
+    }
+
     public void performIdentifierAction(int id) {
         mNavigationView.getMenu().performIdentifierAction(id, 0);
-        StartBLEScan(false,false);
+        StartBLEScan(false, false);
 
     }
 
@@ -598,8 +615,45 @@ public class MainActivity extends AppCompatActivity implements
         finish();
     }
 
+    private void buildDialog(final String day, final String exercise) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice) {
+                switch (choice) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        new PlanMuscleRepo().addExerciseToPlan(day, exercise);
+                        NumberPickerDialog numberPickerDialog = new NumberPickerDialog();
+                        numberPickerDialog.setOnSubmitListener(new onSubmitListener() {
+                            @Override
+                            public void setOnSubmitListener(int sets, int reps, int weight) {
+                                String DayUUID = new PlanRepo().getDayUUID(day);
+                                String MainMuscle = new MuscleRepo().getMainMuscle(exercise);
+                                new MuscleExerciseRepo().insertSelection(DayUUID, exercise, MainMuscle, String.valueOf(sets), String.valueOf(reps), String.valueOf(weight));
+                                ContinueToExercise();
+                            }
+
+                            @Override
+                            public void setOnDismiss() {
+
+                            }
+                        });
+                        numberPickerDialog.show(getFragmentManager(), "");
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Add " + exercise + " To " + day)
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+    }
+
 
     private void StartExercise(Tag tag) {
+
 
         if (mBluetoothDeviceAddress == null && mCurrentMode != Constants.DEVICE_NAME) {
             showScanBLEDialog();
@@ -619,6 +673,17 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
+        Muscle exercise = new MuscleRepo().getExerciseByID(mCurrentTagId,mDayOfTheWeek);
+        boolean isExist = new PlanMuscleRepo().isExerciseExist(mDayOfTheWeek, exercise.getName());
+        if (!isExist) {
+            buildDialog(mDayOfTheWeek, exercise.getName());
+        } else
+            ContinueToExercise();
+
+
+    }
+
+    private void ContinueToExercise() {
         hideProgressDialog();
 
         if (mBluetoothLeService.getConnectionState() != Constants.STATE_CONNECTED) {
@@ -631,8 +696,8 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             StartExerciseActivity();
         }
-
     }
+
 
     private void StartBLEScan(boolean showprogress, boolean on) {
         if (showprogress)
@@ -661,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements
             getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
         } else {
             MuscleRepo muscleRepo = new MuscleRepo();
-            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
+            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId,mDayOfTheWeek);
             bundle.putParcelable("muscle", ex);
             //bundle.putParcelable("tag", mCurrentTag);
             mCurrentFragment = new ExercisesFragment();
@@ -744,17 +809,17 @@ public class MainActivity extends AppCompatActivity implements
 
         if (mBluetoothScanner != null)
             //mBluetoothScanner.ChangeFilter(mCurrentMode);
-        switch (mode) {
-            case Constants.DEVICE_NAME:
-                mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
-                mToolbar.setTitle(Constants.DEVICE_NAME);
-                break;
-            case Constants.EMULATOR_NAME:
-                mBluetoothDeviceAddress = null;
-                mToolbar.setTitle("");
-                break;
+            switch (mode) {
+                case Constants.DEVICE_NAME:
+                    mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
+                    mToolbar.setTitle(Constants.DEVICE_NAME);
+                    break;
+                case Constants.EMULATOR_NAME:
+                    mBluetoothDeviceAddress = null;
+                    mToolbar.setTitle("");
+                    break;
 
-        }
+            }
         Log.d(TAG, "Current Mode " + mCurrentMode);
 
     }
@@ -862,5 +927,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 }).create().show();
     }
+
+
 }
 

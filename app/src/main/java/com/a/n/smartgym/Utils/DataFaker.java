@@ -113,7 +113,7 @@ public class DataFaker {
         current_weight =weightinc +increase;
         String ex_name = muscle.get(index);
         MuscleRepo muscleRepo = new MuscleRepo();
-        Muscle ex = muscleRepo.getExerciseByID(ex_name);
+        Muscle ex = muscleRepo.getExerciseByID(ex_name,"");
 
         ExerciseRepo exerciseRepo = new ExerciseRepo();
         Exercise exercise = new Exercise();
@@ -175,13 +175,13 @@ public class DataFaker {
 
 
 
-    public static String RandomMuscle() {
-        ArrayList<String> muscle = new MuscleRepo().getAllMuscleID();
-        String mCurrentTagId = muscle.get(getRandom(0, muscle.size() - 1));
-        MuscleRepo muscleRepo = new MuscleRepo();
-        Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
-        return ex.getName();
-    }
+//    public static String RandomMuscle() {
+//        ArrayList<String> muscle = new MuscleRepo().getAllMuscleID();
+//        String mCurrentTagId = muscle.get(getRandom(0, muscle.size() - 1));
+//        MuscleRepo muscleRepo = new MuscleRepo();
+//        Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId);
+//        return ex.getName();
+//    }
 
     private static void setNewExercise(String session, String scan) {
 

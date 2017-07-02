@@ -2,7 +2,6 @@ package com.a.n.smartgym.Views;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -17,31 +16,38 @@ import com.daimajia.numberprogressbar.NumberProgressBar;
 
 public class ExerciseLinearLayout extends LinearLayout {
 
-    TextView name;
-    NumberProgressBar progressBar;
+    private TextView tv_num,tv_reps,tv_weight;
 
 
-    public void setTitle(String title) {
-        this.name.setText(title);
+
+    public void setTv_num(String num) {
+        this.tv_num.setText(num);
     }
 
-    public void setProgress(int progress) {
-        this.progressBar.setProgress(progress);
+
+    public void setTv_reps(String tv_reps) {
+        this.tv_reps.setText(tv_reps);
     }
 
-    public ExerciseLinearLayout(Context context,int id) {
+
+
+    public void setTv_weight(String tv_weight) {
+        this.tv_weight.setText(tv_weight);
+    }
+
+    public ExerciseLinearLayout(Context context) {
         super(context);
-        init(context,id);
+        init(context,R.layout.custom_exercise_tab);
     }
 
     public ExerciseLinearLayout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context,R.layout.custom_exercise);
+        init(context,R.layout.custom_exercise_tab);
     }
 
     public ExerciseLinearLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context,R.layout.custom_exercise);
+        init(context,R.layout.custom_exercise_tab);
 
     }
 
@@ -51,9 +57,9 @@ public class ExerciseLinearLayout extends LinearLayout {
 
     private void init(Context context, int id) {
         View.inflate(context, id, this);
-        //setDescendantFocusability(FOCUS_BLOCK_DESCENDANTS);
-        name = (TextView) findViewById(R.id.exercise_name);
-        progressBar = (NumberProgressBar) findViewById(R.id.number_progress_bar);
+        tv_num = (TextView) findViewById(R.id.tv_num);
+        tv_reps = (TextView) findViewById(R.id.tv_reps);
+        tv_weight = (TextView) findViewById(R.id.tv_weight);
 
     }
 }

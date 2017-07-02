@@ -5,6 +5,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.a.n.smartgym.DBModel.Exercise;
+import com.a.n.smartgym.DBModel.MuscleExercise;
+import com.a.n.smartgym.DBModel.Plan;
+import com.a.n.smartgym.DBModel.PlanMuscle;
+import com.a.n.smartgym.DBModel.User;
+import com.a.n.smartgym.DBModel.Visits;
 import com.a.n.smartgym.Utils.DatabaseManager;
 import com.a.n.smartgym.DBModel.Muscle;
 
@@ -133,14 +139,45 @@ public class MuscleRepo {
     }
 
 
-    public Muscle getExerciseByID(String id){
+
+    public String getMainMuscle(String sub){
+        String Mainmuscle = "";
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT " + Muscle.TABLE +"." +Muscle.KEY_NAME
+                + " FROM " + Muscle.TABLE
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_NAME + "='"+ sub+ "'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Mainmuscle = cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return Mainmuscle;
+
+    }
+
+
+    public Muscle getExerciseByID(String id, String day){
         Muscle muscle = new Muscle();
         ArrayList<Muscle> muscleArrayList = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery =  " SELECT * "
                 + " FROM " + Muscle.TABLE
-                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'";
+                + " INNER JOIN " + MuscleExercise.TABLE + " ON " + MuscleExercise.TABLE + "." + MuscleExercise.KEY_EXERCISE_ID + "=" + Muscle.TABLE + "." + Muscle.KEY_NAME
+                + " INNER JOIN " + PlanMuscle.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
+                + " INNER JOIN " + Plan.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'"
+                + " AND " + Plan.TABLE +"."+Plan.KEY_DATE + "="+ "'"+day+"'";
+
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -154,6 +191,10 @@ public class MuscleRepo {
                 muscle.setName(cursor.getString(cursor.getColumnIndex(Muscle.KEY_NAME)));
                 muscle.setImage(cursor.getString(cursor.getColumnIndex(Muscle.KEY_IMAGE)));
                 muscle.setDescription(cursor.getString(cursor.getColumnIndex(Muscle.KEY_DESCRIPTION)));
+                muscle.setNum_reps(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_REPS)));
+                muscle.setNum_sets(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_NUM_OF_SETS)));
+                muscle.setWeight(cursor.getString(cursor.getColumnIndex(MuscleExercise.KEY_WEIGHT)));
+
             } while (cursor.moveToNext());
         }
 

@@ -1,11 +1,9 @@
 package com.a.n.smartgym.Fragment;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +14,7 @@ import com.a.n.smartgym.DBModel.MuscleExercise;
 import com.a.n.smartgym.DBRepo.ExerciseRepo;
 import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
-import com.a.n.smartgym.Views.ExerciseLinearLayout;
+import com.a.n.smartgym.Views.MyDayLinearLayout;
 import com.daimajia.numberprogressbar.NumberProgressBar;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -77,7 +75,7 @@ public class DynamicFragmentTab extends Fragment {
 
             Log.d(TAG,"100" + " * " + sumDone +" / " + sumTodo);
 
-            ExerciseLinearLayout exercisesFragment = new ExerciseLinearLayout(getContext(),R.layout.custom_exercise);
+            MyDayLinearLayout exercisesFragment = new MyDayLinearLayout(getContext(),R.layout.custom_exercise);
             exercisesFragment.setTitle(muscleExercise.getExerciseid());
             exercisesFragment.setLayoutParams(
                     new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));

@@ -79,24 +79,6 @@ public class WizardDayFragment extends Fragment implements RadioGroup.OnCheckedC
         isPlanDayExist(mSelectedDay);
 
     }
-//        String text = new MuscleExerciseRepo().MaptoString(new MuscleExerciseRepo().getDayPlan(mSelectedDay));
-//        mSnackbar = Snackbar.make(getView(), "", Snackbar.LENGTH_LONG).setDuration(30000)
-//                .setAction("Retry", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        isPlanDayExist(mSelectedDay);
-//                        //do what ever you want
-//
-//                    }
-//                });
-//
-//        View snackbarView = mSnackbar.getView();
-//        TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
-//        textView.setMaxLines(20);  //set the max lines for textview to show multiple lines
-//        textView.setText(text,TextView.BufferType.SPANNABLE);
-//        textView.setTextSize(13);
-//        textView.setTextColor(getContext().getColor(R.color.circular_progress_default_progress));
-//        mSnackbar.show();
 
 
     private static int countLines(String str){

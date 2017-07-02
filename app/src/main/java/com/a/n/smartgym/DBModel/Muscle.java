@@ -26,6 +26,33 @@ public class Muscle implements Parcelable {
     private String name;
     private String image;
     private String description;
+    private String num_sets;
+    private String num_reps;
+    private String weight;
+
+    public String getNum_sets() {
+        return num_sets;
+    }
+
+    public void setNum_sets(String num_sets) {
+        this.num_sets = num_sets;
+    }
+
+    public String getNum_reps() {
+        return num_reps;
+    }
+
+    public void setNum_reps(String num_reps) {
+        this.num_reps = num_reps;
+    }
+
+    public String getWeight() {
+        return weight;
+    }
+
+    public void setWeight(String weight) {
+        this.weight = weight;
+    }
 
     public String getId() {
         return id;
