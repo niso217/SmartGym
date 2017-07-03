@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements
             //Restore the fragment's instance
             mCurrentFragment = getSupportFragmentManager().getFragment(savedInstanceState, TAG);
         } else {
-            performIdentifierAction(R.id.exercise);
+            performIdentifierAction(R.id.my_day);
         }
 
         bindService(new Intent(this, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
@@ -729,7 +729,7 @@ public class MainActivity extends AppCompatActivity implements
             Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId,mDayOfTheWeek);
             bundle.putParcelable("muscle", ex);
             //bundle.putParcelable("tag", mCurrentTag);
-            mCurrentFragment = new ExercisesFragment();
+            mCurrentFragment = new ExerciseFragmentNew();
             mCurrentFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment, TAG).commit();
         }

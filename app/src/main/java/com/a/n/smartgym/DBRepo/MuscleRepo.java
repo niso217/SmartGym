@@ -144,7 +144,7 @@ public class MuscleRepo {
         String Mainmuscle = "";
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery =  " SELECT " + Muscle.TABLE +"." +Muscle.KEY_NAME
+        String selectQuery =  " SELECT " + Muscle.TABLE +"." +Muscle.KEY_MUSCLE
                 + " FROM " + Muscle.TABLE
                 + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_NAME + "='"+ sub+ "'";
 
@@ -176,7 +176,7 @@ public class MuscleRepo {
                 + " INNER JOIN " + PlanMuscle.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
                 + " INNER JOIN " + Plan.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
                 + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'"
-                + " AND " + Plan.TABLE +"."+Plan.KEY_DATE + "="+ "'"+day+"'";
+                + " AND " + Plan.TABLE +"."+Plan.KEY_DATE + "="+ "'"+day.toLowerCase()+"'";
 
 
         Log.d(TAG, selectQuery);

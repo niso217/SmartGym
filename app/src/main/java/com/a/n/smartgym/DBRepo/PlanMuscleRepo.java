@@ -123,7 +123,7 @@ public class PlanMuscleRepo {
                 + " INNER JOIN " + PlanMuscle.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
                 + " INNER JOIN " + MuscleExercise.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
                 + " WHERE " + MuscleExercise.KEY_EXERCISE_ID + "=" + "'" + exercise + "'"
-                + " AND " + Plan.TABLE + "." + Plan.KEY_DATE + "=" + "'" + day + "'";
+                + " AND " + Plan.TABLE + "." + Plan.KEY_DATE + "=" + "'" + day.toLowerCase() + "'";
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);

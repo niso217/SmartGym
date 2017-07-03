@@ -1,10 +1,13 @@
 package com.a.n.smartgym.Object;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by nirb on 06/06/2017.
  */
 
-public class LastExercise {
+public class LastExercise implements Parcelable {
 
     private int weight;
     private int count;
@@ -50,5 +53,15 @@ public class LastExercise {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
     }
 }

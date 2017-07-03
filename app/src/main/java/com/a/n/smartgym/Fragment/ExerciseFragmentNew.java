@@ -244,7 +244,7 @@ public class ExerciseFragmentNew extends Fragment {
 
 
             if (!CurrentExercisesId.isEmpty() && current != null && !CurrentVisitId.isEmpty()) {
-                BuildLastExString(current.getName());
+                //BuildLastExString(current.getName());
                 setNewExercise(CurrentExercisesId, CurrentVisitId, current.getName());
                 StartNewSetInstance(0, 0);
 
@@ -254,14 +254,19 @@ public class ExerciseFragmentNew extends Fragment {
         }
     }
 
-    private void BuildLastExString(String name) {
-        ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), name);
-        for (int i = 0; i < lastExercise.size(); i++) {
-            LastExercise last = lastExercise.get(i);
-            mExerciseFragmentTabLastSession.buildview(i+1+"",last.getCount()+"",last.getWeight()+"");
-
-        }
-    }
+//    private void BuildLastExString(String name) {
+//        ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), name);
+//        Bundle bundle = new Bundle();
+//        bundle.putParcelableArrayList("data", data);
+//        DynamicFragmentTab fragmentChild = new DynamicFragmentTab();
+//        fragmentChild.setArguments(bundle);
+//        addPage("TAB2",mExerciseFragmentTabLastSession);
+//        for (int i = 0; i < lastExercise.size(); i++) {
+//            LastExercise last = lastExercise.get(i);
+//            //mExerciseFragmentTabLastSession.buildview(i+1+"",last.getCount()+"",last.getWeight()+"");
+//
+//        }
+//    }
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {

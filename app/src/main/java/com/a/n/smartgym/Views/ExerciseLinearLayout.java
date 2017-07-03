@@ -37,17 +37,17 @@ public class ExerciseLinearLayout extends LinearLayout {
 
     public ExerciseLinearLayout(Context context) {
         super(context);
-        init(context,R.layout.custom_exercise_tab);
+        init(context);
     }
 
     public ExerciseLinearLayout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context,R.layout.custom_exercise_tab);
+        init(context);
     }
 
     public ExerciseLinearLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context,R.layout.custom_exercise_tab);
+        init(context);
 
     }
 
@@ -55,8 +55,8 @@ public class ExerciseLinearLayout extends LinearLayout {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    private void init(Context context, int id) {
-        View.inflate(context, id, this);
+    private void init(Context context) {
+        View.inflate(context, R.layout.custom_exercise_tab, this);
         tv_num = (TextView) findViewById(R.id.tv_num);
         tv_reps = (TextView) findViewById(R.id.tv_reps);
         tv_weight = (TextView) findViewById(R.id.tv_weight);
