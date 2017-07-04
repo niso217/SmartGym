@@ -45,7 +45,7 @@ public class PlanRepo {
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery = " SELECT " + Plan.TABLE +"." + Plan.KEY_PLAN_ID
                 + " FROM " + Plan.TABLE
-                + " WHERE " + Plan.KEY_DATE+"='"+day+"'";
+                + " WHERE " + Plan.KEY_DATE+"='"+day.toLowerCase()+"'";
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);

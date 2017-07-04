@@ -60,12 +60,14 @@ public class ExerciseFragmentNew extends Fragment {
     private static final String TAG = ExerciseFragmentNew.class.getSimpleName();
     private ExerciseFragmentTab mExerciseFragmentTab;
     private ExerciseFragmentTab mExerciseFragmentTabLastSession;
+    private int mNumberOfSetsCounter = 1;
+    private Muscle mCurrentMuscle;
 
 
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (Integer.parseInt(mCurrentWeight) < 3) {
+            if (Integer.parseInt(mCalculatedWeight) < 3) {
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
@@ -87,6 +89,7 @@ public class ExerciseFragmentNew extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mHandler = new Handler();
+        mTicker.run();
 
     }
 
@@ -100,7 +103,7 @@ public class ExerciseFragmentNew extends Fragment {
                 ToIntArray(extra);
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 showProgressDialog(null, false);
-                Toast.makeText(activity, getString(R.string.disconnected_device), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.disconnected_device), Toast.LENGTH_SHORT).show();
                 finishExersise();
             }
         }
@@ -109,16 +112,15 @@ public class ExerciseFragmentNew extends Fragment {
 
     private void InsertToDataBase() {
         if (mCurrentSet != null && mCurrentSet.getCount() > 0) {
-//            mSets.setProgress(++mNumberOfSetsCounter);
-//            mSets.setTitle(mNumberOfSetsCounter + "/"+mSettingsSets);
-//            mRepetition.setTitle("0/"+mSettingsReps);
-//            mRepetition.setProgress(0);
+            mExerciseProgressFragment.Animate(0,100*mNumberOfSetsCounter/Integer.parseInt(mCurrentMuscle.getNum_sets()),100*(++mNumberOfSetsCounter)/Integer.parseInt(mCurrentMuscle.getNum_sets()),1000);
+            mExerciseProgressFragment.Animate(1,Integer.parseInt(mCurrentRepetition),0,1000);
             SetsRepo setsRepo = new SetsRepo();
             setsRepo.insert(mCurrentSet);
             Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
             Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");
             mCurrentSet = null;
 
+            mExerciseProgressFragment.Animate(2,1,100,60000);
 
         }
     }
@@ -130,6 +132,13 @@ public class ExerciseFragmentNew extends Fragment {
         activity.registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         showProgressDialog(getString(R.string.waiting), true);
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stop();
+        mHandler.removeCallbacks(mTicker);
     }
 
     @Override
@@ -157,11 +166,17 @@ public class ExerciseFragmentNew extends Fragment {
 
         mCalculatedWeight = stringArray[2];
         if (!stringArray[1].equals(mCurrentRepetition)) {
+            int LastRep = Integer.parseInt(mCurrentRepetition);
             mCurrentRepetition = stringArray[1];
+            Log.d(TAG,"last: " + LastRep +" current: " + mCurrentRepetition);
             if (!mCurrentRepetition.equals("0")) {
                 int progress = Integer.parseInt(mCurrentRepetition);
-//                mRepetition.setProgress(progress);
-//                mRepetition.setTitle(progress + "/" +mSettingsReps);
+                float last_presentage = 100*LastRep/Integer.parseInt(mCurrentMuscle.getNum_reps());
+                float current_presentage =100*progress/Integer.parseInt(mCurrentMuscle.getNum_reps());
+                Log.d(TAG,last_presentage + " " + current_presentage);
+                mExerciseProgressFragment.stopAnimation();
+                mExerciseProgressFragment.Animate(1,last_presentage,current_presentage,1000);
+                mExerciseProgressFragment.setCenterText(mCurrentRepetition);
                 StartNewSetInstance(progress, Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
@@ -235,17 +250,17 @@ public class ExerciseFragmentNew extends Fragment {
         if (getArguments() != null) {
 
             CurrentExercisesId = UUID.randomUUID().toString();
-            Muscle current = getArguments().getParcelable("muscle");
+            mCurrentMuscle = arg.getParcelable("muscle");
             //Tag tag = getArguments().getParcelable("tag");
             //getMessagesFromTag(tag);
-            mExerciseProgressFragment.Animate(0,Integer.parseInt(current.getNum_sets()),Integer.parseInt(current.getNum_reps()),1000);
+            //mExerciseProgressFragment.Animate(0,Integer.parseInt(current.getNum_sets()),Integer.parseInt(current.getNum_reps()),1000);
 
-            CurrentVisitId = getArguments().getString("uuid");
+            CurrentVisitId = arg.getString("uuid");
 
 
-            if (!CurrentExercisesId.isEmpty() && current != null && !CurrentVisitId.isEmpty()) {
+            if (!CurrentExercisesId.isEmpty() && mCurrentMuscle != null && !CurrentVisitId.isEmpty()) {
                 //BuildLastExString(current.getName());
-                setNewExercise(CurrentExercisesId, CurrentVisitId, current.getName());
+                setNewExercise(CurrentExercisesId, CurrentVisitId, mCurrentMuscle.getName());
                 StartNewSetInstance(0, 0);
 
             }
@@ -270,7 +285,9 @@ public class ExerciseFragmentNew extends Fragment {
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {
-           // mSeconds.removeAnimation();
+            mExerciseProgressFragment.stopAnimation();
+            mExerciseProgressFragment.Animate(2,0,0,1000);
+            // mSeconds.removeAnimation();
             //mSeconds.setProgress(0);
             //mSeconds.setTitle("0/"+mSettingsSeconds);
             mCurrentSet = new Sets();

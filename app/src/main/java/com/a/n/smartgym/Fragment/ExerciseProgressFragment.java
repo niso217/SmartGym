@@ -34,7 +34,7 @@ public class ExerciseProgressFragment extends Fragment  {
     private int mModelCount = 3;
     private ValueAnimator valueAnimator;
     private int mCurrentIndex = -1;
-    private TextView tv_sets,tv_reps,tv_rest;
+    private TextView tv_sets,tv_reps,tv_rest,tv_center;
     private static final String TAG = ExerciseProgressFragment.class.getSimpleName();
 
 
@@ -54,6 +54,7 @@ public class ExerciseProgressFragment extends Fragment  {
         tv_sets = (TextView) view.findViewById(R.id.tv_sets);
         tv_reps = (TextView) view.findViewById(R.id.tv_reps);
         tv_rest = (TextView) view.findViewById(R.id.tv_rest);
+        tv_center = (TextView) view.findViewById(R.id.tv_center);
 
         final String[] stringColors = getResources().getStringArray(R.array.progress);
         final String[] stringBgColors = getResources().getStringArray(R.array.bg);
@@ -76,6 +77,10 @@ public class ExerciseProgressFragment extends Fragment  {
 
 
         return view;
+    }
+
+    public void setCenterText(String text){
+        tv_center.setText(text);
     }
 
 
@@ -114,18 +119,18 @@ public class ExerciseProgressFragment extends Fragment  {
     public void Animate(int index , float from , float to, long duration)
     {
         //valueAnimator.setDuration(duration);
-        blink(tv_rest);
+        //blink(tv_rest);
         SetProgress(index,from);
-        setValueAnimator(from,to);
+        setValueAnimator(from,to,duration);
         SetCurrentIndex(index);
         startAnimation();
     }
 
 
 
-    public void setValueAnimator(float from, float to) {
+    public void setValueAnimator(float from, float to, long duration) {
         valueAnimator = ValueAnimator.ofFloat(from, to);
-        valueAnimator.setDuration(10000);
+        valueAnimator.setDuration(duration);
         addUpdateListener();
         addAnimationListener();
 
@@ -153,6 +158,12 @@ public class ExerciseProgressFragment extends Fragment  {
         if (valueAnimator.isRunning()) return;
         if (mArcProgressStackView.getProgressAnimator().isRunning()) return;
         valueAnimator.start();
+    }
+
+    public void stopAnimation(){
+        if (valueAnimator.isRunning())
+            valueAnimator.cancel();
+
     }
 
     private void blink(final TextView txt){

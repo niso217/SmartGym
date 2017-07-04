@@ -5,7 +5,10 @@ import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,6 +23,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcF;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +50,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.a.n.smartgym.DBModel.Plan;
 import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
 import com.a.n.smartgym.DBRepo.PlanMuscleRepo;
 import com.a.n.smartgym.DBRepo.PlanRepo;
@@ -53,7 +58,7 @@ import com.a.n.smartgym.Fragment.ExercisesFragment;
 import com.a.n.smartgym.Fragment.MyDayFragment;
 import com.a.n.smartgym.Fragment.ExerciseFragmentNew;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
-import com.a.n.smartgym.Fragment.WizardExerciseFragment;
+import com.a.n.smartgym.Fragment.VisitsFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
 import com.a.n.smartgym.Fragment.SettingsDialogFragment;
 import com.a.n.smartgym.Fragment.SettingsFragment;
@@ -63,10 +68,8 @@ import com.a.n.smartgym.Listener.onSubmitListener;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Services.BluetoothLeService;
 import com.a.n.smartgym.Graphs.CombinedChartActivity;
-import com.a.n.smartgym.Fragment.VisitsFragment;
 import com.a.n.smartgym.Helpers.BluetoothScanner;
 import com.a.n.smartgym.Helpers.NdefReaderTask;
-import com.a.n.smartgym.Listener.BluetoothListener;
 import com.a.n.smartgym.Listener.PermissionsGrantedCallback;
 import com.a.n.smartgym.Utils.Constants;
 import com.a.n.smartgym.DBModel.Muscle;
@@ -101,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         SettingsFragment.onSharedPreferenceChangedListener,
         PermissionsGrantedCallback,
-        View.OnClickListener,
-        BluetoothListener {
+        View.OnClickListener
+        {
     DrawerLayout mDrawerLayout;
     NavigationView mNavigationView;
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -130,6 +133,9 @@ public class MainActivity extends AppCompatActivity implements
     private Toolbar mToolbar;
     private Menu mMenu;
     private String mDayOfTheWeek;
+    BluetoothManager btManager;
+    BluetoothAdapter btAdapter;
+    BluetoothLeScanner btScanner;
 
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
@@ -171,6 +177,19 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
 
+
+    // Device scan callback.
+    private ScanCallback leScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            mBluetoothDeviceAddress = result.getDevice().getAddress();
+            mToolbar.setTitle(result.getDevice().getName());
+            StartBLEScan(false, false);
+            Log.d(TAG, "ScanResult");
+
+        }
+    };
+
     // Code to manage Service lifecycle.
     private ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -181,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-            //StartBLEScan(true, true);
+            StartBLEScan(true, true);
 
             if (getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED))
                 handleIntent(getIntent());
@@ -206,10 +225,15 @@ public class MainActivity extends AppCompatActivity implements
 
         InitializeGoogleApiClient();
 
-        mBluetoothScanner = new BluetoothScanner(this);
+        //mBluetoothScanner = new BluetoothScanner(this);
 
 
         mDayOfTheWeek = setTodayDay();
+
+        btManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
+        btAdapter = btManager.getAdapter();
+        btScanner = btAdapter.getBluetoothLeScanner();
+
 
         InitializeNFC();
 
@@ -312,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements
         setCurrentMode();
 
         Log.d(TAG, "Current Mode " + mCurrentMode);
-        mBluetoothScanner.setListener(this);
+        //mBluetoothScanner.setListener(this);
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
         if (mNfcAdapter != null)
@@ -320,17 +344,17 @@ public class MainActivity extends AppCompatActivity implements
                     mTechLists);
 
         //start BLE scan when device is emulator
-        //StartBLEScan(false, true);
+       // StartBLEScan(false, true);
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        if (mBluetoothScanner.getBluetoothAdapter() != null && mBluetoothScanner.getBluetoothAdapter().isEnabled()) {
-            StartBLEScan(false, false);
-            mBluetoothScanner.setListener(null);
-        }
+//        if (mBluetoothScanner.getBluetoothAdapter() != null && mBluetoothScanner.getBluetoothAdapter().isEnabled()) {
+//            StartBLEScan(false, false);
+//            mBluetoothScanner.setListener(null);
+//        }
         unregisterReceiver(mGattUpdateReceiver);
 
         if (mNfcAdapter != null) mNfcAdapter.disableForegroundDispatch(this);
@@ -412,6 +436,8 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
+
+
 
 
     private void InitializeUserDetails() {
@@ -518,10 +544,10 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.device_day_average:
                 mCurrentFragment = new CombinedChartActivity();
-                bundle.putInt("type", Constants.SUMMARY);
-                mCurrentFragment.setArguments(bundle);
+                //bundle.putInt("type", Constants.SUMMARY);
+                //mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("");
+                //mToolbar.setTitle("");
                 break;
             case R.id.day_device_average:
                 mCurrentFragment = new WebChartFragment();
@@ -615,20 +641,20 @@ public class MainActivity extends AppCompatActivity implements
         finish();
     }
 
-    private void buildDialog(final String day, final String exercise) {
+    private void buildDialog(final String day, final String main, final String sub) {
+        final String DayUUID = getPlanDayUUID(day);
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int choice) {
                 switch (choice) {
+
                     case DialogInterface.BUTTON_POSITIVE:
-                        new PlanMuscleRepo().addExerciseToPlan(day, exercise);
+                        new PlanMuscleRepo().addExerciseToPlan(DayUUID, main);
                         NumberPickerDialog numberPickerDialog = new NumberPickerDialog();
                         numberPickerDialog.setOnSubmitListener(new onSubmitListener() {
                             @Override
                             public void setOnSubmitListener(int sets, int reps, int weight) {
-                                String DayUUID = new PlanRepo().getDayUUID(day);
-                                String MainMuscle = new MuscleRepo().getMainMuscle(exercise);
-                                new MuscleExerciseRepo().insertSelection(DayUUID, exercise, MainMuscle, String.valueOf(sets), String.valueOf(reps), String.valueOf(weight));
+                                new MuscleExerciseRepo().insertSelection(DayUUID, sub, main, String.valueOf(sets), String.valueOf(reps), String.valueOf(weight));
                                 ContinueToExercise();
                             }
 
@@ -646,10 +672,24 @@ public class MainActivity extends AppCompatActivity implements
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Add " + exercise + " To " + day)
+        builder.setMessage("Add " + sub + " To " + day)
                 .setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
     }
+
+            private String getPlanDayUUID(String day) {
+                String uuid ="";
+                PlanRepo planRepo = new PlanRepo();
+                uuid = planRepo.getDayUUID(day);
+                if (uuid.isEmpty()) {
+                    Plan plan = new Plan();
+                    uuid = UUID.randomUUID().toString();
+                    plan.setPlanid(uuid);
+                    plan.setDate(day);
+                    planRepo.insert(plan);
+                }
+                return uuid;
+            }
 
 
     private void StartExercise(Tag tag) {
@@ -673,10 +713,10 @@ public class MainActivity extends AppCompatActivity implements
         }
 
 
-        Muscle exercise = new MuscleRepo().getExerciseByID(mCurrentTagId,mDayOfTheWeek);
-        boolean isExist = new PlanMuscleRepo().isExerciseExist(mDayOfTheWeek, exercise.getName());
+        String [] exerciseName = new MuscleRepo().getExerciseNameById(mCurrentTagId);
+        boolean isExist = new PlanMuscleRepo().isExerciseExist(mDayOfTheWeek, exerciseName[1]);
         if (!isExist) {
-            buildDialog(mDayOfTheWeek, exercise.getName());
+            buildDialog(mDayOfTheWeek, exerciseName[0],exerciseName[1]);
         } else
             ContinueToExercise();
 
@@ -702,13 +742,18 @@ public class MainActivity extends AppCompatActivity implements
     private void StartBLEScan(boolean showprogress, boolean on) {
         if (showprogress)
             showProgressDialog(getString(R.string.scanning));
+        else
+            hideProgressDialog();
 
         if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() != Constants.STATE_CONNECTED) {
-            mBluetoothScanner.scanLeDevice(on);
             if (on) {
+                startScanning();
                 setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_searching_white_36dp);
-            } else
+            } else{
+                stopScanning();
                 setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_white_36dp);
+
+            }
         }
 
     }
@@ -726,7 +771,7 @@ public class MainActivity extends AppCompatActivity implements
             getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commitAllowingStateLoss();
         } else {
             MuscleRepo muscleRepo = new MuscleRepo();
-            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId,mDayOfTheWeek);
+            Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId,"'"+mDayOfTheWeek.toLowerCase()+"'");
             bundle.putParcelable("muscle", ex);
             //bundle.putParcelable("tag", mCurrentTag);
             mCurrentFragment = new ExerciseFragmentNew();
@@ -754,28 +799,28 @@ public class MainActivity extends AppCompatActivity implements
         return uuid;
     }
 
-    @Override
-    public void ScanResult(BluetoothDevice device) {
-        hideProgressDialog();
-        //showProgressDialog(getString(R.string.connecting));
-        mBluetoothDeviceAddress = device.getAddress();
-        mToolbar.setTitle(device.getName());
-        StartBLEScan(false, false);
-        Log.d(TAG, "ScanResult");
-    }
+//    @Override
+//    public void ScanResult(BluetoothDevice device) {
+//        hideProgressDialog();
+//        //showProgressDialog(getString(R.string.connecting));
+//        mBluetoothDeviceAddress = device.getAddress();
+//        mToolbar.setTitle(device.getName());
+//        StartBLEScan(false, false);
+//        Log.d(TAG, "ScanResult");
+//    }
 
-    @Override
-    public void ScanTroubleshoot(String msg) {
-        hideProgressDialog();
-        StartBLEScan(false, false);
-        Toast.makeText(this, msg,
-                Toast.LENGTH_SHORT).show();
-        mToolbar.setTitle("No BLE Device Was Found");
-        mBluetoothDeviceAddress = null;
-        setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_disabled_white_36dp);
+//    @Override
+//    public void ScanTroubleshoot(String msg) {
+//        hideProgressDialog();
+//        StartBLEScan(false, false);
+//        Toast.makeText(this, msg,
+//                Toast.LENGTH_SHORT).show();
+//        mToolbar.setTitle("No BLE Device Was Found");
+//        mBluetoothDeviceAddress = null;
+//        setIcon(R.id.bluetooth_searching, R.drawable.ic_bluetooth_disabled_white_36dp);
 
 
-    }
+    //}
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
@@ -807,7 +852,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mBluetoothLeService != null)
             mBluetoothLeService.ChangeMode(mCurrentMode = mode);
 
-        if (mBluetoothScanner != null)
+        //if (mBluetoothScanner != null)
             //mBluetoothScanner.ChangeFilter(mCurrentMode);
             switch (mode) {
                 case Constants.DEVICE_NAME:
@@ -848,12 +893,11 @@ public class MainActivity extends AppCompatActivity implements
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
 
-                    if (mBluetoothScanner != null)
                         StartBLEScan(false, false);
                     if (mBluetoothLeService != null && mBluetoothLeService.getConnectionState() == STATE_CONNECTED)
                         closeBLE();
 
-                    performIdentifierAction(R.id.device_day_average);
+                    //performIdentifierAction(R.id.device_day_average);
 
                 }
             });
@@ -926,6 +970,26 @@ public class MainActivity extends AppCompatActivity implements
                         return;
                     }
                 }).create().show();
+    }
+
+    public void startScanning() {
+        System.out.println("start scanning");
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                btScanner.startScan(leScanCallback);
+            }
+        });
+    }
+
+    public void stopScanning() {
+        System.out.println("stopping scanning");
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                btScanner.stopScan(leScanCallback);
+            }
+        });
     }
 
 

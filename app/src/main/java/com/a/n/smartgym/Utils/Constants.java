@@ -44,6 +44,7 @@ public class Constants {
     public final static String FRIDAY = "friday";
     public final static String SATURDAY = "saturday";
 
+    public final static String  WEEK_ARRAY= "'"+SUNDAY+"',"+"'"+MONDAY+"',"+"'"+TUESDAY+"',"+"'"+WEDNESDAY+"',"+"'"+THURSDAY+"',"+"'"+FRIDAY+"',"+"'"+SATURDAY+"'";
     public final static String PLAN_DAY_UUID = "plan_uuid";
 
 

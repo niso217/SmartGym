@@ -113,7 +113,7 @@ public class DataFaker {
         current_weight =weightinc +increase;
         String ex_name = muscle.get(index);
         MuscleRepo muscleRepo = new MuscleRepo();
-        Muscle ex = muscleRepo.getExerciseByID(ex_name,"");
+        Muscle ex = muscleRepo.getExerciseByID(ex_name);
 
         ExerciseRepo exerciseRepo = new ExerciseRepo();
         Exercise exercise = new Exercise();

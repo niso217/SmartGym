@@ -164,6 +164,66 @@ public class MuscleRepo {
 
     }
 
+    public String [] getExerciseNameById(String id)
+    {
+        String sub = "";
+        String main = "";
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT  " + Muscle.TABLE +"."+Muscle.KEY_NAME +","+Muscle.TABLE +"."+Muscle.KEY_MUSCLE
+                + " FROM " + Muscle.TABLE
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID +"=" + "'"+id+"'";
+
+        Log.d(TAG, selectQuery);
+
+
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                 sub =  cursor.getString(cursor.getColumnIndex(Muscle.KEY_NAME));
+                main = cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return new String []{main,sub};
+
+    }
+
+    public Muscle getExerciseByID(String id){
+        Muscle muscle = new Muscle();
+        ArrayList<Muscle> muscleArrayList = new ArrayList<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT * "
+                + " FROM " + Muscle.TABLE
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                muscle.setId(cursor.getString(cursor.getColumnIndex(Muscle.KEY_ID)));
+                muscle.setMuscle(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE)));
+                muscle.setMain(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MAIN)));
+                muscle.setSecondary(cursor.getString(cursor.getColumnIndex(Muscle.KEY_SECONDARY)));
+                muscle.setName(cursor.getString(cursor.getColumnIndex(Muscle.KEY_NAME)));
+                muscle.setImage(cursor.getString(cursor.getColumnIndex(Muscle.KEY_IMAGE)));
+                muscle.setDescription(cursor.getString(cursor.getColumnIndex(Muscle.KEY_DESCRIPTION)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return muscle;
+
+    }
+
 
     public Muscle getExerciseByID(String id, String day){
         Muscle muscle = new Muscle();
@@ -176,7 +236,7 @@ public class MuscleRepo {
                 + " INNER JOIN " + PlanMuscle.TABLE + " ON " + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_MUSCLE_ID + "=" + MuscleExercise.TABLE + "." + MuscleExercise.KEY_PLAN_MUSCLE_ID
                 + " INNER JOIN " + Plan.TABLE + " ON " + Plan.TABLE + "." + Plan.KEY_PLAN_ID + "=" + PlanMuscle.TABLE + "." + PlanMuscle.KEY_PLAN_ID
                 + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_ID + "="+ "'"+id+"'"
-                + " AND " + Plan.TABLE +"."+Plan.KEY_DATE + "="+ "'"+day.toLowerCase()+"'";
+                + " AND " + Plan.TABLE +"."+Plan.KEY_DATE + " IN(" +day+ ")";
 
 
         Log.d(TAG, selectQuery);
