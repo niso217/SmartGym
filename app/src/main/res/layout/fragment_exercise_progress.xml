@@ -9,8 +9,10 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
-        android:layout_height="21dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
         android:layout_marginTop="2dp"
         android:gravity="center"
         android:text="HOW WE WORK"
@@ -18,8 +20,8 @@
         android:textSize="18sp" />
 
     <FrameLayout
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
         android:layout_gravity="center"
         android:layout_marginTop="25dp">
 
@@ -40,7 +42,7 @@
             app:apsv_text_color="#00000000" />
 
         <LinearLayout
-            android:layout_width="110dp"
+            android:layout_width="95dp"
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="vertical">
@@ -49,6 +51,7 @@
                 android:id="@+id/tv_sets"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:gravity="center"
                 android:shadowColor="#64000000"
                 android:shadowDx="0"
@@ -62,9 +65,8 @@
                 android:id="@+id/tv_reps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
-                android:paddingTop="10dp"
                 android:shadowColor="#64000000"
                 android:shadowDx="0"
                 android:shadowDy="5"
@@ -77,9 +79,8 @@
                 android:id="@+id/tv_rest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
-                android:paddingTop="10dp"
                 android:shadowColor="#64000000"
                 android:shadowDx="0"
                 android:shadowDy="5"
@@ -96,8 +97,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
             android:text="55"
-            android:textSize="30sp"
-            android:textColor="@color/system_green" />
+            android:textColor="@color/system_green"
+            android:textSize="30sp" />
 
     </FrameLayout>
 

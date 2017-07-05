@@ -4,9 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -61,7 +63,9 @@ public class ExerciseFragmentNew extends Fragment {
     private ExerciseFragmentTab mExerciseFragmentTab;
     private ExerciseFragmentTab mExerciseFragmentTabLastSession;
     private int mNumberOfSetsCounter = 1;
+    private int mSetsCounter = 1;
     private Muscle mCurrentMuscle;
+    private String mSettingsSeconds;
 
 
     private final Runnable mTicker = new Runnable() {
@@ -88,6 +92,13 @@ public class ExerciseFragmentNew extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        if (sharedPreferences != null){
+            int seconds = sharedPreferences.getInt(getString(R.string.key_seconds), Integer.parseInt(getString(R.string.default_seconds)));
+            mSettingsSeconds = seconds+"";
+        }
+
         mHandler = new Handler();
         mTicker.run();
 
@@ -118,12 +129,14 @@ public class ExerciseFragmentNew extends Fragment {
             setsRepo.insert(mCurrentSet);
             Toast.makeText(activity, mCurrentSet.getCount() + " " + getString(R.string.database_update), Toast.LENGTH_SHORT).show();
             Log.d(TAG, mCurrentSet.getCount() + " Sets Inserted to DataBase");
+            mExerciseFragmentTab.buildview((mSetsCounter++) +"",mCurrentSet.getCount()+"",mCurrentSet.getWeight()+"");
             mCurrentSet = null;
-
-            mExerciseProgressFragment.Animate(2,1,100,60000);
+            mCurrentRepetition = "0";
+            mExerciseProgressFragment.Animate(2,0,100,60000);
 
         }
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -165,22 +178,24 @@ public class ExerciseFragmentNew extends Fragment {
         if (stringArray.length != 4) return;
 
         mCalculatedWeight = stringArray[2];
+
+
         if (!stringArray[1].equals(mCurrentRepetition)) {
             int LastRep = Integer.parseInt(mCurrentRepetition);
             mCurrentRepetition = stringArray[1];
-            Log.d(TAG,"last: " + LastRep +" current: " + mCurrentRepetition);
             if (!mCurrentRepetition.equals("0")) {
+                Log.d(TAG,"last: " + LastRep +" current: " + mCurrentRepetition);
                 int progress = Integer.parseInt(mCurrentRepetition);
                 float last_presentage = 100*LastRep/Integer.parseInt(mCurrentMuscle.getNum_reps());
                 float current_presentage =100*progress/Integer.parseInt(mCurrentMuscle.getNum_reps());
                 Log.d(TAG,last_presentage + " " + current_presentage);
-                mExerciseProgressFragment.stopAnimation();
                 mExerciseProgressFragment.Animate(1,last_presentage,current_presentage,1000);
-                mExerciseProgressFragment.setCenterText(mCurrentRepetition);
                 StartNewSetInstance(progress, Integer.parseInt(mCalculatedWeight));
                 Log.d(TAG, "AddSet");
 
             }
+
+
         }
 
         mCurrentWeight = stringArray[0];
@@ -221,7 +236,7 @@ public class ExerciseFragmentNew extends Fragment {
         adjustColors();
         mExerciseFragmentTab = new ExerciseFragmentTab();
         mExerciseFragmentTabLastSession = new ExerciseFragmentTab();
-        addPage("TAB1",mExerciseFragmentTab);
+        addPage("TODAY",mExerciseFragmentTab);
 
 
 
@@ -262,6 +277,7 @@ public class ExerciseFragmentNew extends Fragment {
                 //BuildLastExString(current.getName());
                 setNewExercise(CurrentExercisesId, CurrentVisitId, mCurrentMuscle.getName());
                 StartNewSetInstance(0, 0);
+                mExerciseProgressFragment.setTitle(mCurrentMuscle.getName());
 
             }
 
@@ -285,7 +301,6 @@ public class ExerciseFragmentNew extends Fragment {
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {
-            mExerciseProgressFragment.stopAnimation();
             mExerciseProgressFragment.Animate(2,0,0,1000);
             // mSeconds.removeAnimation();
             //mSeconds.setProgress(0);

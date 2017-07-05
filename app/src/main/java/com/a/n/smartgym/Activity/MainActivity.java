@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            if (!result.getDevice().getName().equals(Constants.EMULATOR_NAME)) return;
             mBluetoothDeviceAddress = result.getDevice().getAddress();
             mToolbar.setTitle(result.getDevice().getName());
             StartBLEScan(false, false);
