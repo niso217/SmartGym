@@ -65,7 +65,7 @@ public class ExerciseFragmentNew extends Fragment {
     private int mNumberOfSetsCounter = 1;
     private int mSetsCounter = 1;
     private Muscle mCurrentMuscle;
-    private String mSettingsSeconds;
+    private int mSettingsSeconds;
 
 
     private final Runnable mTicker = new Runnable() {
@@ -95,8 +95,7 @@ public class ExerciseFragmentNew extends Fragment {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         if (sharedPreferences != null){
-            int seconds = sharedPreferences.getInt(getString(R.string.key_seconds), Integer.parseInt(getString(R.string.default_seconds)));
-            mSettingsSeconds = seconds+"";
+            mSettingsSeconds = sharedPreferences.getInt(getString(R.string.key_seconds), Integer.parseInt(getString(R.string.default_seconds)));
         }
 
         mHandler = new Handler();
@@ -132,7 +131,7 @@ public class ExerciseFragmentNew extends Fragment {
             mExerciseFragmentTab.buildview((mSetsCounter++) +"",mCurrentSet.getCount()+"",mCurrentSet.getWeight()+"");
             mCurrentSet = null;
             mCurrentRepetition = "0";
-            mExerciseProgressFragment.Animate(2,0,100,60000);
+            mExerciseProgressFragment.Animate(2,0,100,mSettingsSeconds * 1000);
 
         }
     }
@@ -277,7 +276,7 @@ public class ExerciseFragmentNew extends Fragment {
                 //BuildLastExString(current.getName());
                 setNewExercise(CurrentExercisesId, CurrentVisitId, mCurrentMuscle.getName());
                 StartNewSetInstance(0, 0);
-                mExerciseProgressFragment.setTitle(mCurrentMuscle.getName());
+                mExerciseProgressFragment.Initialize(mCurrentMuscle.getNum_sets(),mCurrentMuscle.getNum_reps(),mSettingsSeconds,mCurrentMuscle.getName());
 
             }
 

@@ -16,6 +16,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.TextView;
 
+import com.a.n.smartgym.DBModel.Muscle;
 import com.a.n.smartgym.R;
 
 import java.util.ArrayList;
@@ -28,15 +29,16 @@ import static devlight.io.library.ArcProgressStackView.Model;
  * Created by GIGAMOLE on 9/21/16.
  */
 
-public class ExerciseProgressFragment extends Fragment  {
+public class ExerciseProgressFragment extends Fragment {
 
     private int mCounter;
     private int mModelCount = 3;
     private ValueAnimator valueAnimator;
     private int mCurrentIndex = -1;
-    private TextView tv_sets,tv_reps,tv_rest,tv_center,tv_title;
+    private TextView tv_sets, tv_reps, tv_rest, tv_center, tv_title;
     private static final String TAG = ExerciseProgressFragment.class.getSimpleName();
     private Animation mAnimation;
+    private int mNumberOfSets,mNumberOfReps,mRestTime;
 
 
     private ArcProgressStackView mArcProgressStackView;
@@ -83,11 +85,11 @@ public class ExerciseProgressFragment extends Fragment  {
         return view;
     }
 
-    public void setCenterText(String text){
+    public void setCenterText(String text) {
         tv_center.setText(text);
     }
 
-    private void setUpTextAnimation(){
+    private void setUpTextAnimation() {
         mAnimation = new AlphaAnimation(0.0f, 1.0f);
         mAnimation.setDuration(200); //You can manage the blinking time with this parameter
         mAnimation.setStartOffset(20);
@@ -95,8 +97,12 @@ public class ExerciseProgressFragment extends Fragment  {
         mAnimation.setRepeatCount(Animation.INFINITE);
     }
 
-    public void setTitle(String title){
+    public void Initialize(String sets, String reps, int rest, String title) {
         tv_title.setText(title);
+        mNumberOfSets = Integer.valueOf(sets);
+        mNumberOfReps = Integer.valueOf(reps);
+        mRestTime = rest;
+
     }
 
 
@@ -108,12 +114,12 @@ public class ExerciseProgressFragment extends Fragment  {
 
     }
 
-    private void addAnimationListener(){
+    private void addAnimationListener() {
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(final Animator animation) {
                 animation.removeListener(this);
-                Log.d(TAG,"Animation Finished");
+                Log.d(TAG, "Animation Finished");
 
             }
 
@@ -126,43 +132,39 @@ public class ExerciseProgressFragment extends Fragment  {
             public void onAnimationUpdate(final ValueAnimator animation) {
                 mArcProgressStackView.getModels().get(mCurrentIndex)
                         .setProgress((Float) animation.getAnimatedValue());
-                        switch (mCurrentIndex)
-                        {
-                            case 0:
-                                tv_center.setText((int)mArcProgressStackView.getModels().get(mCurrentIndex).getProgress()+"");
-                                break;
-                            case 1:
-                                tv_center.setText((int)(mArcProgressStackView.getModels().get(mCurrentIndex).getProgress()*12/100)+"");
-                                break;
-                            case 2:
-                                tv_center.setText((int)(mArcProgressStackView.getModels().get(mCurrentIndex).getProgress()*60/100)+"");
-                                break;
-                        }
+                switch (mCurrentIndex) {
+                    case 0:
+                        tv_center.setText((int) mArcProgressStackView.getModels().get(mCurrentIndex).getProgress() + "");
+                        break;
+                    case 1:
+                        tv_center.setText((int) (mArcProgressStackView.getModels().get(mCurrentIndex).getProgress() * mNumberOfReps / 100) + "");
+                        break;
+                    case 2:
+                        tv_center.setText((int) (mArcProgressStackView.getModels().get(mCurrentIndex).getProgress() * mRestTime / 100) + "");
+                        break;
+                }
 
-                    mArcProgressStackView.postInvalidate();
-                    Log.d(TAG,mArcProgressStackView.getModels().get(mCurrentIndex).getProgress()+"");
+                mArcProgressStackView.postInvalidate();
+                Log.d(TAG, mArcProgressStackView.getModels().get(mCurrentIndex).getProgress() + "");
             }
 
 
         });
     }
 
-    public void Animate(int index , float from , float to, long duration)
-    {
+    public void Animate(int index, float from, float to, long duration) {
         //valueAnimator.setDuration(duration);
         //blink(tv_rest);
         Blink(index);
-        SetProgress(index,from);
-        setValueAnimator(from,to,duration);
+        SetProgress(index, from);
+        setValueAnimator(from, to, duration);
         SetCurrentIndex(index);
         startAnimation();
 
     }
 
-    private void Blink(int index)
-    {
-        switch (index)
-        {
+    private void Blink(int index) {
+        switch (index) {
             case 0:
                 blink(tv_sets);
                 break;
@@ -174,7 +176,6 @@ public class ExerciseProgressFragment extends Fragment  {
                 break;
         }
     }
-
 
 
     public void setValueAnimator(float from, float to, long duration) {
@@ -196,9 +197,6 @@ public class ExerciseProgressFragment extends Fragment  {
     }
 
 
-
-
-
     public void SetCurrentIndex(int index) {
         valueAnimator.setRepeatCount(0);
         mCurrentIndex = index;
@@ -210,18 +208,18 @@ public class ExerciseProgressFragment extends Fragment  {
         valueAnimator.start();
     }
 
-    public void stopAnimation(){
+    public void stopAnimation() {
         if (valueAnimator.isRunning())
             valueAnimator.cancel();
 
     }
 
-    public void stopBlinking(){
-        if (mAnimation!=null)
-        mAnimation.cancel();
+    public void stopBlinking() {
+        if (mAnimation != null)
+            mAnimation.cancel();
     }
 
-    private void blink(final TextView txt){
+    private void blink(final TextView txt) {
         stopBlinking();
         mAnimation = new AlphaAnimation(0.1f, 1.0f);
         mAnimation.setDuration(500); //You can manage the blinking time with this parameter
