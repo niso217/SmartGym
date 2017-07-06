@@ -1,0 +1,15 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorPrimaryDark">@color/primary_dark</item>
+        <item name="android:colorAccent">@color/accent</item>
+    </style>
+    <style name="label" parent="android:TextAppearance.Material.Caption"/>
+    <style name="text" parent="android:TextAppearance.Material.Subhead"/>
+    <style name="subheader" parent="android:TextAppearance.Material.Body2">
+        <item name="android:textColor">@color/secondary_text</item>
+    </style>
+
+</resources>
