@@ -61,7 +61,7 @@ public class ExerciseFragmentNew extends Fragment {
     private Context activity;
     private static final String TAG = ExerciseFragmentNew.class.getSimpleName();
     private ExerciseFragmentTab mExerciseFragmentTab;
-    private ExerciseFragmentTab mExerciseFragmentTabLastSession;
+    private LastExerciseFragmentTab mExerciseFragmentTabLastSession;
     private int mNumberOfSetsCounter = 1;
     private int mSetsCounter = 1;
     private Muscle mCurrentMuscle;
@@ -234,7 +234,7 @@ public class ExerciseFragmentNew extends Fragment {
         mCurrentValues = new ArrayList<>();
         adjustColors();
         mExerciseFragmentTab = new ExerciseFragmentTab();
-        mExerciseFragmentTabLastSession = new ExerciseFragmentTab();
+        mExerciseFragmentTabLastSession = new LastExerciseFragmentTab();
         addPage("TODAY",mExerciseFragmentTab);
 
 
@@ -273,7 +273,7 @@ public class ExerciseFragmentNew extends Fragment {
 
 
             if (!CurrentExercisesId.isEmpty() && mCurrentMuscle != null && !CurrentVisitId.isEmpty()) {
-                //BuildLastExString(current.getName());
+                BuildLastExString(mCurrentMuscle.getName());
                 setNewExercise(CurrentExercisesId, CurrentVisitId, mCurrentMuscle.getName());
                 StartNewSetInstance(0, 0);
                 mExerciseProgressFragment.Initialize(mCurrentMuscle.getNum_sets(),mCurrentMuscle.getNum_reps(),mSettingsSeconds,mCurrentMuscle.getName());
@@ -284,19 +284,14 @@ public class ExerciseFragmentNew extends Fragment {
         }
     }
 
-//    private void BuildLastExString(String name) {
-//        ArrayList<LastExercise> lastExercise = new ExerciseRepo().getLastExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), name);
-//        Bundle bundle = new Bundle();
-//        bundle.putParcelableArrayList("data", data);
-//        DynamicFragmentTab fragmentChild = new DynamicFragmentTab();
-//        fragmentChild.setArguments(bundle);
-//        addPage("TAB2",mExerciseFragmentTabLastSession);
-//        for (int i = 0; i < lastExercise.size(); i++) {
-//            LastExercise last = lastExercise.get(i);
-//            //mExerciseFragmentTabLastSession.buildview(i+1+"",last.getCount()+"",last.getWeight()+"");
-//
-//        }
-//    }
+    private void BuildLastExString(String name) {
+        ArrayList<LastExercise> data = new ExerciseRepo().getLastExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), name);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("data", data);
+        mExerciseFragmentTabLastSession.setArguments(bundle);
+        if (data.size() > 0)
+        addPage(data.get(0).getDate().toUpperCase(),mExerciseFragmentTabLastSession);
+    }
 
     private void StartNewSetInstance(int count, int weight) {
         if (mCurrentSet == null) {
