@@ -168,8 +168,11 @@ public class MyDayFragment extends Fragment {
 
         myDayProgressFragment.AddModel(models);
 
-        for (int i = 0; i < mCurrentValues.size(); i++)
+        for (int i = 0; i < mCurrentValues.size(); i++){
+            Log.d(TAG,mCurrentValues.get(i).toString());
             myDayProgressFragment.SetProgress(i, mCurrentValues.get(i));
+
+        }
 
         myDayProgressFragment.setUpAnimation();
         myDayProgressFragment.startAnimation();
@@ -179,17 +182,28 @@ public class MyDayFragment extends Fragment {
     private int AggregateSets(ArrayList<MuscleExercise> muscleExerciseList) {
         int sumTodo = 0;
         int sumDone = 0;
+        int RsumTodo = 0;
+        int RsumDone = 0;
 
         for (MuscleExercise muscleExercise : muscleExerciseList) {
+            sumDone = sumTodo = 0;
             ArrayList<LastExercise> lastExercise = new ExerciseRepo().getTodayExercise(FirebaseAuth.getInstance().getCurrentUser().getUid(), muscleExercise.getExerciseid());
             for (int i = 0; i < lastExercise.size(); i++) {
                 sumDone += lastExercise.get(i).getCount() * lastExercise.get(i).getSets();
             }
             sumTodo += Integer.parseInt(muscleExercise.getNumberofreps()) * Integer.parseInt(muscleExercise.getNumberofsets());
-        }
-        Log.d(TAG,"100" + " * " + sumDone +" / " + sumTodo);
 
-        return 100 * sumDone / sumTodo;
+            if (sumDone>sumTodo)
+                RsumDone += sumTodo;
+            else
+                RsumDone+= sumDone;
+
+            RsumTodo +=sumTodo;
+
+
+        }
+        Log.d(TAG,"100" + " * " + RsumDone +" / " + RsumTodo);
+        return 100 * RsumDone / RsumTodo;
     }
 
     public void setupTabLayout() {

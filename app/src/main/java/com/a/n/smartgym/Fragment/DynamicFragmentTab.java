@@ -72,6 +72,7 @@ public class DynamicFragmentTab extends Fragment {
             sumTodo += Integer.parseInt(muscleExercise.getNumberofreps()) * Integer.parseInt(muscleExercise.getNumberofsets());
 
             int calc = 100 * sumDone / sumTodo;
+            if (calc>100) calc = 100;
 
             Log.d(TAG,"100" + " * " + sumDone +" / " + sumTodo);
 

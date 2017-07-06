@@ -34,7 +34,9 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Peripheral extends Activity implements ServiceFragment.ServiceFragmentDelegate {
 
   private static final int REQUEST_ENABLE_BT = 1;

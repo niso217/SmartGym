@@ -17,6 +17,7 @@
 package com.example.emulator;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -24,9 +25,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -103,6 +106,7 @@ public class EmulatorFragment extends ServiceFragment implements OnSeekBarChange
   private BluetoothGattService mBatteryService;
   private BluetoothGattCharacteristic mBatteryLevelCharacteristic;
 
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   public EmulatorFragment() {
     mBatteryLevelCharacteristic =
             new BluetoothGattCharacteristic(BATTERY_LEVEL_UUID,
@@ -252,6 +256,8 @@ public class EmulatorFragment extends ServiceFragment implements OnSeekBarChange
 
   }
 
+
+
   @Override
   public void notificationsDisabled(BluetoothGattCharacteristic characteristic) {
     if (characteristic.getUuid() != BATTERY_LEVEL_UUID) {
@@ -266,6 +272,7 @@ public class EmulatorFragment extends ServiceFragment implements OnSeekBarChange
     });
     mDemoPractice.execute();
   }
+
 
 
 
