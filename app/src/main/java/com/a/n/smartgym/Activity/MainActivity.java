@@ -54,9 +54,8 @@ import com.a.n.smartgym.DBModel.Plan;
 import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
 import com.a.n.smartgym.DBRepo.PlanMuscleRepo;
 import com.a.n.smartgym.DBRepo.PlanRepo;
-import com.a.n.smartgym.Fragment.ExercisesFragment;
 import com.a.n.smartgym.Fragment.MyDayFragment;
-import com.a.n.smartgym.Fragment.ExerciseFragmentNew;
+import com.a.n.smartgym.Fragment.ExerciseFragment;
 import com.a.n.smartgym.Fragment.PermissionsDialogFragment;
 import com.a.n.smartgym.Fragment.VisitsFragment;
 import com.a.n.smartgym.Fragment.WizardFragment;
@@ -182,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            if (result.getDevice().getName()!= null && !result.getDevice().getName().equals(Constants.EMULATOR_NAME)) return;
+            if (result.getDevice().getName()== null || !result.getDevice().getName().equals(Constants.EMULATOR_NAME)) return;
             mBluetoothDeviceAddress = result.getDevice().getAddress();
             mToolbar.setTitle(result.getDevice().getName());
             StartBLEScan(false, false);
@@ -394,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements
             handleIntent(intent);
 
         } else {
-            ExercisesFragment myFragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(TAG);
+            ExerciseFragment myFragment = (ExerciseFragment) getSupportFragmentManager().findFragmentByTag(TAG);
             if (myFragment != null && myFragment.isVisible()) {
                 return;
             } else
@@ -539,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements
                 mToolbar.setTitle("My Day");
                 break;
             case R.id.exercise:
-                mCurrentFragment = new ExerciseFragmentNew();
+                mCurrentFragment = new ExerciseFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("Exercise");
                 break;
@@ -775,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements
             Muscle ex = muscleRepo.getExerciseByID(mCurrentTagId,"'"+mDayOfTheWeek.toLowerCase()+"'");
             bundle.putParcelable("muscle", ex);
             //bundle.putParcelable("tag", mCurrentTag);
-            mCurrentFragment = new ExerciseFragmentNew();
+            mCurrentFragment = new ExerciseFragment();
             mCurrentFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment, TAG).commit();
         }

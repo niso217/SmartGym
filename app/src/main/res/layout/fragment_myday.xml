@@ -40,7 +40,7 @@
                 android:textAlignment="center">
 
 
-                <android.support.design.widget.TabLayout
+                <com.a.n.smartgym.Views.CustomTabLayout
                     android:id="@+id/my_tab_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -50,11 +50,11 @@
                     android:textAlignment="center"
                     app:tabGravity="fill"
                     app:tabIndicatorColor="@color/system_green"
-                    app:tabMode="fixed"
+                    app:tabMode="scrollable"
                     app:tabSelectedTextColor="@color/system_green"
                     app:tabTextColor="@color/white">
 
-                </android.support.design.widget.TabLayout>
+                </com.a.n.smartgym.Views.CustomTabLayout>
 
             </LinearLayout>
         </android.support.design.widget.AppBarLayout>

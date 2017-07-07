@@ -6,6 +6,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.nfc.FormatException;
+import android.nfc.NdefMessage;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -25,16 +29,14 @@ import com.a.n.smartgym.DBModel.Exercise;
 import com.a.n.smartgym.DBModel.Muscle;
 import com.a.n.smartgym.DBModel.Sets;
 import com.a.n.smartgym.DBRepo.ExerciseRepo;
-import com.a.n.smartgym.DBRepo.PlanMuscleRepo;
 import com.a.n.smartgym.DBRepo.SetsRepo;
 import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Services.BluetoothLeService;
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -42,7 +44,7 @@ import java.util.UUID;
 /**
  * Created by DAT on 9/1/2015.
  */
-public class ExerciseFragmentNew extends Fragment {
+public class ExerciseFragment extends Fragment {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
@@ -59,7 +61,7 @@ public class ExerciseFragmentNew extends Fragment {
     List<Integer> mCurrentValues;
     private int mNumberOfSecondssCounter;
     private Context activity;
-    private static final String TAG = ExerciseFragmentNew.class.getSimpleName();
+    private static final String TAG = ExerciseFragment.class.getSimpleName();
     private ExerciseFragmentTab mExerciseFragmentTab;
     private LastExerciseFragmentTab mExerciseFragmentTabLastSession;
     private int mNumberOfSetsCounter = 1;
@@ -71,7 +73,7 @@ public class ExerciseFragmentNew extends Fragment {
     private final Runnable mTicker = new Runnable() {
         public void run() {
             //user interface interactions and updates on screen
-            if (Integer.parseInt(mCalculatedWeight) < 3) {
+            if (Integer.parseInt(mCurrentWeight) < 3) {
                 mZeroValueCounter++;
                 if (mZeroValueCounter > 3) { //3 seconds pasted throw data to database
                     InsertToDataBase();
@@ -87,6 +89,8 @@ public class ExerciseFragmentNew extends Fragment {
 
         }
     };
+
+
 
 
     @Override
@@ -118,6 +122,43 @@ public class ExerciseFragmentNew extends Fragment {
             }
         }
     };
+
+
+    private void getMessagesFromTag(final Tag tag) {
+
+        new Thread(new Runnable() {
+            public void run() {
+                Ndef ndef = Ndef.get(tag);
+
+                try {
+                    while (true) {
+                        try {
+                            Thread.sleep(3000);
+
+                            ndef.connect();
+                            NdefMessage msg = ndef.getNdefMessage();
+
+                            // TODO: do something
+
+                        } catch (IOException e) {
+                            Log.d(TAG, "tag is gone");
+                            finishExersise();
+                            // if the tag is gone we might want to end the thread:
+                            break;
+                        } catch (FormatException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                ndef.close();
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        }).start();
+    }
 
 
     private void InsertToDataBase() {
@@ -164,7 +205,7 @@ public class ExerciseFragmentNew extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-        View view = inflater.inflate(R.layout.fragment_exercise_new, container, false);
+        View view = inflater.inflate(R.layout.fragment_exercise, container, false);
         GetIdPortrait(view);
         setEvents();
         getArgs(getArguments());

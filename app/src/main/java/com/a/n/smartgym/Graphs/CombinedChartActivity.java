@@ -98,8 +98,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         mMonth.setOnClickListener(this);
         mYear.setOnClickListener(this);
 
-        getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      
 
         mChart = (CombinedChart) view.findViewById(R.id.chart1);
         mChart.getDescription().setEnabled(false);

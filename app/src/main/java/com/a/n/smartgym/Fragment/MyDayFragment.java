@@ -26,6 +26,7 @@ import com.a.n.smartgym.Graphs.DayAverageFragmentTab;
 import com.a.n.smartgym.Object.DailyAverage;
 import com.a.n.smartgym.Object.LastExercise;
 import com.a.n.smartgym.R;
+import com.a.n.smartgym.Views.CustomTabLayout;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -52,7 +53,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
  * Created by DAT on 9/1/2015.
  */
 public class MyDayFragment extends Fragment {
-    private TabLayout tabLayout;
+    private CustomTabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
     private int selectedTabPosition;
@@ -60,6 +61,7 @@ public class MyDayFragment extends Fragment {
     private int[] bgColors;
     MyDayProgressFragment myDayProgressFragment;
     List<Integer> mCurrentValues;
+    private Map<String, ArrayList<MuscleExercise>> exercises;
     private static final String TAG = MyDayFragment.class.getSimpleName();
 
 
@@ -79,7 +81,9 @@ public class MyDayFragment extends Fragment {
 
     private void GetIdPortrait(View view) {
         viewPager = (ViewPager) view.findViewById(R.id.my_viewpager);
-        tabLayout = (TabLayout) view.findViewById(R.id.my_tab_layout);
+        exercises = new MuscleExerciseRepo().getDayPlan(getDayOfWeek());
+        tabLayout = (CustomTabLayout) view.findViewById(R.id.my_tab_layout);
+        tabLayout.setDividerFactor(exercises.keySet().size());
         adapter = new ViewPagerAdapter(getFragmentManager(), getActivity(), viewPager, tabLayout);
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
@@ -137,15 +141,18 @@ public class MyDayFragment extends Fragment {
         setupTabLayout();
     }
 
+    private String getDayOfWeek(){
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+        Date d = new Date();
+        return sdf.format(d).toLowerCase();
+    }
+
     private void addFragmentToTab() {
 
         final ArrayList<ArcProgressStackView.Model> models = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
-        Date d = new Date();
-        String dayOfTheWeek = sdf.format(d);
+
         int index = 0;
         long MainMuscleDonePercentage = 0;
-        Map<String, ArrayList<MuscleExercise>> exercises = new MuscleExerciseRepo().getDayPlan(dayOfTheWeek.toLowerCase());
 
         ArrayList<MuscleExercise> muscleExerciseList = new ArrayList<>();
         myDayProgressFragment.setModelCount(exercises.keySet().size());
@@ -165,7 +172,7 @@ public class MyDayFragment extends Fragment {
             }
             index++;
         }
-
+        myDayProgressFragment.setWidth((float)(index*65));
         myDayProgressFragment.AddModel(models);
 
         for (int i = 0; i < mCurrentValues.size(); i++){

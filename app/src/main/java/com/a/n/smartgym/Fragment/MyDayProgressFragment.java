@@ -37,11 +37,11 @@ public class MyDayProgressFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_circel_progress, null);
+        View view = inflater.inflate(R.layout.fragment_myday_progress, null);
 
         mArcProgressStackView = (ArcProgressStackView) view.findViewById(R.id.apsv_presentation);
         mArcProgressStackView.setShadowColor(Color.argb(200, 0, 0, 0));
-        mArcProgressStackView.setAnimationDuration(200);
+        mArcProgressStackView.setAnimationDuration(1000);
 
 
         return view;
@@ -49,8 +49,6 @@ public class MyDayProgressFragment extends Fragment {
 
     public void setUpAnimation() {
         valueAnimator = ValueAnimator.ofFloat(1.0F, 105.0F);
-        valueAnimator.setDuration(500);
-        valueAnimator.setStartDelay(0);
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
         valueAnimator.setRepeatCount(mModelCount - 1);
         valueAnimator.addListener(new AnimatorListenerAdapter() {
@@ -104,6 +102,7 @@ public class MyDayProgressFragment extends Fragment {
 
     public void setValueAnimator(float limit) {
         valueAnimator = ValueAnimator.ofFloat(1.0F, limit);
+        valueAnimator.setDuration(500);
         addUpdateListener();
 
     }
@@ -125,6 +124,13 @@ public class MyDayProgressFragment extends Fragment {
     public void SetCurrentIndex(int index) {
         valueAnimator.setRepeatCount(0);
         mCurrentIndex = index;
+    }
+
+    public void setWidth(float width)
+    {
+        //mArcProgressStackView.setDrawWidthFraction(width);
+        mArcProgressStackView.setDrawWidthDimension(width);
+
     }
 
     public void startAnimation() {

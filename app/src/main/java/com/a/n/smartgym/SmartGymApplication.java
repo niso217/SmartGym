@@ -42,7 +42,7 @@ public class SmartGymApplication extends Application {
     private RequestQueue requestQueue;
     private static final String TAG = Application.class.getSimpleName();
 
-    private static final String ENDPOINT = "https://api.myjson.com/bins/gmvr5";
+    private static final String ENDPOINT = "https://api.myjson.com/bins/yf0fr";
 
 
     private Gson gson;
