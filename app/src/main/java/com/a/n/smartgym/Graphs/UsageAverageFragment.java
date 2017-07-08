@@ -1,9 +1,11 @@
 package com.a.n.smartgym.Graphs;
 
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
@@ -13,7 +15,9 @@ import android.view.ViewGroup;
 import com.a.n.smartgym.Object.MachineUsage;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.DBRepo.ExerciseRepo;
+import com.a.n.smartgym.Utils.Constants;
 import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
@@ -78,6 +82,11 @@ public class UsageAverageFragment extends Fragment {
         mChart.setRotationEnabled(true);
         mChart.setHighlightPerTapEnabled(true);
 
+
+        mChart.setTransparentCircleColor(ContextCompat.getColor(getContext(), R.color.background));
+        mChart.setTransparentCircleAlpha(255); // fully opaque
+        mChart.setHoleColor(ContextCompat.getColor(getContext(), R.color.background));
+
         // mChart.setUnit(" €");
         // mChart.setDrawUnitsInChart(true);
 
@@ -91,15 +100,17 @@ public class UsageAverageFragment extends Fragment {
 
         Legend l = mChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        l.setOrientation(Legend.LegendOrientation.VERTICAL);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
         l.setDrawInside(false);
+        l.setTextColor(ContextCompat.getColor(getContext(), R.color.system_green));
         l.setXEntrySpace(7f);
         l.setYEntrySpace(0f);
         l.setYOffset(0f);
+        l.setTextSize(13);
 
         // entry label styling
-        mChart.setEntryLabelColor(Color.WHITE);
+        mChart.setEntryLabelColor(ContextCompat.getColor(getContext(), R.color.flame));
         mChart.setEntryLabelTextSize(12f);
     }
 
@@ -115,79 +126,69 @@ public class UsageAverageFragment extends Fragment {
     }
 
 
-
     private void setData() {
 
-        int size = 0;
-        long other = 0;
-        ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-        //if (machineUsages.size()<5) return;
-
+        ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage2("");
 
         ArrayList<PieEntry> entries = new ArrayList<PieEntry>();
 
-        if (MAX_EXERCISE < machineUsages.size()){
-            for (int i = MAX_EXERCISE; i < machineUsages.size(); i++) {
-                other += machineUsages.get(i).getPresent();
-            }
-            size = MAX_EXERCISE;
-            entries.add(new PieEntry(other, "Others"));
+        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
+        // the chart.
+        for (int i = 0; i < machineUsages.size(); i++) {
+            entries.add(new PieEntry((float) machineUsages.get(i).getCounter(),  machineUsages.get(i).getMuscle().toUpperCase()));
         }
-        else{
-            size = machineUsages.size();
-        }
-
-        for (int i = 0; i < size ; i++) {
-            entries.add(new PieEntry(machineUsages.get(i).getPresent(),
-                            machineUsages.get(i).getMachine_name()));
-        }
-
-
-
 
         PieDataSet dataSet = new PieDataSet(entries, "");
-
-        dataSet.setDrawIcons(false);
-
-        dataSet.setSliceSpace(3f);
-        dataSet.setIconsOffset(new MPPointF(0, 40));
+        dataSet.setSliceSpace(0);
         dataSet.setSelectionShift(5f);
 
         // add a lot of colors
 
         ArrayList<Integer> colors = new ArrayList<Integer>();
 
-        for (int c : ColorTemplate.VORDIPLOM_COLORS)
+        for (int c : Constants.PIE_COLORs)
             colors.add(c);
 
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);
+//        for (int c : ColorTemplate.JOYFUL_COLORS)
+//            colors.add(c);
+//
+//        for (int c : ColorTemplate.COLORFUL_COLORS)
+//            colors.add(c);
+//
+//        for (int c : ColorTemplate.LIBERTY_COLORS)
+//            colors.add(c);
 
-        for (int c : ColorTemplate.COLORFUL_COLORS)
-            colors.add(c);
+//        for (int c : ColorTemplate.PASTEL_COLORS)
+//            colors.add(c);
 
-        for (int c : ColorTemplate.LIBERTY_COLORS)
-            colors.add(c);
+        //colors.add(ColorTemplate.getHoloBlue());
 
-        for (int c : ColorTemplate.PASTEL_COLORS)
-            colors.add(c);
-
-        colors.add(ColorTemplate.getHoloBlue());
+//        colors.add(Color.rgb(103, 110, 129));
+//        colors.add(Color.rgb(121, 162, 175));
 
         dataSet.setColors(colors);
         //dataSet.setSelectionShift(0f);
 
+
+        dataSet.setValueLinePart1OffsetPercentage(80.f);
+        dataSet.setValueLineColor(ContextCompat.getColor(getContext(), R.color.system_green));
+        dataSet.setValueLinePart1Length(0.2f);
+        dataSet.setValueLinePart2Length(0.6f);
+        //dataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+
         PieData data = new PieData(dataSet);
         data.setValueFormatter(new PercentFormatter());
         data.setValueTextSize(11f);
-        data.setValueTextColor(Color.WHITE);
+        data.setValueTextColor(ContextCompat.getColor(getContext(), R.color.system_green));
+       // data.setValueTypeface(tf);
         mChart.setData(data);
-        mChart.setCenterText(generateCenterSpannableText(size));
-
 
         // undo all highlights
         mChart.highlightValues(null);
+
+//        Paint p1 = mChart.getPaint(Chart.PAINT_HOLE);
+//        p1.setColor(ContextCompat.getColor(getContext(), R.color.background));
 
         mChart.invalidate();
     }

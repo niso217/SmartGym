@@ -63,6 +63,7 @@ import com.a.n.smartgym.Fragment.SettingsDialogFragment;
 import com.a.n.smartgym.Fragment.SettingsFragment;
 import com.a.n.smartgym.Fragment.WebChartFragment;
 import com.a.n.smartgym.Fragment.WizardMuscleFragment;
+import com.a.n.smartgym.Graphs.UsageAverageFragment;
 import com.a.n.smartgym.Listener.onSubmitListener;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Services.BluetoothLeService;
@@ -557,9 +558,9 @@ public class MainActivity extends AppCompatActivity implements
                 mToolbar.setTitle("");
                 break;
             case R.id.usage_average:
-                mCurrentFragment = new WebChartFragment();
-                bundle.putInt("type", Constants.USAGE);
-                mCurrentFragment.setArguments(bundle);
+                mCurrentFragment = new UsageAverageFragment();
+                //bundle.putInt("type", Constants.USAGE);
+                //mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("");
                 break;

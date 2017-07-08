@@ -26,5 +26,7 @@
 
     <color name="text_light">#66000000</color>
     <color name="instruction_text">#9E9E9E</color>
+    <color name="flame">#cc6633</color>
+
 
 </resources>

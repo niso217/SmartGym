@@ -1,5 +1,7 @@
 package com.a.n.smartgym.Utils;
 
+import android.graphics.Color;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,6 +86,11 @@ public class Constants {
     public static final String WRITE_EXTERNAL_STORAGE = "an" + "droid.permission.WRITE_EXTERNAL_STORAGE";
     public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
     public static final String GYM1_ADDRESS = "B8:27:EB:6B:29:BF";
+
+    public static final int[] PIE_COLORs = {
+            Color.rgb(244,244,158), Color.rgb(218,249,164), Color.rgb(185,229,174),
+            Color.rgb(148,199,190), Color.rgb(119,132,161)
+    };
 
 
 }

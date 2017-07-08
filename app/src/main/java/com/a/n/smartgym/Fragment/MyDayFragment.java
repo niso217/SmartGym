@@ -83,7 +83,7 @@ public class MyDayFragment extends Fragment {
         viewPager = (ViewPager) view.findViewById(R.id.my_viewpager);
         exercises = new MuscleExerciseRepo().getDayPlan(getDayOfWeek());
         tabLayout = (CustomTabLayout) view.findViewById(R.id.my_tab_layout);
-        tabLayout.setDividerFactor(exercises.keySet().size());
+        tabLayout.setDividerFactor(exercises.keySet().size()>0? exercises.keySet().size() : 1);
         adapter = new ViewPagerAdapter(getFragmentManager(), getActivity(), viewPager, tabLayout);
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
