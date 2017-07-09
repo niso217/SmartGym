@@ -274,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements
         mNavigationView.setNavigationItemSelectedListener(this);
         fab = (FloatingActionButton) findViewById(R.id.fake_nfc);
         fab.setOnClickListener(this);
+        fab.setVisibility(View.INVISIBLE);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.app_name,

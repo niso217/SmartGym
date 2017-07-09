@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Smart Gym</string>
+    <string name="app_name">GYMobilize</string>
     <string name="loading">Loading...</string>
     <string name="connecting">Connecting to device, please wait...</string>
     <string name="scanning">Scanning for BLE devices, please wait...</string>

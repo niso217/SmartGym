@@ -70,10 +70,20 @@ public class MyDayFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        View view;
+        exercises = new MuscleExerciseRepo().getDayPlan(getDayOfWeek());
+        if (exercises.size()>0)
+        {
+             view = inflater.inflate(R.layout.fragment_myday, container, false);
+            GetIdPortrait(view);
+            setEvents();
+        }
+        else{
+            view = inflater.inflate(R.layout.no_activity_today, container, false);
+            TextView  tv_title = (TextView) view.findViewById(R.id.tv_title);
+            tv_title.setText("NO EXERCISES FOUND ON " + getDayOfWeek().toUpperCase());
+        }
 
-        View view = inflater.inflate(R.layout.fragment_myday, container, false);
-        GetIdPortrait(view);
-        setEvents();
 
         return view;
     }
@@ -81,7 +91,6 @@ public class MyDayFragment extends Fragment {
 
     private void GetIdPortrait(View view) {
         viewPager = (ViewPager) view.findViewById(R.id.my_viewpager);
-        exercises = new MuscleExerciseRepo().getDayPlan(getDayOfWeek());
         tabLayout = (CustomTabLayout) view.findViewById(R.id.my_tab_layout);
         tabLayout.setDividerFactor(exercises.keySet().size()>0? exercises.keySet().size() : 1);
         adapter = new ViewPagerAdapter(getFragmentManager(), getActivity(), viewPager, tabLayout);
@@ -210,7 +219,8 @@ public class MyDayFragment extends Fragment {
 
         }
         Log.d(TAG,"100" + " * " + RsumDone +" / " + RsumTodo);
-        return 100 * RsumDone / RsumTodo;
+        int progress = 100 * RsumDone / RsumTodo;
+        return progress;
     }
 
     public void setupTabLayout() {
