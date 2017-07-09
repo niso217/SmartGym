@@ -75,6 +75,8 @@ public class SocialSignInFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        FacebookSdk.sdkInitialize(getContext());
+
         InitializeGoogleApiClient();
 
         mAuth = FirebaseAuth.getInstance();
@@ -146,10 +148,10 @@ public class SocialSignInFragment extends Fragment implements
 
 
         //Facebook login button
-//        mFaceBookLoginButton = (LoginButton) rootFragment.findViewById(R.id.facebook_login);
-//        mFaceBookLoginButton.setFragment(this);
-//        mFaceBookLoginButton.setReadPermissions("email", "public_profile");
-//        mFaceBookLoginButton.registerCallback(mCallbackManager, mCallBack);
+        mFaceBookLoginButton = (LoginButton) rootFragment.findViewById(R.id.facebook_login);
+        mFaceBookLoginButton.setFragment(this);
+        mFaceBookLoginButton.setReadPermissions("email", "public_profile");
+        mFaceBookLoginButton.registerCallback(mCallbackManager, mCallBack);
         return rootFragment;
     }
 
