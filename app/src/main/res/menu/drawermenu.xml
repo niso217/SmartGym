@@ -19,7 +19,7 @@
 
                 <item
                     android:id="@+id/device_day_average"
-                    android:title="Day / Average"
+                    android:title="Trend"
                     android:icon="@drawable/ic_timeline_white_36dp"/>
                 <!--<item-->
                     <!--android:id="@+id/day_device_average"-->

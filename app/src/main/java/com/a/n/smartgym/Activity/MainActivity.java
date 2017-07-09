@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements
         public void onScanResult(int callbackType, ScanResult result) {
             if (result.getDevice().getName()== null || !result.getDevice().getName().equals(Constants.EMULATOR_NAME)) return;
             mBluetoothDeviceAddress = result.getDevice().getAddress();
-            mToolbar.setTitle(result.getDevice().getName());
+            //mToolbar.setTitle(result.getDevice().getName());
             StartBLEScan(false, false);
             Log.d(TAG, "ScanResult");
 
@@ -203,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
+            if (!mCurrentMode.equals(Constants.DEVICE_NAME))
             StartBLEScan(true, true);
 
             if (getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED))
@@ -552,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements
                 //bundle.putInt("type", Constants.SUMMARY);
                 //mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                //mToolbar.setTitle("");
+                mToolbar.setTitle("Trend");
                 break;
 //            case R.id.day_device_average:
 //                mCurrentFragment = new WebChartFragment();
@@ -566,17 +567,17 @@ public class MainActivity extends AppCompatActivity implements
                 //bundle.putInt("type", Constants.USAGE);
                 //mCurrentFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("");
+                mToolbar.setTitle("Usage");
                 break;
             case R.id.visits:
                 mCurrentFragment = new VisitsFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("");
+                mToolbar.setTitle("Visits");
                 break;
             case R.id.program:
                 mCurrentFragment = new WizardFragment();
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("");
+                mToolbar.setTitle("Training");
                 break;
             case R.id.nav_logout:
                 logout();
@@ -700,7 +701,7 @@ public class MainActivity extends AppCompatActivity implements
     private void StartExercise(Tag tag) {
 
 
-        if (mBluetoothDeviceAddress == null && mCurrentMode != Constants.DEVICE_NAME) {
+        if (mBluetoothDeviceAddress == null && !mCurrentMode.equals(Constants.DEVICE_NAME)) {
             showScanBLEDialog();
             return;
         }
@@ -862,11 +863,11 @@ public class MainActivity extends AppCompatActivity implements
             switch (mode) {
                 case Constants.DEVICE_NAME:
                     mBluetoothDeviceAddress = Constants.GYM1_ADDRESS;
-                    mToolbar.setTitle(Constants.DEVICE_NAME);
+                    //mToolbar.setTitle(Constants.DEVICE_NAME);
                     break;
                 case Constants.EMULATOR_NAME:
                     mBluetoothDeviceAddress = null;
-                    mToolbar.setTitle("");
+                    //mToolbar.setTitle("");
                     break;
 
             }

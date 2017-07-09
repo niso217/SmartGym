@@ -119,6 +119,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setTextColor(Color.WHITE);
         l.setDrawInside(false);
 
         YAxis rightAxis = mChart.getAxisRight();

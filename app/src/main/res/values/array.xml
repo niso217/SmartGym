@@ -18,18 +18,67 @@
 
     <string-array name="progress">
         <item>#bada55</item>
+        <item>#B3bada55</item>
         <item>#C8DA55</item>
+        <item>#B3C8DA55</item>
         <item>#DCDA55</item>
+        <item>#B3DCDA55</item>
         <item>#F0DA55</item>
+        <item>#B3F0DA55</item>
+
+    </string-array>
+
+    <string-array name="progress_bg">
+        <item>#33558B2F</item>
+        <item>#33689F38</item>
+        <item>#337CB342</item>
+        <item>#338BC34A</item>
+        <item>#339CCC65</item>
+        <item>#33AED581</item>
+        <item>#33C5E1A5</item>
+        <item>#33DCEDC8</item>
+        <item>#33F1F8E9</item>
+
+    </string-array>
+
+    <string-array name="progress_front">
+        <item>#2E7D32</item>
+        <item>#388E3C</item>
+        <item>#43A047</item>
+        <item>#4CAF50</item>
+        <item>#66BB6A</item>
+        <item>#81C784</item>
+        <item>#A5D6A7</item>
+        <item>#C8E6C9</item>
+        <item>#E8F5E9</item>
+
+    </string-array>
+
+    <string-array name="bg_new">
+        <item>#9E9D24</item>
+        <item>#AFB42B</item>
+        <item>#C0CA33</item>
+        <item>#CDDC39</item>
+        <item>#D4E157</item>
+        <item>#DCE775</item>
+        <item>#E6EE9C</item>
+        <item>#F0F4C3</item>
+        <item>#F9FBE7</item>
+
     </string-array>
 
 
 
     <string-array name="bg">
-        <item>#33dddddd</item>
-        <item>#33dddddd</item>
-        <item>#33dddddd</item>
-        <item>#33dddddd</item>
+        <item>#E6545454</item>
+        <item>#CC545454</item>
+        <item>#B3545454</item>
+        <item>#99545454</item>
+        <item>#80545454</item>
+        <item>#66545454</item>
+        <item>#4D545454</item>
+        <item>#33545454</item>
+
     </string-array>
 
     <string-array name="polluted_waves">
