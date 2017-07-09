@@ -7,42 +7,46 @@
             <!--android:id="@+id/nav_item_inbox"-->
             <!--android:icon="@drawable/inbox"-->
             <!--android:title="Inbox" />-->
-
-
         <item
-            android:id="@+id/navigation_subheader"
-            android:title="Statistics">
-            <menu>
-                <item
-                    android:id="@+id/my_day"
-                    android:title="My Day" />
+            android:id="@+id/my_day"
+            android:title="My Day"
+            android:icon="@drawable/ic_assignment_ind_white_36dp"/>
+
+        <!--<item-->
+            <!--android:id="@+id/navigation_subheader"-->
+            <!--android:title="">-->
+            <!--<menu>-->
+
                 <item
                     android:id="@+id/device_day_average"
-                    android:title="Day / Average" />
-                <item
-                    android:id="@+id/day_device_average"
-                    android:title="Trend" />
+                    android:title="Day / Average"
+                    android:icon="@drawable/ic_timeline_white_36dp"/>
+                <!--<item-->
+                    <!--android:id="@+id/day_device_average"-->
+                    <!--android:title="Trend" />-->
                 <item
                     android:id="@+id/usage_average"
-                    android:title="Usage" />
+                    android:title="Usage"
+                    android:icon="@drawable/ic_pie_chart_white_36dp"/>
+
                 <item
                     android:id="@+id/visits"
-                    android:title="Visits" />
+                    android:title="Visits"
+                    android:icon="@drawable/ic_event_white_36dp"/>
 
                 <item
                     android:id="@+id/program"
-                    android:title="Training" />
-            </menu>
-        </item>
+                    android:title="Training"
+                    android:icon="@drawable/ic_fitness_center_white_36dp"
+                    />
 
-        <item
-            android:id="@+id/exercise"
-            android:icon="@drawable/draft"
-            android:title="Exercise" />
+                <!--/>-->
+            <!--</menu>-->
+        <!--</item>-->
 
         <item
             android:id="@+id/nav_logout"
-            android:icon="@drawable/draft"
+            android:icon="@drawable/ic_transfer_within_a_station_white_36dp"
             android:title="Log Out" />
 
     </group>

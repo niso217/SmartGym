@@ -18,6 +18,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -266,6 +268,8 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mNavigationView = (NavigationView) findViewById(R.id.shitstuff);
+        mNavigationView.setItemTextColor(csl);
+        mNavigationView.setItemIconTintList(csl2);
         mNavigationView.setNavigationItemSelectedListener(this);
         fab = (FloatingActionButton) findViewById(R.id.fake_nfc);
         fab.setOnClickListener(this);
@@ -538,11 +542,11 @@ public class MainActivity extends AppCompatActivity implements
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 mToolbar.setTitle("My Day");
                 break;
-            case R.id.exercise:
-                mCurrentFragment = new ExerciseFragment();
-                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("Exercise");
-                break;
+//            case R.id.exercise:
+//                mCurrentFragment = new ExerciseFragment();
+//                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+//                mToolbar.setTitle("Exercise");
+//                break;
             case R.id.device_day_average:
                 mCurrentFragment = new CombinedChartActivity();
                 //bundle.putInt("type", Constants.SUMMARY);
@@ -550,13 +554,13 @@ public class MainActivity extends AppCompatActivity implements
                 getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
                 //mToolbar.setTitle("");
                 break;
-            case R.id.day_device_average:
-                mCurrentFragment = new WebChartFragment();
-                bundle.putInt("type", Constants.TREND);
-                mCurrentFragment.setArguments(bundle);
-                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
-                mToolbar.setTitle("");
-                break;
+//            case R.id.day_device_average:
+//                mCurrentFragment = new WebChartFragment();
+//                bundle.putInt("type", Constants.TREND);
+//                mCurrentFragment.setArguments(bundle);
+//                getSupportFragmentManager().beginTransaction().replace(R.id.containerView, mCurrentFragment).commit();
+//                mToolbar.setTitle("");
+//                break;
             case R.id.usage_average:
                 mCurrentFragment = new UsageAverageFragment();
                 //bundle.putInt("type", Constants.USAGE);
@@ -992,6 +996,43 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+
+            // FOR NAVIGATION VIEW ITEM TEXT COLOR
+            int[][] state = new int[][] {
+                    new int[] {-android.R.attr.state_enabled}, // disabled
+                    new int[] {android.R.attr.state_enabled}, // enabled
+                    new int[] {-android.R.attr.state_checked}, // unchecked
+                    new int[] { android.R.attr.state_pressed}  // pressed
+
+            };
+
+            int[] color = new int[] {
+                    Color.WHITE,
+                    Color.WHITE,
+                    Color.WHITE,
+                    Color.WHITE
+            };
+
+            ColorStateList csl = new ColorStateList(state, color);
+
+
+            // FOR NAVIGATION VIEW ITEM ICON COLOR
+            int[][] states = new int[][] {
+                    new int[] {-android.R.attr.state_enabled}, // disabled
+                    new int[] {android.R.attr.state_enabled}, // enabled
+                    new int[] {-android.R.attr.state_checked}, // unchecked
+                    new int[] { android.R.attr.state_pressed}  // pressed
+
+            };
+
+            int[] colors = new int[] {
+                    Color.WHITE,
+                    Color.WHITE,
+                    Color.WHITE,
+                    Color.WHITE
+            };
+
+            ColorStateList csl2 = new ColorStateList(states, colors);
 
 
 }

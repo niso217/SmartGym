@@ -147,7 +147,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         ArrayList<String> exercisesList = new ExerciseRepo().getAllExercises("");
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(),
-                android.R.layout.simple_spinner_item, exercisesList);
+                R.layout.spinner_item, exercisesList);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCharts.setAdapter(dataAdapter);
         spCharts.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
