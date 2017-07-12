@@ -17,6 +17,7 @@ import com.a.n.smartgym.DBModel.Muscle;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -135,6 +136,54 @@ public class MuscleRepo {
         DatabaseManager.getInstance().closeDatabase();
 
         return muscleArrayList;
+
+    }
+
+    public Map<String,ArrayList<Muscle>> getHashSubMuscle(String main, String sub){
+        Muscle muscle;
+        String mainMuscle;
+        Map<String,ArrayList<Muscle>> muscleHashtable = new Hashtable<>();
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery =  " SELECT * "
+                + " FROM " + Muscle.TABLE
+                + " WHERE " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE + " IN("+main+")";
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                mainMuscle = cursor.getString(cursor.getColumnIndex(Muscle.KEY_MUSCLE));
+                muscle= new Muscle();
+                muscle.setId(cursor.getString(cursor.getColumnIndex(Muscle.KEY_ID)));
+                muscle.setMuscle(mainMuscle);
+                muscle.setMain(cursor.getString(cursor.getColumnIndex(Muscle.KEY_MAIN)));
+                muscle.setSecondary(cursor.getString(cursor.getColumnIndex(Muscle.KEY_SECONDARY)));
+                muscle.setName(cursor.getString(cursor.getColumnIndex(Muscle.KEY_NAME)));
+                muscle.setImage(cursor.getString(cursor.getColumnIndex(Muscle.KEY_IMAGE)));
+                muscle.setDescription(cursor.getString(cursor.getColumnIndex(Muscle.KEY_DESCRIPTION)));
+
+                ArrayList<Muscle> temp = muscleHashtable.get(mainMuscle);
+                if (temp!=null) {
+                    temp.add(muscle);
+                    muscleHashtable.put(mainMuscle,temp);
+                }
+                else
+                {
+                    temp = new ArrayList<>();
+                    temp.add(muscle);
+                    muscleHashtable.put(mainMuscle,temp);
+                }
+
+            }
+            while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return muscleHashtable;
 
     }
 

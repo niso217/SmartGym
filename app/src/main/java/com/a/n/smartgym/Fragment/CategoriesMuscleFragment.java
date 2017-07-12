@@ -33,7 +33,7 @@ public class CategoriesMuscleFragment extends Fragment {
         mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),4));
 
         //Your RecyclerView.Adapter
-        mAdapter = new CategoriesAdapter(getActivity());
+        //mAdapter = new CategoriesAdapter(getActivity());
 
         //This is the code to provide a sectioned grid
         List<SectionedGridRecyclerViewAdapter.Section> sections =

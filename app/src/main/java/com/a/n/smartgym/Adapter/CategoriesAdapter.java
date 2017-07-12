@@ -5,12 +5,17 @@ package com.a.n.smartgym.Adapter;
  */
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.a.n.smartgym.DBModel.Muscle;
+import com.a.n.smartgym.DBRepo.MuscleExerciseRepo;
+import com.a.n.smartgym.Object.MuscleItem;
 import com.a.n.smartgym.R;
 
 import java.util.ArrayList;
@@ -20,10 +25,10 @@ import java.util.List;
  * @author Gabriele Mariotti (gabri.mariotti@gmail.com)
  */
 public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.SimpleViewHolder> {
-    private static final int COUNT = 100;
 
     private final Context mContext;
-    private final List<Integer> mItems;
+    private ArrayList<MuscleItem> mItems = new ArrayList<>();
+
     private int mCurrentItemId = 0;
 
     public static class SimpleViewHolder extends RecyclerView.ViewHolder {
@@ -36,12 +41,22 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Si
     }
 
     public CategoriesAdapter(Context context) {
+        // mItems.clear();
         mContext = context;
-        mItems = new ArrayList<Integer>(COUNT);
-        for (int i = 0; i < COUNT; i++) {
-            addItem(i);
-        }
+
+
+
+//        for (int i = 0; i < mItems.size(); i++) {
+//            addItem(i);
+//        }
     }
+
+    public void  updateData(ArrayList<MuscleItem> muscleItemArrayList){
+            mItems=muscleItemArrayList;
+            notifyDataSetChanged();
+
+    }
+
 
     public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(mContext).inflate(R.layout.catagories_item, parent, false);
@@ -49,19 +64,28 @@ public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.Si
     }
 
     @Override
-    public void onBindViewHolder(SimpleViewHolder holder, final int position) {
-        holder.title.setText(mItems.get(position).toString());
+    public void onBindViewHolder(final SimpleViewHolder holder, final int position) {
+        holder.title.setText(mItems.get(position).getTitle());
+        final MuscleItem model = mItems.get(position);
+        holder.title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                model.setSelected(!model.isSelected());
+                holder.title.setBackgroundColor(model.isSelected() ? Color.CYAN : Color.WHITE);
+            }
+        });
     }
 
-    public void addItem(int position) {
+
+    public void addItem(MuscleItem muscleItem) {
         final int id = mCurrentItemId++;
-        mItems.add(position, id);
-        notifyItemInserted(position);
+        mItems.add(muscleItem);
+        notifyDataSetChanged();
     }
 
     public void removeItem(int position) {
         mItems.remove(position);
-        notifyItemRemoved(position);
+        notifyDataSetChanged();
     }
 
     @Override
