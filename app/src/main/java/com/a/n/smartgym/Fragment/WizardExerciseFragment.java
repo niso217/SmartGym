@@ -21,6 +21,7 @@ import com.a.n.smartgym.Adapter.CategoriesAdapter;
 import com.a.n.smartgym.Adapter.GridViewAdapter;
 import com.a.n.smartgym.Adapter.SectionedGridRecyclerViewAdapter;
 import com.a.n.smartgym.DBModel.MuscleExercise;
+import com.a.n.smartgym.Listener.OnItemClickListener;
 import com.a.n.smartgym.Listener.onSubmitListener;
 import com.a.n.smartgym.Object.MuscleItem;
 import com.a.n.smartgym.DBModel.Muscle;
@@ -32,6 +33,7 @@ import com.a.n.smartgym.Views.NumberPickerDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +44,7 @@ import static com.a.n.smartgym.Utils.Constants.WIZARD_MAIN_UPDATE;
 /**
  * Created by Ratan on 7/29/2015.
  */
-public class WizardExerciseFragment extends Fragment  implements onSubmitListener {
+public class WizardExerciseFragment extends Fragment  implements onSubmitListener,OnItemClickListener {
 
     private GridView gridView;
     private GridViewAdapter gridAdapter;
@@ -50,6 +52,8 @@ public class WizardExerciseFragment extends Fragment  implements onSubmitListene
     private static final String TAG = WizardExerciseFragment.class.getSimpleName();
     private Context mContext;
     private MuscleItem mSelectedMuscleItem;
+    private ArrayList<MuscleItem> mSelectedMuscleItemArray;
+
     private RecyclerView mRecyclerView;
     private CategoriesAdapter mAdapter;
     List<SectionedGridRecyclerViewAdapter.Section> sections;
@@ -62,46 +66,17 @@ public class WizardExerciseFragment extends Fragment  implements onSubmitListene
         public void onReceive(Context context, Intent intent) {
             switch ((intent.getAction())) {
                 case WIZARD_MAIN_UPDATE:
-                    setUpSection();
                     onDataChanged();
                     break;
                 case WIZARD_DAY_UPDATE:
                     DayUUID = intent.getStringExtra(PLAN_DAY_UUID);
-                    setUpSection();
                     onDataChanged();
                     break;
             }
         }
     };
 
-    private void setUpSection() {
-        sections.clear();
-        int index = 0;
-        Map<String,ArrayList<Muscle>> categories =  getCategories();
-        for (Map.Entry<String, ArrayList<Muscle>> entry : categories.entrySet())
-        {
-            ArrayList<Muscle> temp = entry.getValue();
-            sections.add(new SectionedGridRecyclerViewAdapter.Section(index,entry.getKey().toUpperCase()));
-            index = temp.size();
 
-            //System.out.println(entry.getKey() + "/" + entry.getValue());
-        }
-
-        //Sections
-//        sections.add(new SectionedGridRecyclerViewAdapter.Section(5,"Section 2"));
-//        sections.add(new SectionedGridRecyclerViewAdapter.Section(12,"Section 3"));
-//        sections.add(new SectionedGridRecyclerViewAdapter.Section(14,"Section 4"));
-//        sections.add(new SectionedGridRecyclerViewAdapter.Section(20,"Section 5"));
-
-        //Add your adapter to the sectionAdapter
-        SectionedGridRecyclerViewAdapter.Section[] dummy = new SectionedGridRecyclerViewAdapter.Section[sections.size()];
-        SectionedGridRecyclerViewAdapter mSectionedAdapter = new
-                SectionedGridRecyclerViewAdapter(getActivity(),R.layout.section,R.id.section_text,mRecyclerView,mAdapter);
-        mSectionedAdapter.setSections(sections.toArray(dummy));
-
-        //Apply this adapter to the RecyclerView
-        mRecyclerView.setAdapter(mSectionedAdapter);
-    }
 
     @Override
     public void onAttach(Context context) {
@@ -129,101 +104,84 @@ public class WizardExerciseFragment extends Fragment  implements onSubmitListene
         mRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),4));
 
         //Your RecyclerView.Adapter
-        mAdapter = new CategoriesAdapter(getActivity());
+        mAdapter = new CategoriesAdapter(getActivity(),this);
+
+        sections = new ArrayList<>();
+
+
 
         //This is the code to provide a sectioned grid
-        sections = new ArrayList<>();
 
         return view;
     }
 
-//    @Nullable
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//
-//        View rootFragment = inflater.inflate(R.layout.fragment_muscle, null);
-//
-//
-//        gridView = (GridView) rootFragment.findViewById(R.id.gridView);
-//        gridAdapter = new GridViewAdapter(getContext(), R.layout.grid_item_layout, getData());
-//        gridView.setAdapter(gridAdapter);
-//
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-//                mSelectedMuscleItem = (MuscleItem) parent.getItemAtPosition(position);
-//
-//                boolean selectedIndex = new MuscleExerciseRepo().isSubMuscleExist(DayUUID,mSelectedMuscleItem.getTitle());
-//                if (selectedIndex) {
-//                    setGridViewSelection(false);
-//                } else {
-//                    ShowDialog();
-//                }
-//            }
-//        });
-//
-//
-//        return rootFragment;
-//    }
 
-    private void ShowDialog(){
-        NumberPickerDialog dialog = new NumberPickerDialog();
-        dialog.setOnSubmitListener(WizardExerciseFragment.this);
-        dialog.show(getActivity().getFragmentManager(),"");
-    }
 
-    private ArrayList<MuscleItem> getData() {
 
-        final ArrayList<MuscleItem> muscleItems = new ArrayList<>();
-        MuscleRepo muscleRepo = new MuscleRepo();
+    public LinkedHashMap<String,ArrayList<Muscle>> getCategories(){
         String selected_main = new PlanMuscleRepo().getMainMuscleByDayAsString(DayUUID);
-        List<Muscle> exname = muscleRepo.getSubMuscle(selected_main, "");
-        if (exname==null) return muscleItems;
-
-        for (int i = 0; i < exname.size(); i++) {
-            muscleItems.add(new MuscleItem(exname.get(i).getImage(), exname.get(i).getName(),exname.get(i).getMuscle()));
-        }
-
-        return muscleItems;
-
-    }
-
-    public Map<String,ArrayList<Muscle>> getCategories(){
-        String selected_main = new PlanMuscleRepo().getMainMuscleByDayAsString(DayUUID);
-        Map<String,ArrayList<Muscle>> nir =  new MuscleRepo().getHashSubMuscle(selected_main, "");
+        LinkedHashMap<String,ArrayList<Muscle>> nir =  new MuscleRepo().getHashSubMuscle(selected_main, "");
 
         return nir;
 
     }
 
     public void onDataChanged() {
-        mAdapter.updateData(getData());
-        //mAdapter.notifyDataSetChanged();
 
-//        gridAdapter.clear();
-//        gridAdapter.addAll(getData());
-//
-//        new Handler().post(new Runnable() {
-//            @Override
-//            public void run() {
-//                List<String> selected = new MuscleExerciseRepo().getSubMuscleByDay(DayUUID);
-//                for (int i = 0; i < gridAdapter.getSize(); i++) {
-//                    if (selected.contains(gridAdapter.getData().get(i).getTitle())) {
-//                        MuscleItem item = (MuscleItem) gridView.getItemAtPosition(i);
-//                        item.setSelected(true);
-//                    }
-//                    else{
-//                        MuscleItem item = (MuscleItem) gridView.getItemAtPosition(i);
-//                        item.setSelected(false);
-//
-//                    }
-//
-//                }
-//                gridAdapter.notifyDataSetChanged();
-//
-//            }
-//        });
+        sections.clear();
+        int index = 0;
+        mSelectedMuscleItemArray = new ArrayList<>();
+        LinkedHashMap<String,ArrayList<Muscle>> categories =  getCategories();
+        for (Map.Entry<String, ArrayList<Muscle>> entry : categories.entrySet())
+        {
+            ArrayList<Muscle> exname = entry.getValue();
+            for (int i = 0; i < exname.size(); i++) {
+                mSelectedMuscleItemArray.add(new MuscleItem(exname.get(i).getImage(), exname.get(i).getName(),exname.get(i).getMuscle()));
+            }
+            sections.add(new SectionedGridRecyclerViewAdapter.Section(index,entry.getKey().toUpperCase()));
+            index += exname.size();
+        }
 
+        //Add your adapter to the sectionAdapter
+        SectionedGridRecyclerViewAdapter.Section[] dummy = new SectionedGridRecyclerViewAdapter.Section[sections.size()];
+        SectionedGridRecyclerViewAdapter mSectionedAdapter = new
+                SectionedGridRecyclerViewAdapter(getActivity(),R.layout.section,R.id.section_text,mRecyclerView,mAdapter);
+        mSectionedAdapter.setSections(sections.toArray(dummy));
+
+        //Apply this adapter to the RecyclerView
+        mRecyclerView.setAdapter(mSectionedAdapter);
+
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                List<String> selected = new MuscleExerciseRepo().getSubMuscleByDay(DayUUID);
+                for (int i = 0; i < mAdapter.getItemCount(); i++) {
+                    if (selected.contains(mAdapter.getData().get(i).getTitle())) {
+                        MuscleItem item = mAdapter.getItemAtPosition(i);
+                        item.setSelected(true);
+                    }
+                    else{
+                        MuscleItem item = mAdapter.getItemAtPosition(i);
+                        item.setSelected(false);
+
+                    }
+
+                }
+                mAdapter.notifyDataSetChanged();
+
+            }
+        });
+
+
+        mAdapter.updateData(mSelectedMuscleItemArray);
+
+
+    }
+
+    private void ShowDialog(){
+        NumberPickerDialog dialog = new NumberPickerDialog();
+        dialog.setOnSubmitListener(WizardExerciseFragment.this);
+        dialog.show(getActivity().getFragmentManager(),"");
     }
 
 
@@ -250,6 +208,17 @@ public class WizardExerciseFragment extends Fragment  implements onSubmitListene
 
     private void setGridViewSelection(boolean selection) {
         mSelectedMuscleItem.setSelected(selection);
-        gridAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemClicked(int index) {
+        mSelectedMuscleItem = mSelectedMuscleItemArray.get(index);
+        boolean selectedIndex = new MuscleExerciseRepo().isSubMuscleExist(DayUUID,mSelectedMuscleItem.getTitle());
+        if (selectedIndex) {
+            setGridViewSelection(false);
+        } else {
+            ShowDialog();
+        }
     }
 }

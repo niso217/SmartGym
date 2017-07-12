@@ -16,6 +16,7 @@ import com.a.n.smartgym.DBModel.Muscle;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -139,10 +140,10 @@ public class MuscleRepo {
 
     }
 
-    public Map<String,ArrayList<Muscle>> getHashSubMuscle(String main, String sub){
+    public LinkedHashMap<String,ArrayList<Muscle>> getHashSubMuscle(String main, String sub){
         Muscle muscle;
         String mainMuscle;
-        Map<String,ArrayList<Muscle>> muscleHashtable = new Hashtable<>();
+        LinkedHashMap<String,ArrayList<Muscle>> muscleHashtable = new LinkedHashMap<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
         String selectQuery =  " SELECT * "

@@ -98,12 +98,17 @@ public class WizardFragment extends Fragment {
                     case 0:
                         if (DayUUID != null && !DayUUID.equals("")) {
                             viewPager.setCurrentItem(getItem(+1), true);
+
                         }
                         break;
                     case 1:
                         if (new PlanMuscleRepo().getMainMuscleByDay(DayUUID).size() > 0) {
                             viewPager.setCurrentItem(getItem(+1), true);
+                            mNextButton.setText("FINISH");
                         }
+                        break;
+                    case 2:
+                        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.containerView, new MyDayFragment()).commit();
                         break;
                 }
             }
@@ -113,6 +118,7 @@ public class WizardFragment extends Fragment {
 
             @Override
             public void onClick(View view) {
+                mNextButton.setText("NEXT");
                 viewPager.setCurrentItem(getItem(-1), true); //getItem(-1) for previous
             }
         });
