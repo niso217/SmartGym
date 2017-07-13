@@ -30,6 +30,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,6 +42,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.UUID;
+
+import static com.example.emulator.Peripheral.CURRENT_FRAGMENT_TAG;
 
 
 public class EmulatorFragment extends ServiceFragment implements OnSeekBarChangeListener {
@@ -85,6 +88,7 @@ public class EmulatorFragment extends ServiceFragment implements OnSeekBarChange
       }
       mBatteryLevelCharacteristic.setValue(value);
       // Insert custom code here
+      if (mDelegate!=null)
       mDelegate.sendNotificationToDevices(mBatteryLevelCharacteristic);
       // Repeat every 2 seconds
       mHandler.postDelayed(runnable, 50);
@@ -293,14 +297,26 @@ public class EmulatorFragment extends ServiceFragment implements OnSeekBarChange
           boolean isconnected= intent.getBooleanExtra(Peripheral.CONNECTION_STATUS,false);
           if (!isconnected){
               mDemoPractice.cancel(true);
-
-
+//            ServiceFragment mCurrentServiceFragment = (ServiceFragment) getFragmentManager()
+//                    .findFragmentByTag(CURRENT_FRAGMENT_TAG);
+//
+//            getFragmentManager()
+//                    .beginTransaction()
+//                    .detach(mCurrentServiceFragment)
+//                    .attach(mCurrentServiceFragment)
+//                    .commit();
+            startBLEScanActivity();
           }
 
 
       }
     }
   };
+
+      private void startBLEScanActivity() {
+        Intent activityIntent = new Intent(getActivity(), Peripheral.class);
+        startActivity(activityIntent);
+    }
 
   private static IntentFilter makeGattUpdateIntentFilter() {
     final IntentFilter intentFilter = new IntentFilter();
