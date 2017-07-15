@@ -1,8 +1,10 @@
 package com.a.n.smartgym.Fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +12,9 @@ import android.view.ViewGroup;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.DBRepo.VisitsRepo;
 import com.google.firebase.auth.FirebaseAuth;
+import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,7 +22,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SELECTION_MODE_MULTIPLE;
 import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SELECTION_MODE_NONE;
+import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SELECTION_MODE_SINGLE;
 
 
 /**
@@ -28,6 +34,8 @@ import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.
 public class VisitsFragment extends Fragment {
 
     private MaterialCalendarView calendar;
+    private static final String TAG = VisitsFragment.class.getSimpleName();
+
 
     @Nullable
     @Override
@@ -36,7 +44,7 @@ public class VisitsFragment extends Fragment {
         View view = inflater.inflate(R.layout.visits_fragment, container, false);
 
         VisitsRepo visitsRepo = new VisitsRepo();
-        List<Date> dates = visitsRepo.getAllVisitsDates(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        final List<Date> dates = visitsRepo.getAllVisitsDates(FirebaseAuth.getInstance().getCurrentUser().getUid());
         calendar = (MaterialCalendarView) view.findViewById(R.id.calendar_view);
 
         calendar.state().edit()
@@ -44,11 +52,32 @@ public class VisitsFragment extends Fragment {
 
                 .commit();
 
-        calendar.setSelectionMode(SELECTION_MODE_NONE);
+        calendar.setSelectionMode(SELECTION_MODE_MULTIPLE);
 
         for (int i = 0; i < dates.size(); i++) {
             calendar.setDateSelected(dates.get(i),true);
         }
+
+        calendar.setOnDateChangedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
+                if (dates.contains(date.getDate()))
+                {
+                    Log.d(TAG,date.getDate()+"");
+                    calendar.setDateSelected(date.getDate(),true);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    String format = formatter.format(date.getDate());
+                    ShowDialog(format);
+
+                }
+                else
+                    calendar.setDateSelected(date.getDate(),false);
+
+//                for (int i = 0; i < dates.size(); i++) {
+//                    calendar.setDateSelected(dates.get(i),true);
+//                }
+            }
+        });
 //        calendar.setDateSelected(getHolidays("13-06-2017"), true);
 //        calendar.setDateSelected(getHolidays("14-06-2017"), true);
 //        calendar.setDateSelected(getHolidays("15-06-2017"), true);
@@ -56,6 +85,12 @@ public class VisitsFragment extends Fragment {
 //        calendar.setDateSelected(getHolidays("11-10-2017"), true);
 
         return view;
+    }
+
+    private void ShowDialog(String day){
+        DayExerciseDialogFragment dialog = new DayExerciseDialogFragment();
+        dialog.show(getActivity().getSupportFragmentManager(),day);
+
     }
 
 //    private Calendar[] getRange(List<Date> dates) {

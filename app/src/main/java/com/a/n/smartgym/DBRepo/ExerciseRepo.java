@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.a.n.smartgym.Object.DailyAverage;
+import com.a.n.smartgym.Object.DayPlanTable;
 import com.a.n.smartgym.Object.MachineUsage;
 import com.a.n.smartgym.Utils.DatabaseManager;
 import com.a.n.smartgym.Object.LastExercise;
@@ -108,6 +109,45 @@ public class ExerciseRepo {
         DatabaseManager.getInstance().closeDatabase();
 
         return DailyAverages;
+
+    }
+
+    public ArrayList<DayPlanTable> getDaySummary(String user_id, String date) {
+        ArrayList<DayPlanTable> dayPlanTableArrayList = new ArrayList<>();
+        DayPlanTable dayPlanTable = null;
+
+        SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
+        String selectQuery = " SELECT " + Sets.TABLE + "." + Sets.KEY_WEIGHT
+                + " ,SUM(" + Sets.TABLE + "." + Sets.KEY_COUNT + ") as sum"
+                + " ,COUNT(" + Sets.TABLE + "." + Sets.KEY_COUNT + ") as count"
+                + " , " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " AND " + Visits.TABLE + "." + Visits.KEY_DATE + "=DATE('"+ date +"')"
+                + " GROUP BY " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME ;
+
+
+        Log.d(TAG, selectQuery);
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                dayPlanTable = new DayPlanTable();
+                dayPlanTable.setExercise_name(cursor.getString(cursor.getColumnIndex(Exercise.KEY_MACHINE_NAME)));
+                dayPlanTable.setNumber_sets(cursor.getString(cursor.getColumnIndex("count")));
+                dayPlanTable.setNumber_reps(cursor.getString(cursor.getColumnIndex("sum")));
+                dayPlanTable.setWeight(cursor.getString(cursor.getColumnIndex(Sets.KEY_WEIGHT)));
+                dayPlanTableArrayList.add(dayPlanTable);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        DatabaseManager.getInstance().closeDatabase();
+
+        return dayPlanTableArrayList;
 
     }
 

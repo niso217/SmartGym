@@ -21,6 +21,9 @@ public class DayPlanTable {
 		this.weight = weight;
 	}
 
+	public DayPlanTable() {
+	}
+
 	public String getExercise_name() {
 		return exercise_name;
 	}

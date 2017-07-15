@@ -15,6 +15,29 @@ public class LastExercise implements Parcelable {
     private String name;
     private int sets;
 
+    public LastExercise(Parcel in) {
+        weight = in.readInt();
+        count = in.readInt();
+        date = in.readString();
+        name = in.readString();
+        sets = in.readInt();
+    }
+
+    public LastExercise() {
+    }
+
+    public static final Creator<LastExercise> CREATOR = new Creator<LastExercise>() {
+        @Override
+        public LastExercise createFromParcel(Parcel in) {
+            return new LastExercise(in);
+        }
+
+        @Override
+        public LastExercise[] newArray(int size) {
+            return new LastExercise[size];
+        }
+    };
+
     public int getSets() {
         return sets;
     }
@@ -62,6 +85,10 @@ public class LastExercise implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
+        dest.writeInt(weight);
+        dest.writeInt(count);
+        dest.writeString(date);
+        dest.writeString(name);
+        dest.writeInt(sets);
     }
 }
