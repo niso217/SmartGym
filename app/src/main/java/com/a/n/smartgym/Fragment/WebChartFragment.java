@@ -29,6 +29,7 @@ import com.a.n.smartgym.Object.MachineUsage;
 import com.a.n.smartgym.R;
 import com.a.n.smartgym.Utils.Constants;
 import com.a.n.smartgym.DBRepo.ExerciseRepo;
+import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONArray;
 
@@ -135,7 +136,7 @@ public class WebChartFragment extends Fragment {
                     break;
                 case Constants.SUMMARY:
                     spCharts.setVisibility(View.GONE);
-                    ArrayList<LastExercise> summary = new ExerciseRepo().getLastSummary("", "");
+                    ArrayList<LastExercise> summary = new ExerciseRepo().getLastSummary(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     if (summary.size()==0) break;
                     title = summary.get(0).getDate();
 

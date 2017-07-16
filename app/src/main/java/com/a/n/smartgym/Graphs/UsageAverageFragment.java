@@ -128,7 +128,7 @@ public class UsageAverageFragment extends Fragment {
 
     private void setData() {
 
-        ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage2("");
+        ArrayList<MachineUsage> machineUsages = new ExerciseRepo().getUsage2(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         ArrayList<PieEntry> entries = new ArrayList<PieEntry>();
 

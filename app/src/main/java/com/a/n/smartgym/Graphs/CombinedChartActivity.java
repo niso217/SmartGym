@@ -37,6 +37,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Utils;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -145,7 +146,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         mCombinedData.setValueTypeface(mTfLight);
 
 
-        ArrayList<String> exercisesList = new ExerciseRepo().getAllExercises("");
+        ArrayList<String> exercisesList = new ExerciseRepo().getAllExercises(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(),
                 R.layout.spinner_item, exercisesList);
@@ -177,7 +178,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
 
     private void setUpSummary(){
         mUpperMenu.setVisibility(View.GONE);
-        ArrayList<LastExercise> summary = new ExerciseRepo().getLastSummary("", "");
+        ArrayList<LastExercise> summary = new ExerciseRepo().getLastSummary(FirebaseAuth.getInstance().getCurrentUser().getUid());
         if (summary.size()==0) return;
         mTitle = summary.get(0).getDate();
 
@@ -221,7 +222,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
         switch (range)
         {
             case YEAR:
-                avg = new ExerciseRepo().getAllMonthAverages("", mTitle,"-"+range+" days");
+                avg = new ExerciseRepo().getAllMonthAverages(FirebaseAuth.getInstance().getCurrentUser().getUid(), mTitle,"-"+range+" days");
 
                 Iterator<DailyAverage> iterator = avg.iterator();
                 while (iterator.hasNext()) {
@@ -236,7 +237,7 @@ public class CombinedChartActivity extends Fragment implements View.OnClickListe
 
                 break;
             default:
-                avg = new ExerciseRepo().getAllDaysAverages2("", mTitle,"-"+range+" days");
+                avg = new ExerciseRepo().getAllDaysAverages2(FirebaseAuth.getInstance().getCurrentUser().getUid(), mTitle,"-"+range+" days");
                 Iterator<DailyAverage> iterator2 = avg.iterator();
                 while (iterator2.hasNext()) {
                     DailyAverage current = iterator2.next();

@@ -152,19 +152,22 @@ public class ExerciseRepo {
     }
 
 
-    public ArrayList<DailyAverage> getAllDaysAverages2(String user_id, String ex, String date) {
+    public ArrayList<DailyAverage> getAllDaysAverages2(String user_id, String ex_name, String date) {
         DailyAverage dailyAverage;
         ArrayList<DailyAverage> DailyAverages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery = "select Visits.date,Exercise.machinename,sum(Sets.count) as count,avg(Sets.weight) as average\n" +
-                "FROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2' and Exercise.machinename="+ "'" + ex + "'"+" \n" +
-                "and Visits.date BETWEEN datetime('now', "+ "'" + date + "'"+ ") AND datetime('now', 'localtime')\n" +
-                "group by Exercise.machinename,Visits.date";
 
+        String selectQuery = "SELECT "+Visits.TABLE+"."+Visits.KEY_DATE+","+Exercise.TABLE+"."+Exercise.KEY_MACHINE_NAME+","+"SUM("+Sets.TABLE+"."+Sets.KEY_COUNT+") AS count,"
+                +" AVG("+Sets.TABLE+"."+Sets.KEY_WEIGHT+") AS average"
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " AND " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME + "=" + "'" + ex_name + "'"
+                + " AND " +Visits.TABLE+"."+Visits.KEY_DATE + " BETWEEN DATETIME('NOW', "+ "'" + date + "'"+ ") AND DATETIME('NOW', 'LOCALTIME')"
+                + " GROUP BY " +Exercise.TABLE+"."+Exercise.KEY_MACHINE_NAME+","+Visits.TABLE+"."+Visits.KEY_DATE;
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -189,22 +192,21 @@ public class ExerciseRepo {
     }
 
 
-    public ArrayList<DailyAverage> getAllMonthAverages(String user_id, String ex, String date) {
+    public ArrayList<DailyAverage> getAllMonthAverages(String user_id, String ex_name, String date) {
         DailyAverage dailyAverage;
         ArrayList<DailyAverage> DailyAverages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery = "select strftime('%Y-%m',strftime('%Y-%m-%d', Exercise.start / 1000, 'unixepoch')) yr_mon, count(*) times,\n" +
-                "sum(Sets.count) as count,round(avg(Sets.weight),0) as average , Exercise.machinename\n" +
-                " \n" +
-                "FROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2' and Exercise.machinename="+ "'" + ex + "'"+" \n" +
-                "and Visits.date BETWEEN datetime('now', "+ "'" + date + "'"+ ") AND datetime('now', 'localtime')\n"+
-                "\t\t\t\t\n" +
-                "\t\t\t\tgroup by yr_mon;";
-
+        String selectQuery = "SELECT STRFTIME('%Y-%m',STRFTIME('%Y-%m-%d', " +Exercise.TABLE +"." + Exercise.KEY_START + " / 1000, 'UNIXEPOCH')) yr_mon, count(*) times,"
+                + " SUM("+ Sets.TABLE + "." + Sets.KEY_COUNT +") AS count , ROUND(AVG(" + Sets.TABLE +"."+Sets.KEY_WEIGHT+"),0) AS average," +Exercise.TABLE+"."+Exercise.KEY_MACHINE_NAME
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " AND " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME + "=" + "'" + ex_name + "'"
+                + " AND " +Visits.TABLE+"."+Visits.KEY_DATE + " BETWEEN DATETIME('NOW', "+ "'" + date + "'"+ ") AND DATETIME('NOW', 'LOCALTIME')"
+                + " GROUP BY yr_mon";
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -234,13 +236,14 @@ public class ExerciseRepo {
         ArrayList<String> exercises = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery = "\t\tselect Exercise.machinename\n" +
-                "\t\t\t\tFROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2'\n" +
-                "\t\t\t\tgroup by Exercise.machinename";
 
+        String selectQuery = " SELECT " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " GROUP BY " + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME;
 
         Log.d(TAG, selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -259,25 +262,27 @@ public class ExerciseRepo {
     }
 
 
-    public ArrayList<LastExercise> getLastSummary(String user_id, String name) {
+    public ArrayList<LastExercise> getLastSummary(String user_id) {
         LastExercise lastExercise;
         ArrayList<LastExercise> LastExercises = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery =
-        "SELECT sum(Sets.count) as count, avg(Sets.weight) as weight, Exercise.machinename, strftime('%Y-%m-%d', Exercise.start / 1000, 'unixepoch') as date\n" +
-                "                FROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2'\n" +
-                "\t\t\t\tand date>=(\n" +
-                "\t\t\t\tselect date(strftime('%Y-%m-%d', max(Exercise.start) / 1000, 'unixepoch'))\n" +
-                "\t\t\t\tFROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2'\n" +
-                "\t\t\t\t)\n" +
-                "                group by Exercise.machinename,date";
+
+        String selectQuery = "SELECT SUM("+Sets.TABLE +"."+Sets.KEY_COUNT +") AS count, AVG("+Sets.TABLE+"."+Sets.KEY_WEIGHT+") AS weight, " +Exercise.TABLE+"."+Exercise.KEY_MACHINE_NAME
+                + ", STRFTIME('%Y-%m-%d', "+Exercise.TABLE+"."+Exercise.KEY_START+"/1000,'UNIXEPOCH') AS date"
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " AND date>=("
+                + " SELECT date(STRFTIME('%Y-%m-%d', MAX("+Exercise.TABLE+"."+Exercise.KEY_START+")/1000,'UNIXEPOCH'))"
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "')"
+                + " GROUP BY "+ Exercise.TABLE+"."+Exercise.KEY_MACHINE_NAME+",date";
 
 
         Log.d(TAG, selectQuery);
@@ -438,14 +443,16 @@ public class ExerciseRepo {
         ArrayList<MachineUsage> machineUsages = new ArrayList<>();
 
         SQLiteDatabase db = DatabaseManager.getInstance().openDatabase();
-        String selectQuery = "\t\t\t\tselect sum(Sets.count) as count, MUSCLE.muscle\n" +
-                "\t\t\t\tFROM User INNER JOIN Visits ON Visits.userid=User.userid\n" +
-                "                INNER JOIN Exercise ON Exercise.visitid=Visits.visitid\n" +
-                "                INNER JOIN Sets ON Sets.exerciseid=Exercise.exerciseid\n" +
-                "                INNER JOIN MUSCLE  ON MUSCLE.name = Exercise.machinename\n" +
-                "                WHERE User.userid='3fiPmozQFuanqa7SfBbfqD0mlRj2'\n" +
-                "\t\t\t\tgroup by MUSCLE.muscle"
-                ;
+        String selectQuery = "SELECT SUM("+Sets.TABLE+"."+Sets.KEY_COUNT +") AS count, " + Muscle.TABLE + "."+Muscle.KEY_MUSCLE
+                + " FROM " + User.TABLE
+                + " INNER JOIN " + Visits.TABLE + " ON " + Visits.TABLE + "." + Visits.KEY_USER_ID + "=" + User.TABLE + "." + User.KEY_USER_ID
+                + " INNER JOIN " + Exercise.TABLE + " ON " + Exercise.TABLE + "." + Exercise.KEY_VISIT_ID + "=" + Visits.TABLE + "." + Visits.KEY_VISIT_ID
+                + " INNER JOIN " + Sets.TABLE + " ON " + Sets.TABLE + "." + Sets.KEY_EXERCISE_ID + "=" + Exercise.TABLE + "." + Exercise.KEY_EXERCISE_ID
+                + " INNER JOIN " + Muscle.TABLE + " ON " + Muscle.TABLE + "." + Muscle.KEY_NAME + "=" + Exercise.TABLE + "." + Exercise.KEY_MACHINE_NAME
+                + " WHERE " + User.TABLE + "." + User.KEY_USER_ID + "=" + "'" + user_id + "'"
+                + " GROUP BY " + Muscle.TABLE +"."+Muscle.KEY_MUSCLE;
+
+
 
 
         Log.d(TAG, selectQuery);
@@ -463,13 +470,6 @@ public class ExerciseRepo {
 
         cursor.close();
         DatabaseManager.getInstance().closeDatabase();
-
-//        int sum = CalcSum(machineUsages);
-//
-//        for (int i = 0; i < machineUsages.size(); i++) {
-//            machineUsages.get(i).setPresent(100L * machineUsages.get(i).getCounter() / sum);
-//
-//        }
 
         return machineUsages;
 
