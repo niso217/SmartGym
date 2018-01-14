@@ -44,13 +44,12 @@
                     android:id="@+id/my_tab_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_gravity="center"
                     android:background="#3d3d3d"
-                    android:gravity="center"
+                    android:gravity="fill"
                     android:textAlignment="center"
-                    app:tabGravity="fill"
                     app:tabIndicatorColor="@color/system_green"
-                    app:tabMode="scrollable"
+                    app:tabMode="fixed"
+                    app:tabMaxWidth="0dp"
                     app:tabSelectedTextColor="@color/system_green"
                     app:tabTextColor="@color/white">
 
